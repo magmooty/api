@@ -16,14 +16,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Out-of-the-loop/api.git"
+    "url": "git+https://github.com/magmooty/commons.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Out-of-the-loop/api/issues"
+    "url": "https://github.com/magmooty/commons/issues"
   },
-  "homepage": "https://github.com/Out-of-the-loop/api#readme",
+  "homepage": "https://github.com/magmooty/commons#readme",
   "devDependencies": {
     "@tsconfig/node16": "^1.0.3",
     "@types/node": "^18.0.1",
