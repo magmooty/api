@@ -8,6 +8,18 @@ on:
       - prod
 
 jobs:
+  version:
+    runs-on: ubuntu-latest
+    if: "!startsWith(github.event.head_commit.message, 'chore')"
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.PACKAGE_TOKEN }}
+      - run: git config --global user.email "increment-version@users.noreply.github.com"
+      - run: git config --global user.name "Increment App Version"
+      - run: npm version patch -m "Version %s"
+      - run: git push
+
   publish:
     runs-on: ubuntu-latest
     steps:
