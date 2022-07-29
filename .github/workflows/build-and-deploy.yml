@@ -10,25 +10,20 @@ on:
 jobs:
   version:
     runs-on: ubuntu-latest
-    if: "startsWith(github.event.head_commit.message, 'chore')"
+    if: "!startsWith(github.event.head_commit.message, '[version]')"
     steps:
       - uses: actions/checkout@v2
         with:
           token: ${{ secrets.PACKAGE_TOKEN }}
-      - run: git config --global user.email "increment-version@users.noreply.github.com"
-      - run: git config --global user.name "Increment App Version"
-      - run: npm version patch -m "Version %s"
-      - run: git push
-
-  publish:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
           node-version: 12
           registry-url: https://npm.pkg.github.com/
           scope: "@magmooty"
+      - run: git config --global user.email "increment-version@users.noreply.github.com"
+      - run: git config --global user.name "Increment App Version"
+      - run: npm version patch -m "[version] %s"
+      - run: git push
       - run: npm install
       - run: npm publish
         env:
