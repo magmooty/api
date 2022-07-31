@@ -1,4 +1,5 @@
 import { Logger } from "@/logger";
+import { MetricsHandler } from "@/metrics";
 import { nanoid } from "nanoid";
 
 /**
@@ -30,8 +31,13 @@ export interface Context {
   parentId?: string;
 }
 
+export interface TracerOptions {
+  log: Logger;
+  metrics: MetricsHandler;
+}
+
 export class Tracer {
-  constructor(private log: Logger) {}
+  constructor(private options: TracerOptions) {}
 
   wrapper<T extends (...args: any[]) => any>(
     func: T
@@ -50,9 +56,9 @@ export class Tracer {
         traceId: (rootCtx && rootCtx.traceId) || spanId,
       };
 
-      const log = this.log.overloadWithPrefilledData.bind(this.log)(
-        traceIds
-      ) as Logger;
+      const log = this.options.log.overloadWithPrefilledData.bind(
+        this.options.log
+      )(traceIds) as Logger;
 
       const ctx: Context = {
         register: (info: TraceInfo) => {

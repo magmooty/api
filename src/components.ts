@@ -1,18 +1,25 @@
 import { ConsoleLogger } from "@/logger/console";
 import { ClassicMessageFormatter } from "@/logger/formatters/classic";
 import { Tracer } from "@/tracing";
+import { MetricsHandler } from "./metrics";
+
+// Info
+const version = process.env.npm_package_version as string;
 
 // Logger
 const classMessageFormatter = new ClassicMessageFormatter({
   service: "api",
-  version: process.env.npm_package_version as string,
+  version,
   timestampFormat: "YYYY-MM-DD HH:mm:ss",
 });
 
-const logger = new ConsoleLogger(classMessageFormatter);
+const log = new ConsoleLogger(classMessageFormatter);
+
+// Metrics
+const metrics = new MetricsHandler({ version });
 
 // Tracing
-const tracer = new Tracer(logger);
+const tracer = new Tracer({ log, metrics });
 const wrapper = tracer.wrapper.bind(tracer);
 
-export { logger, wrapper };
+export { wrapper, metrics };
