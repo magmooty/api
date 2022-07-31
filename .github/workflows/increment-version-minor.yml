@@ -1,11 +1,9 @@
-name: Build and Deploy
+name: Minor version
 
 on:
   push:
     branches:
-      - dev
       - stage
-      - prod
 
 jobs:
   version:
@@ -17,7 +15,7 @@ jobs:
           token: ${{ secrets.PACKAGE_TOKEN }}
       - run: git config --global user.email "increment-version@users.noreply.github.com"
       - run: git config --global user.name "Increment App Version"
-      - run: npm version patch -m "[version] %s"
+      - run: npm version minor -m "[version] %s"
       - run: git push
         env:
           NODE_AUTH_TOKEN: ${{secrets.PACKAGE_TOKEN}}
