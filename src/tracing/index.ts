@@ -1,15 +1,5 @@
-
-
-interface TraceInfo {
-  name: string;
-}
-
-type RegisterFunction = (info: TraceInfo) => void;
-
-interface Context {
-  log: Logger;
-  register: RegisterFunction;
-}
+import { Logger } from "@/logger";
+import { nanoid } from "nanoid";
 
 /**
  * Obtain the parameters of a function type in a tuple
@@ -26,28 +16,59 @@ type ExtractReturnType<T extends (...args: any[]) => any> = T extends (
   ? R
   : any;
 
-function wrapper<T extends (...args: any[]) => any>(
-  func: T
-): (
-  ...funcArgs: ExtractParametersWithoutFirstParam<T>
-) => ExtractReturnType<T> {
-  let traceInfo: TraceInfo = null;
-
-  const ctx: Context = {
-    register: (info) => {
-      traceInfo = info;
-    },
-  };
-
-  return (...args: unknown[]) => {
-    func(ctx, ...args);
-  };
+interface TraceInfo {
+  name: string;
 }
 
-const rule = wrapper(async (ctx: Context, test: string) => {
-  console.log("this is the rule");
-  console.log({ ctx });
-  console.log(test);
-});
+type RegisterFunction = (info: TraceInfo) => void;
 
-rule("test");
+export interface Context {
+  log: Logger;
+  register: RegisterFunction;
+  traceId: string;
+  spanId: string;
+  parentId?: string;
+}
+
+export class Tracer {
+  constructor(private log: Logger) {}
+
+  wrapper<T extends (...args: any[]) => any>(
+    func: T
+  ): (
+    rootCtx: Context | null,
+    ...funcArgs: ExtractParametersWithoutFirstParam<T>
+  ) => ExtractReturnType<T> {
+    let traceInfo: TraceInfo;
+
+    return ((rootCtx: Context | null, ...args: unknown[]) => {
+      const spanId = nanoid();
+
+      const traceIds = {
+        spanId,
+        parentId: (rootCtx && rootCtx.spanId) || undefined,
+        traceId: (rootCtx && rootCtx.traceId) || spanId,
+      };
+
+      const log = this.log.overloadWithPrefilledData.bind(this.log)(
+        traceIds
+      ) as Logger;
+
+      const ctx: Context = {
+        register: (info: TraceInfo) => {
+          traceInfo = info;
+        },
+        log,
+        ...traceIds,
+      };
+
+      try {
+        return func(ctx, ...args).catch((e: unknown) => {
+          log.error(e as Error, "Uncaught error", traceInfo);
+        });
+      } catch (e: unknown) {
+        log.error(e as Error, "Uncaught error", traceInfo);
+      }
+    }).bind(this);
+  }
+}

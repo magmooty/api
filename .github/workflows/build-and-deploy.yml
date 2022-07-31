@@ -15,16 +15,9 @@ jobs:
       - uses: actions/checkout@v2
         with:
           token: ${{ secrets.PACKAGE_TOKEN }}
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 12
-          registry-url: https://npm.pkg.github.com/
-          scope: "@magmooty"
       - run: git config --global user.email "increment-version@users.noreply.github.com"
       - run: git config --global user.name "Increment App Version"
       - run: npm version patch -m "[version] %s"
       - run: git push
-      - run: npm install
-      - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.PACKAGE_TOKEN}}

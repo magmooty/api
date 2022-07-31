@@ -1,29 +1,29 @@
 {
-  "name": "@magmooty/commons",
+  "name": "@magmooty/api",
   "version": "1.0.2",
-  "description": "Common shared modules in the system",
-  "main": "index.js",
+  "description": "Magmooty Web API",
+  "main": "dist/main.js",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/@magmooty"
   },
   "scripts": {
-    "start": "node dist/main.js",
+    "start": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register dist/main.js",
     "build": "npx tsc",
     "start:dev": "nodemon",
-    "test": "echo \"No tests specified\" && exit 1",
+    "test": "echo \"No tests specified\"",
     "clean": "rm -rf dist",
     "lint": "eslint . --fix"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/magmooty/commons.git"
+    "url": "git+https://github.com/magmooty/api.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/magmooty/commons/issues"
+    "url": "https://github.com/magmooty/api/issues"
   },
-  "homepage": "https://github.com/magmooty/commons#readme",
+  "homepage": "https://github.com/magmooty/api#readme",
   "devDependencies": {
     "@tsconfig/node16": "^1.0.3",
     "@types/node": "^18.0.1",
@@ -32,6 +32,12 @@
     "eslint": "^8.19.0",
     "ts-node": "^10.8.2",
     "tsc": "^2.0.4",
+    "tsconfig-paths": "^4.0.0",
     "typescript": "^4.7.4"
+  },
+  "dependencies": {
+    "@stdlib/error-to-json": "^0.0.7",
+    "moment": "^2.29.4",
+    "nanoid": "^3.3.4"
   }
 }
