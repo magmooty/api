@@ -1,4 +1,5 @@
 import { ObjectConfig } from "@/graph";
+import { OwnerViewVirtualExecutor } from "@/graph/common";
 
 export default {
   code: "Z1",
@@ -24,7 +25,7 @@ export default {
     views: {
       owner: {
         pre: ["all"],
-        execute: () => false,
+        execute: OwnerViewVirtualExecutor,
       },
     },
   },

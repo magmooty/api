@@ -1,7 +1,7 @@
 import { ObjectViewVirtualExecutor } from "@/graph";
 import { GraphObject, User } from "@/graph/objects/types";
 
-export const OwnerViewVirtual: ObjectViewVirtualExecutor = (
+export const OwnerViewVirtualExecutor: ObjectViewVirtualExecutor = (
   object: GraphObject,
   author: User
 ) => {
