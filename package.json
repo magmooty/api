@@ -9,6 +9,7 @@
   "scripts": {
     "start": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register dist/main.js",
     "build": "npx tsc",
+    "gen:types": "ts-node src/scripts/generate-types.ts",
     "start:dev": "nodemon",
     "test": "echo \"No tests specified\"",
     "clean": "rm -rf dist",
@@ -31,6 +32,7 @@
     "@typescript-eslint/eslint-plugin": "^5.30.5",
     "@typescript-eslint/parser": "^5.30.5",
     "eslint": "^8.19.0",
+    "prettier": "^2.7.1",
     "ts-node": "^10.8.2",
     "tsc": "^2.0.4",
     "tsconfig-paths": "^4.0.0",
