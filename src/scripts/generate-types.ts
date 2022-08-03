@@ -20,6 +20,7 @@ export interface GraphObject {
   object_type: ObjectType;
   [key: string]: ObjectFieldValue;
 }
+
 `;
 
 const capitalize = (text: string, splitter?: string) => {
