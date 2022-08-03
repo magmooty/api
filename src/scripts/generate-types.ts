@@ -69,7 +69,11 @@ const object = {
   start: (objectType: string) => {
     const typeName = capitalize(objectType);
 
-    return `export interface ${typeName} {`;
+    return [
+      `export interface ${typeName} {`,
+      "id: ObjectId",
+      `object_type: "${objectType}"`,
+    ].join("\n");
   },
   fields: {
     string: (fieldName: string) => {

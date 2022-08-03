@@ -1,6 +1,9 @@
-import { ObjectViewVirtualExecutor } from ".";
+import { ObjectViewVirtualExecutor } from "@/graph";
+import { GraphObject, User } from "@/graph/objects/types";
 
 export const OwnerViewVirtual: ObjectViewVirtualExecutor = (
-  object,
-  author
-) => {};
+  object: GraphObject,
+  author: User
+) => {
+  return object.id === author.id;
+};

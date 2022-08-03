@@ -12,6 +12,8 @@ export interface GraphObject {
 export type UserStatusVS = "created";
 
 export interface User {
+  id: ObjectId;
+  object_type: "user";
   email: string;
   email_verified: boolean;
   status: UserStatusVS;

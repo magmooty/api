@@ -1,5 +1,5 @@
-import objects from "./objects";
-import { ObjectFieldValue } from "./objects/types";
+import objects from "@/graph/objects";
+import { GraphObject, ObjectFieldValue, User } from "@/graph/objects/types";
 
 export type ObjectFieldType =
   | "string"
@@ -36,7 +36,10 @@ export interface ObjectView {
   PATCH: string[];
 }
 
-export type ObjectViewVirtualExecutor = (object: GraphObject) => boolean;
+export type ObjectViewVirtualExecutor = (
+  object: GraphObject,
+  author: User
+) => boolean;
 
 export interface ObjectViewVirtual {
   pre: string[];
