@@ -1,0 +1,30 @@
+[
+  {
+    "code": "ObjectDoesNotExist",
+    "template": "هذا الكيان غير موجود في النظام"
+  },
+  {
+    "code": "ObjectTypeDoesNotExist",
+    "template": "نوع هذا الكيان غير موجود في النظام"
+  },
+  {
+    "code": "ErrorDataMissing",
+    "template": "حدث خطأ في برمجة النطام"
+  },
+  {
+    "code": "ObjectCreationFailed",
+    "template": "فشل في إنشاء الكيان"
+  },
+  {
+    "code": "InvalidObjectId",
+    "template": "رقم تعريفي غير صحيح للكيان"
+  },
+  {
+    "code": "ObjectUpdateFailed",
+    "template": "فشل تحديث الكيان"
+  },
+  {
+    "code": "ObjectDeleteFailed",
+    "template": "فشل مسح الكيان"
+  }
+]

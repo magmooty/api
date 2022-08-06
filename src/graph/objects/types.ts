@@ -4,11 +4,15 @@ export type ObjectType = "user";
 
 export type ObjectFieldValue = string | number | boolean | Date | ObjectId;
 
+export type AppLocale = "ar" | "en";
+
 export interface GraphObject {
   id: ObjectId;
   object_type: ObjectType;
   [key: string]: ObjectFieldValue;
 }
+
+export type ValueSet = "UserStatus";
 export type UserStatusVS = "created";
 
 export interface User {

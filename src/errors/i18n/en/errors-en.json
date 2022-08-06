@@ -1,0 +1,30 @@
+[
+  {
+    "code": "ObjectDoesNotExist",
+    "template": "Object doesn't exist"
+  },
+  {
+    "code": "ObjectTypeDoesNotExist",
+    "template": "Object type doesn't exist"
+  },
+  {
+    "code": "ErrorDataMissing",
+    "template": "System error"
+  },
+  {
+    "code": "ObjectCreationFailed",
+    "template": "Failed to create object"
+  },
+  {
+    "code": "InvalidObjectId",
+    "template": "Invalid Object ID"
+  },
+  {
+    "code": "ObjectUpdateFailed",
+    "template": "Failed to update object"
+  },
+  {
+    "code": "ObjectDeleteFailed",
+    "template": "Failed to delete object"
+  }
+]

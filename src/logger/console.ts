@@ -16,7 +16,7 @@ export class ConsoleLogger implements Logger {
     console.warn(this.formatter.format({ level: "warn" }, message, data));
   }
 
-  error(error: Error, message: string, data?: LogData) {
+  error(error: Error | Object | unknown, message: string, data?: LogData) {
     let logData;
 
     if (error instanceof Error) {
@@ -42,7 +42,7 @@ export class ConsoleLogger implements Logger {
         this.debug(message, { ...data, ...prefilledData });
       },
       info: (message, data?) => {
-        this.debug(message, { ...data, ...prefilledData });
+        this.info(message, { ...data, ...prefilledData });
       },
       warn: (message, data?) => {
         this.warn(message, { ...data, ...prefilledData });

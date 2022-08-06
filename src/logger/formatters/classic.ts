@@ -1,6 +1,5 @@
 import {
   LogData,
-  LogMessage,
   LogMessageOptions,
   MessageFormatter,
   MessageFormatterOptions,
@@ -14,9 +13,16 @@ export class ClassicMessageFormatter implements MessageFormatter {
     { level }: LogMessageOptions,
     message: string,
     data: LogData = {}
-  ): LogMessage {
+  ): string {
     const timestamp = moment().utc().format(this.options.timestampFormat);
     const { service, version } = this.options;
-    return { timestamp, service, version, level, ...data };
+    return JSON.stringify({
+      timestamp,
+      service,
+      version,
+      level,
+      message,
+      data,
+    });
   }
 }

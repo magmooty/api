@@ -32,16 +32,21 @@ export default {
   fields: {
     email: {
       type: "string",
+      unique: true,
+      required: true,
     },
     email_verified: {
       type: "boolean",
+      default: () => false,
     },
     status: {
       type: "value-set",
       valueSet: "user-status",
+      default: () => "created",
     },
     last_read_notification: {
       type: "date",
+      default: () => new Date(),
     },
   },
   edges: {

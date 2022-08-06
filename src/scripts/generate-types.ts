@@ -2,9 +2,39 @@ import { exec } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
 import { ObjectConfig, ObjectField, objects } from "../graph";
+import * as tsj from "ts-json-schema-generator";
 
+const log = console;
+
+const CONFIG_JSON_SCHEMA_FILE_PATH = path.join(
+  __dirname,
+  "../config/schema.json"
+);
+const TSCONFIG_FILE_PATH = path.join(__dirname, "../../tsconfig.json");
+const CONFIG_TYPES_FILE_PATH = path.join(__dirname, "../config/types.ts");
 const TYPES_FILE_PATH = path.join(__dirname, "../graph/objects/types.ts");
 const VALUE_SET_DIR_PATH = path.join(__dirname, "../value-sets");
+
+//#region Generate JSON config schema
+
+function generateSchema() {
+  const config = {
+    path: CONFIG_TYPES_FILE_PATH,
+    tsconfig: TSCONFIG_FILE_PATH,
+    type: "*", // Or <type-name> if you want to generate schema for that one type only
+  };
+
+  const schema = tsj.createGenerator(config).createSchema(config.type);
+
+  const schemaString = JSON.stringify(schema, null, 2);
+  fs.writeFileSync(CONFIG_JSON_SCHEMA_FILE_PATH, schemaString);
+}
+
+generateSchema();
+
+//#endregion
+
+//#region Generate types from object graph
 
 let typesFileContents = `
 export type ObjectId = string;
@@ -14,6 +44,8 @@ export type ObjectType = ${Object.keys(objects)
   .join(" | ")}
 
 export type ObjectFieldValue = string | number | boolean | Date | ObjectId;
+
+export type AppLocale = 'ar' | 'en';
 
 export interface GraphObject {
   id: ObjectId;
@@ -41,30 +73,20 @@ const newLine = () => {
 };
 
 const valueSet = {
-  generator: (fileName: string, vs: { code: string }[]) => {
-    const typeName = capitalize(fileName.replace(".json", ""), "-");
+  generator: (valueSetFileName: string, vs: { code: string }[]) => {
+    const typeName = capitalize(valueSetFileName.replace(".json", ""), "-");
 
     return `export type ${typeName}VS = ${vs
       .map(({ code }) => `"${code}"`)
       .join(" | ")}`;
   },
+  genericType: (types: string[]): string => {
+    return `export type ValueSet = ${types
+      .map((type) => `"${type}"`)
+      .join(" | ")}`;
+  },
   end: () => "\n",
 };
-
-// | "string"
-//   | "number"
-//   | "boolean"
-//   | "date"
-//   | "object-id"
-//   | "struct"
-//   | "value-set"
-//   | "array:string"
-//   | "array:number"
-//   | "array:boolean"
-//   | "array:date"
-//   | "array:object-id"
-//   | "array:struct"
-//   | "array:value-set";
 
 const object = {
   start: (objectType: string) => {
@@ -109,7 +131,15 @@ const object = {
 
 let typesNotFound = false;
 
-const valueSetFiles = fs.readdirSync(VALUE_SET_DIR_PATH);
+const valueSetFiles = fs
+  .readdirSync(VALUE_SET_DIR_PATH)
+  .filter((file) => file.endsWith(".json"));
+
+const valueSetTypes = valueSetFiles.map((valueSetFileName) =>
+  capitalize(valueSetFileName.replace(".json", ""), "-")
+);
+
+append(valueSet.genericType(valueSetTypes));
 
 for (const valueSetFileName of valueSetFiles) {
   const json = JSON.parse(
@@ -133,7 +163,7 @@ for (const objectType in objects) {
     if (object.fields[fieldConfig.type]) {
       append(object.fields[fieldConfig.type](objectField, fieldConfig));
     } else {
-      console.error("Couldn't find field generator for type", fieldConfig.type);
+      log.error("Couldn't find field generator for type", fieldConfig.type);
       typesNotFound = true;
     }
   }
@@ -145,16 +175,18 @@ if (typesNotFound) {
   process.exit();
 }
 
-console.log(`Generated types for ${Object.keys(objects).length} objects`);
+log.info(`Generated types for ${Object.keys(objects).length} objects`);
 
 fs.writeFileSync(TYPES_FILE_PATH, typesFileContents);
 
-console.log("Applying prettier");
+log.info("Applying prettier");
 
 exec(`env npx prettier --write ${TYPES_FILE_PATH}`, (error, stdout, stderr) => {
   if (error) {
-    console.error(stderr);
+    log.error(stderr);
   } else {
-    console.log(stdout.replace(/\n$/, ""));
+    log.info(stdout.replace(/\n$/, ""));
   }
 });
+
+//#endregion

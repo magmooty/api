@@ -1,0 +1,193 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/AppConfig",
+  "definitions": {
+    "AppConfig": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "server": {
+          "type": "object",
+          "properties": {
+            "port": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "port"
+          ],
+          "additionalProperties": false
+        },
+        "auth": {
+          "type": "object",
+          "properties": {
+            "driver": {
+              "type": "string",
+              "const": "cognito"
+            },
+            "config": {
+              "$ref": "#/definitions/CognitoConfig"
+            }
+          },
+          "required": [
+            "driver",
+            "config"
+          ],
+          "additionalProperties": false
+        },
+        "persistence": {
+          "$ref": "#/definitions/PersistenceConfig"
+        },
+        "i18n": {
+          "type": "object",
+          "properties": {
+            "defaultLocale": {
+              "$ref": "#/definitions/AppLocale"
+            },
+            "locales": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/AppLocale"
+              }
+            }
+          },
+          "required": [
+            "defaultLocale",
+            "locales"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "server",
+        "auth",
+        "persistence",
+        "i18n"
+      ],
+      "additionalProperties": false
+    },
+    "CognitoConfig": {
+      "type": "object",
+      "properties": {
+        "cognitoUserPoolId": {
+          "type": "string"
+        },
+        "cognitoClientId": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "tokenUse": {
+          "type": "string"
+        },
+        "tokenExpiration": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "cognitoUserPoolId",
+        "cognitoClientId",
+        "region",
+        "tokenUse",
+        "tokenExpiration"
+      ],
+      "additionalProperties": false
+    },
+    "PersistenceConfig": {
+      "type": "object",
+      "properties": {
+        "driver": {
+          "type": "string",
+          "const": "dynamodb"
+        },
+        "config": {
+          "$ref": "#/definitions/DynamoDBConfig"
+        },
+        "cache": {
+          "type": "object",
+          "properties": {
+            "driver": {
+              "type": "string",
+              "const": "redis"
+            },
+            "config": {
+              "type": "object",
+              "properties": {
+                "host": {
+                  "type": "string"
+                },
+                "port": {
+                  "type": "number"
+                },
+                "prefix": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "host",
+                "port",
+                "prefix"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "driver",
+            "config"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "driver",
+        "config",
+        "cache"
+      ],
+      "additionalProperties": false
+    },
+    "DynamoDBConfig": {
+      "type": "object",
+      "properties": {
+        "region": {
+          "type": "string"
+        },
+        "prefix": {
+          "type": "string"
+        },
+        "maxRetries": {
+          "type": "number"
+        },
+        "allowedRetryErrorCodes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "endpoint": {
+          "type": "string"
+        },
+        "retryAfter": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "region",
+        "prefix",
+        "maxRetries",
+        "allowedRetryErrorCodes",
+        "retryAfter"
+      ],
+      "additionalProperties": false
+    },
+    "AppLocale": {
+      "type": "string",
+      "enum": [
+        "ar",
+        "en"
+      ]
+    }
+  }
+}
