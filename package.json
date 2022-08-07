@@ -1,6 +1,6 @@
 {
   "name": "@magmooty/api",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "description": "Magmooty Web API",
   "main": "dist/server.js",
   "publishConfig": {
