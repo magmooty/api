@@ -38,5 +38,21 @@
   {
     "code": "ObjectReplaceFailed",
     "template": "فشل تبديل الكيان"
+  },
+  {
+    "code": "EdgeCreationFailed",
+    "template": "فشل تحقيق الاتصال بين الكيانات"
+  },
+  {
+    "code": "EdgeDeleteFailed",
+    "template": "فشل مسح الاتصال بين الكيانات"
+  },
+  {
+    "code": "GetEdgesFailed",
+    "template": "فشل في الحصول على الاتصالات بين الكيانات"
+  },
+  {
+    "code": "GetReverseEdgesFailed",
+    "template": "فشل في الحصول على الاتصالات العكسية بين الكيانات"
   }
 ]

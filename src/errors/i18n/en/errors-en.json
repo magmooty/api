@@ -38,5 +38,21 @@
   {
     "code": "ObjectReplaceFailed",
     "template": "Failed to replace object"
+  },
+  {
+    "code": "EdgeCreationFailed",
+    "template": "Failed to create an edge between objects"
+  },
+  {
+    "code": "EdgeDeleteFailed",
+    "template": "Failed to delete an edge between objects"
+  },
+  {
+    "code": "GetEdgesFailed",
+    "template": "Failed to get edges between objects"
+  },
+  {
+    "code": "GetReverseEdgesFailed",
+    "template": "Failed to get reverse edges between objects"
   }
 ]

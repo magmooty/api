@@ -104,37 +104,31 @@ export interface PersistenceDriver {
 
   // /* Edges */
 
-  // createEdge(
-  //   ctx: Context,
-  //   src: string,
-  //   edgeName: string,
-  //   dst: string,
-  //   sortValue?: string
-  // ): Promise<void>;
+  createEdge(
+    ctx: Context | null,
+    src: ObjectId,
+    edgeName: string,
+    dst: ObjectId
+  ): Promise<void>;
 
-  // deleteEdge(
-  //   ctx: Context,
-  //   src: string,
-  //   edgeName: string,
-  //   dst: string,
-  //   sortValue?: string
-  // ): Promise<void>;
+  deleteEdge(
+    ctx: Context | null,
+    src: string,
+    edgeName: string,
+    dst: string
+  ): Promise<void>;
 
-  // getAllEdges(ctx: Context, src: string, edgeName: string): Promise<string[]>;
+  getEdges(
+    ctx: Context | null,
+    src: string,
+    edgeName: string
+  ): Promise<string[]>;
 
-  // getAllReverseEdges(
-  //   ctx: Context,
-  //   edgeName: string,
-  //   dst: string
-  // ): Promise<string[]>;
-
-  // getEdgeCount(ctx: Context, src: string, edgeName: string): Promise<number>;
-
-  // getReverseEdgeCount(
-  //   ctx: Context,
-  //   dst: string,
-  //   edgeName: string
-  // ): Promise<number>;
+  getReverseEdges(
+    ctx: Context | null,
+    edgeName: string,
+    dst: string
+  ): Promise<string[]>;
 }
 
 export interface PersistenceConfig {

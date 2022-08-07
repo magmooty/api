@@ -52,6 +52,7 @@ export interface CommandOutput<T = unknown> {
 const DYNAMO_TABLES = [
   "objects",
   "edges",
+  "reverse_edges",
   "counters",
   "uniques",
   "lookups",
@@ -94,7 +95,11 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
     }
   );
 
-  private constructTableSchema(tableName: string, primaryKey: string) {
+  private constructTableSchema(
+    tableName: string,
+    primaryKey: string,
+    secondaryPrimaryKey?: string
+  ) {
     return {
       TableName: this.prefixTableName(tableName),
       BillingMode: "PAY_PER_REQUEST",
@@ -103,6 +108,14 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
           AttributeName: primaryKey,
           AttributeType: "S",
         },
+        ...(secondaryPrimaryKey
+          ? [
+              {
+                AttributeName: secondaryPrimaryKey,
+                AttributeType: "S",
+              },
+            ]
+          : []),
       ],
       KeySchema: [
         {
@@ -110,6 +123,22 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
           KeyType: "HASH",
         },
       ],
+      ...(secondaryPrimaryKey && {
+        GlobalSecondaryIndexUpdates: [
+          {
+            IndexName: secondaryPrimaryKey,
+            Projection: {
+              ProjectionType: "ALL",
+            },
+            KeySchema: [
+              {
+                KeyType: "HASH",
+                AttributeName: secondaryPrimaryKey,
+              },
+            ],
+          },
+        ],
+      }),
     };
   }
 
@@ -126,7 +155,7 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
       switch (table) {
         case "objects":
           command = new CreateTableCommand(
-            this.constructTableSchema("objects", "id")
+            this.constructTableSchema("objects", "id", "object_type")
           );
           break;
         case "counters":
@@ -147,6 +176,11 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
         case "uniques":
           command = new CreateTableCommand(
             this.constructTableSchema("uniques", "id")
+          );
+          break;
+        case "reverse_edges":
+          command = new CreateTableCommand(
+            this.constructTableSchema("reverse_edges", "edgeName_dst")
           );
           break;
         default:
@@ -675,6 +709,395 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
       ctx.metrics
         .getCounter("dynamo_queried_objects_error")
         .inc({ objectType: ctx.getParam("objectType"), error: error.message });
+    }
+  );
+
+  createEdge = wrapper(
+    { name: "createEdge", file: __filename },
+    async (
+      ctx: Context,
+      src: ObjectId,
+      edgeName: string,
+      dst: ObjectId
+    ): Promise<void> => {
+      ctx.startTrackTime(
+        "dynamo_create_edge_duration",
+        "dynamo_create_edge_error_duration"
+      );
+
+      const srcObjectType = await getObjectTypeFromId(ctx, src);
+
+      ctx.register({ src, edgeName, dst });
+
+      ctx.setParam("srcObjectType", srcObjectType);
+      ctx.setParam("edgeName", edgeName);
+
+      ctx.setErrorDurationMetricLabels({ srcObjectType, edgeName });
+
+      const sortValue = new Date().getTime().toString();
+
+      let totalRetries = 0;
+
+      {
+        const TableName = this.prefixTableName("edges");
+
+        const Key: AttributeMap = marshall({
+          src_edgeName: `${src}+${edgeName}`,
+        });
+
+        const command = new UpdateItemCommand({
+          TableName,
+          Key,
+          UpdateExpression: "SET #dst = :sortValue",
+          ExpressionAttributeValues: {
+            ":sortValue": { N: sortValue },
+          },
+          ExpressionAttributeNames: {
+            "#dst": dst,
+          },
+          ReturnValues: "ALL_NEW",
+        });
+
+        const { result, retries } = (await this.sendCommand(
+          ctx,
+          command
+        )) as CommandOutput<UpdateItemCommandOutput>;
+
+        ctx.metrics
+          .getCounter("dynamo_retries")
+          .inc({ method: "createEdge", srcObjectType, edgeName }, retries);
+
+        totalRetries += retries;
+
+        if (result?.$metadata?.httpStatusCode !== 200) {
+          return errors.createError(ctx, "EdgeCreationFailed", {
+            src,
+            edgeName,
+            dst,
+          });
+        }
+      }
+
+      {
+        const TableName = this.prefixTableName("reverse_edges");
+
+        const Key: AttributeMap = marshall({
+          edgeName_dst: `${edgeName}+${dst}`,
+        });
+
+        const command = new UpdateItemCommand({
+          TableName,
+          Key,
+          UpdateExpression: "SET #src = :sortValue",
+          ExpressionAttributeValues: {
+            ":sortValue": { N: sortValue },
+          },
+          ExpressionAttributeNames: {
+            "#src": src,
+          },
+          ReturnValues: "ALL_NEW",
+        });
+
+        const { result, retries } = (await this.sendCommand(
+          ctx,
+          command
+        )) as CommandOutput<UpdateItemCommandOutput>;
+
+        ctx.metrics
+          .getCounter("dynamo_retries")
+          .inc(
+            { method: "createReverseEdge", srcObjectType, edgeName },
+            retries
+          );
+
+        totalRetries += retries;
+
+        if (result?.$metadata?.httpStatusCode !== 200) {
+          return errors.createError(ctx, "EdgeCreationFailed", {
+            src,
+            edgeName,
+            dst,
+          });
+        }
+      }
+
+      ctx.setDurationMetricLabels({ srcObjectType, retries: totalRetries });
+    },
+    (ctx, error) => {
+      ctx.metrics.getCounter("dynamo_create_edge_error").inc({
+        srcObjectType: ctx.getParam("srcObjectType"),
+        edgeName: ctx.getParam("edgeName"),
+        error: error.message,
+      });
+    },
+    (ctx) => {
+      ctx.metrics.getCounter("dynamo_create_edge").inc({
+        srcObjectType: ctx.getParam("srcObjectType"),
+        edgeName: ctx.getParam("edgeName"),
+      });
+    }
+  );
+
+  deleteEdge = wrapper(
+    { name: "deleteEdge", file: __filename },
+    async (
+      ctx: Context,
+      src: ObjectId,
+      edgeName: string,
+      dst: ObjectId
+    ): Promise<void> => {
+      ctx.startTrackTime(
+        "dynamo_delete_edge_duration",
+        "dynamo_delete_edge_error_duration"
+      );
+
+      const srcObjectType = await getObjectTypeFromId(ctx, src);
+
+      ctx.register({ src, edgeName, dst });
+
+      ctx.setParam("srcObjectType", srcObjectType);
+      ctx.setParam("edgeName", edgeName);
+
+      ctx.setErrorDurationMetricLabels({ srcObjectType, edgeName });
+
+      let totalRetries = 0;
+
+      {
+        const TableName = this.prefixTableName("edges");
+
+        const Key: AttributeMap = marshall({
+          src_edgeName: `${src}+${edgeName}`,
+        });
+
+        const command = new UpdateItemCommand({
+          TableName,
+          Key,
+          UpdateExpression: "REMOVE #dst",
+          ExpressionAttributeNames: {
+            "#dst": dst,
+          },
+          ReturnValues: "ALL_NEW",
+        });
+
+        const { result, retries } = (await this.sendCommand(
+          ctx,
+          command
+        )) as CommandOutput<UpdateItemCommandOutput>;
+
+        ctx.metrics
+          .getCounter("dynamo_retries")
+          .inc({ method: "deleteEdge", srcObjectType, edgeName }, retries);
+
+        totalRetries += retries;
+
+        if (result?.$metadata?.httpStatusCode !== 200) {
+          return errors.createError(ctx, "EdgeDeleteFailed", {
+            src,
+            edgeName,
+            dst,
+          });
+        }
+      }
+
+      {
+        const TableName = this.prefixTableName("reverse_edges");
+
+        const Key: AttributeMap = marshall({
+          edgeName_dst: `${edgeName}+${dst}`,
+        });
+
+        const command = new UpdateItemCommand({
+          TableName,
+          Key,
+          UpdateExpression: "REMOVE #src",
+          ExpressionAttributeNames: {
+            "#src": src,
+          },
+          ReturnValues: "ALL_NEW",
+        });
+
+        const { result, retries } = (await this.sendCommand(
+          ctx,
+          command
+        )) as CommandOutput<UpdateItemCommandOutput>;
+
+        ctx.metrics
+          .getCounter("dynamo_retries")
+          .inc({ method: "deleteReverseEdge", srcObjectType, edgeName }, retries);
+
+        totalRetries += retries;
+
+        if (result?.$metadata?.httpStatusCode !== 200) {
+          return errors.createError(ctx, "EdgeDeleteFailed", {
+            src,
+            edgeName,
+            dst,
+          });
+        }
+      }
+
+      ctx.setDurationMetricLabels({ srcObjectType, retries: totalRetries });
+    },
+    (ctx, error) => {
+      ctx.metrics.getCounter("dynamo_delete_edge_error").inc({
+        srcObjectType: ctx.getParam("srcObjectType"),
+        edgeName: ctx.getParam("edgeName"),
+        error: error.message,
+      });
+    },
+    (ctx) => {
+      ctx.metrics.getCounter("dynamo_delete_edge").inc({
+        srcObjectType: ctx.getParam("srcObjectType"),
+        edgeName: ctx.getParam("edgeName"),
+      });
+    }
+  );
+
+  getEdges = wrapper(
+    { name: "getEdges", file: __filename },
+    async (
+      ctx: Context,
+      src: ObjectId,
+      edgeName: string
+    ): Promise<string[]> => {
+      ctx.startTrackTime(
+        "dynamo_get_edges_duration",
+        "dynamo_get_edges_error_duration"
+      );
+
+      const srcObjectType = await getObjectTypeFromId(ctx, src);
+
+      ctx.register({ src, edgeName });
+
+      ctx.setParam("srcObjectType", srcObjectType);
+      ctx.setParam("edgeName", edgeName);
+
+      ctx.setErrorDurationMetricLabels({ srcObjectType, edgeName });
+
+      const TableName = this.prefixTableName("edges");
+
+      const Key: AttributeMap = marshall({
+        src_edgeName: `${src}+${edgeName}`,
+      });
+
+      const command = new GetItemCommand({
+        TableName,
+        Key,
+      });
+
+      const { result, retries } = (await this.sendCommand(
+        ctx,
+        command
+      )) as CommandOutput<GetItemCommandOutput>;
+
+      ctx.metrics
+        .getCounter("dynamo_retries")
+        .inc({ method: "getEdges", srcObjectType, edgeName }, retries);
+
+      if (result?.$metadata?.httpStatusCode !== 200) {
+        return errors.createError(ctx, "GetEdgesFailed", {
+          src,
+          edgeName,
+        });
+      }
+
+      if (!result?.Item) {
+        return [];
+      }
+
+      ctx.setDurationMetricLabels({ srcObjectType, retries });
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { src_edgeName, ...dsts } = unmarshall(result.Item);
+
+      return Object.keys(dsts).sort((a, b) => dsts[a] - dsts[b]);
+    },
+    (ctx, error) => {
+      ctx.metrics.getCounter("dynamo_get_edges_error").inc({
+        srcObjectType: ctx.getParam("srcObjectType"),
+        edgeName: ctx.getParam("edgeName"),
+        error: error.message,
+      });
+    },
+    (ctx) => {
+      ctx.metrics.getCounter("dynamo_get_edges").inc({
+        srcObjectType: ctx.getParam("srcObjectType"),
+        edgeName: ctx.getParam("edgeName"),
+      });
+    }
+  );
+
+  getReverseEdges = wrapper(
+    { name: "getReverseEdges", file: __filename },
+    async (
+      ctx: Context,
+      edgeName: string,
+      dst: ObjectId
+    ): Promise<string[]> => {
+      ctx.startTrackTime(
+        "dynamo_get_reverse_edges_duration",
+        "dynamo_get_reverse_edges_error_duration"
+      );
+
+      const dstObjectType = await getObjectTypeFromId(ctx, dst);
+
+      ctx.register({ dst, edgeName });
+
+      ctx.setParam("dstObjectType", dstObjectType);
+      ctx.setParam("edgeName", edgeName);
+
+      ctx.setErrorDurationMetricLabels({ dstObjectType, edgeName });
+
+      const TableName = this.prefixTableName("reverse_edges");
+
+      const Key: AttributeMap = marshall({
+        edgeName_dst: `${edgeName}+${dst}`,
+      });
+
+      const command = new GetItemCommand({
+        TableName,
+        Key,
+      });
+
+      const { result, retries } = (await this.sendCommand(
+        ctx,
+        command
+      )) as CommandOutput<GetItemCommandOutput>;
+
+      ctx.metrics
+        .getCounter("dynamo_retries")
+        .inc({ method: "getReverseEdges", dstObjectType, edgeName }, retries);
+
+      if (result?.$metadata?.httpStatusCode !== 200) {
+        return errors.createError(ctx, "GetEdgesFailed", {
+          dst,
+          edgeName,
+        });
+      }
+
+      if (!result?.Item) {
+        return [];
+      }
+
+      ctx.setDurationMetricLabels({ dstObjectType, retries });
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { edgeName_dst, ...srcs } = unmarshall(result.Item);
+
+      return Object.keys(srcs).sort((a, b) => srcs[a] - srcs[b]);
+    },
+    (ctx, error) => {
+      ctx.metrics.getCounter("dynamo_get_reverse_edges_error").inc({
+        dstObjectType: ctx.getParam("dstObjectType"),
+        edgeName: ctx.getParam("edgeName"),
+        error: error.message,
+      });
+    },
+    (ctx) => {
+      ctx.metrics.getCounter("dynamo_get_reverse_edges").inc({
+        dstObjectType: ctx.getParam("dstObjectType"),
+        edgeName: ctx.getParam("edgeName"),
+      });
     }
   );
 }

@@ -52,6 +52,22 @@ const errors = [
     code: "ObjectReplaceFailed",
     templateProps: [],
   },
+  {
+    code: "EdgeCreationFailed",
+    templateProps: [],
+  },
+  {
+    code: "EdgeDeleteFailed",
+    templateProps: [],
+  },
+  {
+    code: "GetEdgesFailed",
+    templateProps: [],
+  },
+  {
+    code: "GetReverseEdgesFailed",
+    templateProps: [],
+  },
 ] as const;
 
 export type ErrorType = typeof errors[number]["code"];

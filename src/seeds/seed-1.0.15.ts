@@ -1,3 +1,5 @@
+// Add global secondary index to objects table
+
 import { config } from "@/components";
 import {
   DescribeTableCommand,

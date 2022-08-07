@@ -70,9 +70,55 @@ export const metricsCounters = [
     labelNames: ["objectType", "error"],
   },
   {
+    name: "dynamo_create_edge",
+    help: "Total number of create edge requests to dynamo",
+    labelNames: ["srcObjectType", "edgeName"],
+  },
+  {
+    name: "dynamo_create_edge_error",
+    help: "Total number of errored create edge requests to dynamo",
+    labelNames: ["srcObjectType", "edgeName", "error"],
+  },
+  {
+    name: "dynamo_delete_edge",
+    help: "Total number of delete edge requests to dynamo",
+    labelNames: ["srcObjectType", "edgeName"],
+  },
+  {
+    name: "dynamo_delete_edge_error",
+    help: "Total number of errored delete edge requests to dynamo",
+    labelNames: ["srcObjectType", "edgeName", "error"],
+  },
+  {
+    name: "dynamo_get_edges",
+    help: "Total number of get edges requests to dynamo",
+    labelNames: ["srcObjectType", "edgeName"],
+  },
+  {
+    name: "dynamo_get_edges_error",
+    help: "Total number of errored get edge requests to dynamo",
+    labelNames: ["srcObjectType", "edgeName", "error"],
+  },
+  {
+    name: "dynamo_get_reverse_edges",
+    help: "Total number of get edges requests to dynamo",
+    labelNames: ["dstObjectType", "edgeName"],
+  },
+  {
+    name: "dynamo_get_reverse_edges_error",
+    help: "Total number of errored get edge requests to dynamo",
+    labelNames: ["dstObjectType", "edgeName", "error"],
+  },
+  {
     name: "dynamo_retries",
     help: "Total number of retries to dynamo",
-    labelNames: ["method", "objectType"],
+    labelNames: [
+      "method",
+      "objectType",
+      "srcObjectType",
+      "edgeName",
+      "dstObjectType",
+    ],
   },
 ] as const;
 
