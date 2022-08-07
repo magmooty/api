@@ -1,7 +1,7 @@
-import express from "express";
 import { config, errors, metrics, persistence, wrapper } from "@/components";
-import { Context } from "@/tracing";
 import { User } from "@/graph/objects/types";
+import { Context } from "@/tracing";
+import express from "express";
 
 const startServer = wrapper(
   { name: "startServer", file: __filename },

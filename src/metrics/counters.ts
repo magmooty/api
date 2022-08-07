@@ -30,6 +30,11 @@ export const metricsCounters = [
     labelNames: ["objectType"],
   },
   {
+    name: "dynamo_queried_objects",
+    help: "Total number of seeded objects fetched from dynamo",
+    labelNames: ["objectType"],
+  },
+  {
     name: "dynamo_retries",
     help: "Total number of retries to dynamo",
     labelNames: ["method", "objectType"],

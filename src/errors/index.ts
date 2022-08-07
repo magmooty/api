@@ -40,6 +40,14 @@ const errors = [
     code: "ObjectDeleteFailed",
     templateProps: [],
   },
+  {
+    code: "ObjectQueryFailed",
+    templateProps: [],
+  },
+  {
+    code: "AfterKeyIsInvalid",
+    templateProps: [],
+  },
 ] as const;
 
 export type ErrorType = typeof errors[number]["code"];

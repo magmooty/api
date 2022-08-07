@@ -13,7 +13,8 @@
     "start:dev": "nodemon",
     "test": "echo \"No tests specified\"",
     "clean": "rm -rf dist",
-    "lint": "eslint . --fix"
+    "lint": "eslint . --fix",
+    "seed": "ts-node -r tsconfig-paths/register src/seeds/index.ts"
   },
   "repository": {
     "type": "git",

@@ -26,5 +26,13 @@
   {
     "code": "ObjectDeleteFailed",
     "template": "Failed to delete object"
+  },
+  {
+    "code": "ObjectQueryFailed",
+    "template": "Failed to query objects for seeding"
+  },
+  {
+    "code": "AfterKeyIsInvalid",
+    "template": "The after key is invalid"
   }
 ]

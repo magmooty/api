@@ -26,5 +26,13 @@
   {
     "code": "ObjectDeleteFailed",
     "template": "فشل مسح الكيان"
+  },
+  {
+    "code": "ObjectQueryFailed",
+    "template": "فشل في الحصول على الكيانات لإعادة حسابها"
+  },
+  {
+    "code": "AfterKeyIsInvalid",
+    "template": "مفتاح الاستكمال غير صحيح"
   }
 ]

@@ -39,6 +39,16 @@ export const metricsHistogram = [
     help: "Duration of delete object requests to dynamo",
     labelNames: ["objectType", "error"],
   },
+  {
+    name: "dynamo_query_objects_duration",
+    help: "Duration of query requests to dynamo",
+    labelNames: ["objectType", "retries"],
+  },
+  {
+    name: "dynamo_query_objects_error_duration",
+    help: "Duration of query requests to dynamo",
+    labelNames: ["objectType", "error"],
+  },
 ] as const;
 
 export type HistogramName = typeof metricsHistogram[number]["name"];

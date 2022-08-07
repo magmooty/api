@@ -1,6 +1,7 @@
 import {
   GraphObject,
   ObjectFieldValue,
+  ObjectId,
   ObjectType,
 } from "@/graph/objects/types";
 import { Context } from "@/tracing";
@@ -23,6 +24,13 @@ export interface Lookup {
 
 export interface MethodOptions {
   noLocks?: boolean;
+}
+
+export type SeedObjectsAfterKey = `${string}#${ObjectId}`;
+
+export interface SeedObjectsResult<T> {
+  results: T[];
+  nextKey?: SeedObjectsAfterKey | null;
 }
 
 export type CounterModifier = `+${number}` | `-${number}` | number;
@@ -52,13 +60,20 @@ export interface PersistenceDriver {
     object: { [key: string]: ObjectFieldValue }
   ): Promise<T>;
 
-  replaceObject<T = GraphObject>(
-    ctx: Context | null,
-    id: string,
-    object: CreateObjectPayload
-  ): Promise<T>;
+  // replaceObject<T = GraphObject>(
+  //   ctx: Context | null,
+  //   id: string,
+  //   object: CreateObjectPayload
+  // ): Promise<T>;
 
-  deleteObject(ctx: Context, id: string): Promise<void>;
+  deleteObject(ctx: Context | null, id: string): Promise<void>;
+
+  queryObjects<T = GraphObject>(
+    ctx: Context | null,
+    objectType: ObjectType,
+    projection?: string[] | null,
+    after?: SeedObjectsAfterKey | null
+  ): Promise<SeedObjectsResult<T>>;
 
   // /* Counters */
 

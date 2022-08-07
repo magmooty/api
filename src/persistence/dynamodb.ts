@@ -1,7 +1,12 @@
 import { errors, wrapper } from "@/components";
-import { getObjectTypeFromId } from "@/graph";
-import { GraphObject } from "@/graph/objects/types";
-import { CreateObjectPayload, PersistenceDriver } from "@/persistence";
+import { getObjectTypeFromId, objects } from "@/graph";
+import { GraphObject, ObjectId, ObjectType } from "@/graph/objects/types";
+import {
+  CreateObjectPayload,
+  PersistenceDriver,
+  SeedObjectsAfterKey,
+  SeedObjectsResult,
+} from "@/persistence";
 import { Context } from "@/tracing";
 import {
   AttributeValue,
@@ -16,6 +21,8 @@ import {
   ListTablesCommandOutput,
   PutItemCommand,
   PutItemCommandOutput,
+  QueryCommand,
+  QueryCommandOutput,
   UpdateItemCommand,
   UpdateItemCommandOutput,
 } from "@aws-sdk/client-dynamodb";
@@ -478,6 +485,97 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
       ctx.setDurationMetricLabels({ objectType, retries });
 
       return;
+    }
+  );
+
+  queryObjects = wrapper(
+    { name: "queryObjects", file: __filename },
+    async <T = GraphObject>(
+      ctx: Context,
+      objectType: ObjectType,
+      projection?: string[] | null,
+      after?: SeedObjectsAfterKey | null
+    ): Promise<SeedObjectsResult<T>> => {
+      ctx.startTrackTime(
+        "dynamo_query_objects_duration",
+        "dynamo_query_objects_error_duration"
+      );
+
+      ctx.register({
+        objectType,
+      });
+
+      if (!objectType || !objects[objectType]) {
+        errors.createError(ctx, "ObjectTypeDoesNotExist", { objectType });
+      }
+
+      let startKey: AttributeMap | null = null;
+
+      if (after) {
+        const [afterObjectType, afterId] = after.split("#");
+
+        if (!afterObjectType || !afterId) {
+          errors.createError(ctx, "AfterKeyIsInvalid", { objectType, after });
+        }
+
+        startKey = marshall({ object_type: afterObjectType, id: afterId });
+      }
+
+      ctx.setErrorDurationMetricLabels({ objectType });
+
+      const TableName = this.prefixTableName("objects");
+
+      const command = new QueryCommand({
+        TableName,
+        ScanIndexForward: false,
+        IndexName: "objectTypes",
+        KeyConditionExpression: "#object_type = :object_type",
+        ExpressionAttributeNames: { "#object_type": "object_type" },
+        ExpressionAttributeValues: {
+          ":object_type": { S: objectType },
+        },
+        ...(projection &&
+          projection.length && { ProjectionExpression: projection.join(",") }),
+        ...(startKey && { ExclusiveStartKey: startKey }),
+      });
+
+      const { result, retries } = (await this.sendCommand(
+        ctx,
+        command
+      )) as CommandOutput<QueryCommandOutput>;
+
+      ctx.metrics
+        .getCounter("dynamo_queried_objects")
+        .inc({ objectType }, result.Count || 0);
+
+      ctx.metrics
+        .getCounter("dynamo_retries")
+        .inc({ method: "queryObjects", objectType }, retries);
+
+      if (result?.$metadata?.httpStatusCode !== 200) {
+        return errors.createError(ctx, "ObjectQueryFailed", {
+          objectType,
+        });
+      }
+
+      ctx.setDurationMetricLabels({ objectType, retries });
+
+      let nextKey: SeedObjectsAfterKey | null = null;
+
+      if (result.LastEvaluatedKey) {
+        const { id, object_type } = unmarshall(result.LastEvaluatedKey);
+        nextKey = `${object_type}#${id}`;
+      }
+
+      if (!result.Items) {
+        return { results: [] };
+      }
+
+      const results: any[] = await Promise.all(
+        result.Items.map(this.unserializeDocument)
+      );
+
+      return { nextKey, results };
     }
   );
 }
