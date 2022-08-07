@@ -34,5 +34,9 @@
   {
     "code": "AfterKeyIsInvalid",
     "template": "مفتاح الاستكمال غير صحيح"
+  },
+  {
+    "code": "ObjectReplaceFailed",
+    "template": "فشل تبديل الكيان"
   }
 ]

@@ -60,11 +60,11 @@ export interface PersistenceDriver {
     object: { [key: string]: ObjectFieldValue }
   ): Promise<T>;
 
-  // replaceObject<T = GraphObject>(
-  //   ctx: Context | null,
-  //   id: string,
-  //   object: CreateObjectPayload
-  // ): Promise<T>;
+  replaceObject<T = GraphObject>(
+    ctx: Context | null,
+    id: string,
+    object: Partial<GraphObject>
+  ): Promise<T>;
 
   deleteObject(ctx: Context | null, id: string): Promise<void>;
 

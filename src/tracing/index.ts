@@ -55,6 +55,8 @@ export interface Context {
   metrics: MetricsHandler;
   parentId?: string;
   setLocale: (locale: AppLocale) => void;
+  getParam: (name: string) => any;
+  setParam: (name: string, value: any) => any;
   traceInfo: TraceInfo;
   startTrackTime: (
     durationMetric: HistogramName,
@@ -144,6 +146,9 @@ export class Tracer {
             trackingMetrics.errorDurationMetric.labels = labels;
           }
         },
+        getParam: (name: string) => (traceInfo as any)[name],
+        setParam: (name: string, value: string | number) =>
+          ((traceInfo as any)[name] = value),
         log,
         metrics: this.options.metrics,
         fatal: (message: string, data?: Object) => {

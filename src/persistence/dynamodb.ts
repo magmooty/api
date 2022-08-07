@@ -263,9 +263,9 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
 
       const objectType = await getObjectTypeFromId(ctx, id);
 
-      ctx.setErrorDurationMetricLabels({ objectType });
+      ctx.setParam("objectType", objectType);
 
-      ctx.metrics.getCounter("dynamo_get_object").inc({ objectType });
+      ctx.setErrorDurationMetricLabels({ objectType });
 
       const Key: AttributeMap = marshall({ id });
 
@@ -289,6 +289,16 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
       ctx.setDurationMetricLabels({ objectType, retries });
 
       return this.unserializeDocument(result.Item);
+    },
+    (ctx, error) => {
+      ctx.metrics
+        .getCounter("dynamo_get_object_error")
+        .inc({ objectType: ctx.getParam("objectType"), error: error.message });
+    },
+    (ctx) => {
+      ctx.metrics
+        .getCounter("dynamo_get_object")
+        .inc({ objectType: ctx.getParam("objectType") });
     }
   );
 
@@ -307,6 +317,8 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
 
       const { object_type: objectType } = payload;
 
+      ctx.setParam("objectType", objectType);
+
       ctx.setErrorDurationMetricLabels({ objectType });
 
       ctx.log.debug("Generating new id for object", { objectType });
@@ -314,12 +326,6 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
       const id = await generateID(ctx, objectType);
 
       const object: GraphObject = { ...payload, id };
-
-      ctx.register({
-        object,
-      });
-
-      ctx.metrics.getCounter("dynamo_create_object").inc({ objectType });
 
       const Item = await this.serializeDocument(object);
 
@@ -346,6 +352,16 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
       ctx.setDurationMetricLabels({ objectType, retries });
 
       return object as any;
+    },
+    (ctx, error) => {
+      ctx.metrics
+        .getCounter("dynamo_create_object_error")
+        .inc({ objectType: ctx.getParam("objectType"), error: error.message });
+    },
+    (ctx) => {
+      ctx.metrics
+        .getCounter("dynamo_create_object")
+        .inc({ objectType: ctx.getParam("objectType") });
     }
   );
 
@@ -399,8 +415,6 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
 
       ctx.setErrorDurationMetricLabels({ objectType });
 
-      ctx.metrics.getCounter("dynamo_update_object").inc({ objectType });
-
       const TableName = this.prefixTableName("objects");
 
       const Key: AttributeMap = marshall({ id });
@@ -439,11 +453,81 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
       ctx.setDurationMetricLabels({ objectType, retries });
 
       return updatedObject as any;
+    },
+    (ctx, error) => {
+      ctx.metrics
+        .getCounter("dynamo_update_object_error")
+        .inc({ objectType: ctx.getParam("objectType"), error: error.message });
+    },
+    (ctx) => {
+      ctx.metrics
+        .getCounter("dynamo_update_object")
+        .inc({ objectType: ctx.getParam("objectType") });
+    }
+  );
+
+  replaceObject = wrapper(
+    { name: "replaceObject", file: __filename },
+    async <T = GraphObject>(
+      ctx: Context,
+      id: string,
+      payload: Partial<GraphObject>
+    ): Promise<T> => {
+      ctx.startTrackTime(
+        "dynamo_replace_object_duration",
+        "dynamo_replace_object_error_duration"
+      );
+
+      ctx.register({ id, payload });
+
+      const objectType = await getObjectTypeFromId(ctx, id);
+
+      ctx.setParam("objectType", objectType);
+
+      ctx.setErrorDurationMetricLabels({ objectType });
+
+      const object: GraphObject = { ...payload, object_type: objectType, id };
+
+      const Item = await this.serializeDocument(object);
+
+      const TableName = this.prefixTableName("objects");
+
+      const command = new PutItemCommand({
+        TableName,
+        Item,
+      });
+
+      const { result, retries } = (await this.sendCommand(
+        ctx,
+        command
+      )) as CommandOutput<PutItemCommandOutput>;
+
+      ctx.metrics
+        .getCounter("dynamo_retries")
+        .inc({ method: "replaceObject", objectType }, retries);
+
+      if (result?.$metadata?.httpStatusCode !== 200) {
+        return errors.createError(ctx, "ObjectReplaceFailed", { object });
+      }
+
+      ctx.setDurationMetricLabels({ objectType, retries });
+
+      return object as any;
+    },
+    (ctx, error) => {
+      ctx.metrics
+        .getCounter("dynamo_replace_object_error")
+        .inc({ objectType: ctx.getParam("objectType"), error: error.message });
+    },
+    (ctx) => {
+      ctx.metrics
+        .getCounter("dynamo_replace_object")
+        .inc({ objectType: ctx.getParam("objectType") });
     }
   );
 
   deleteObject = wrapper(
-    { name: "getObject", file: __filename },
+    { name: "deleteObject", file: __filename },
     async (ctx: Context, id: string): Promise<void> => {
       ctx.startTrackTime(
         "dynamo_delete_object_duration",
@@ -456,9 +540,9 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
 
       const objectType = await getObjectTypeFromId(ctx, id);
 
-      ctx.setErrorDurationMetricLabels({ objectType });
+      ctx.setParam("objectType", objectType);
 
-      ctx.metrics.getCounter("dynamo_delete_object").inc({ objectType });
+      ctx.setErrorDurationMetricLabels({ objectType });
 
       const Key: AttributeMap = marshall({ id });
 
@@ -485,6 +569,16 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
       ctx.setDurationMetricLabels({ objectType, retries });
 
       return;
+    },
+    (ctx, error) => {
+      ctx.metrics
+        .getCounter("dynamo_delete_object_error")
+        .inc({ objectType: ctx.getParam("objectType"), error: error.message });
+    },
+    (ctx) => {
+      ctx.metrics
+        .getCounter("dynamo_delete_object")
+        .inc({ objectType: ctx.getParam("objectType") });
     }
   );
 
@@ -545,10 +639,6 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
       )) as CommandOutput<QueryCommandOutput>;
 
       ctx.metrics
-        .getCounter("dynamo_queried_objects")
-        .inc({ objectType }, result.Count || 0);
-
-      ctx.metrics
         .getCounter("dynamo_retries")
         .inc({ method: "queryObjects", objectType }, retries);
 
@@ -575,7 +665,16 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
         result.Items.map(this.unserializeDocument)
       );
 
+      ctx.metrics
+        .getCounter("dynamo_queried_objects")
+        .inc({ objectType }, result.Count || 0);
+
       return { nextKey, results };
+    },
+    (ctx, error) => {
+      ctx.metrics
+        .getCounter("dynamo_queried_objects_error")
+        .inc({ objectType: ctx.getParam("objectType"), error: error.message });
     }
   );
 }

@@ -34,5 +34,9 @@
   {
     "code": "AfterKeyIsInvalid",
     "template": "The after key is invalid"
+  },
+  {
+    "code": "ObjectReplaceFailed",
+    "template": "Failed to replace object"
   }
 ]

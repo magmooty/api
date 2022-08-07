@@ -48,6 +48,10 @@ const errors = [
     code: "AfterKeyIsInvalid",
     templateProps: [],
   },
+  {
+    code: "ObjectReplaceFailed",
+    templateProps: [],
+  },
 ] as const;
 
 export type ErrorType = typeof errors[number]["code"];

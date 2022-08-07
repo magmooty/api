@@ -30,6 +30,16 @@ export const metricsHistogram = [
     labelNames: ["objectType", "error"],
   },
   {
+    name: "dynamo_replace_object_duration",
+    help: "Duration of replace object requests to dynamo",
+    labelNames: ["objectType", "retries"],
+  },
+  {
+    name: "dynamo_replace_object_error_duration",
+    help: "Duration of replace object requests to dynamo",
+    labelNames: ["objectType", "error"],
+  },
+  {
     name: "dynamo_delete_object_duration",
     help: "Duration of delete object requests to dynamo",
     labelNames: ["objectType", "retries"],
