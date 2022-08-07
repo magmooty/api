@@ -4,3 +4,8 @@ services:
     ports:
       - "8000:8000"
     image: amazon/dynamodb-local
+  redis:
+    container_name: redis
+    image: redis
+    ports:
+      - "6379:6379"
