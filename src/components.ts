@@ -33,8 +33,13 @@ import { ErrorThrower } from "./errors";
 const errors = new ErrorThrower();
 
 // Persistence
-import { createPersistenceDriver } from "./persistence";
+import { Persistence } from "./persistence";
 
-const persistence = createPersistenceDriver(config.persistence);
+const persistence = new Persistence(config.persistence);
 
-export { wrapper, metrics, config, persistence, errors };
+// Message queue
+import { createQueueDriver } from "@/queue";
+
+const queue = createQueueDriver(config.queue);
+
+export { wrapper, metrics, config, persistence, errors, queue };

@@ -25,10 +25,10 @@
           "properties": {
             "driver": {
               "type": "string",
-              "const": "cognito"
+              "const": "native"
             },
             "config": {
-              "$ref": "#/definitions/CognitoConfig"
+              "$ref": "#/definitions/NativeAuthDriverConfig"
             }
           },
           "required": [
@@ -58,41 +58,29 @@
             "locales"
           ],
           "additionalProperties": false
+        },
+        "queue": {
+          "$ref": "#/definitions/QueueConfig"
         }
       },
       "required": [
         "server",
         "auth",
         "persistence",
-        "i18n"
+        "i18n",
+        "queue"
       ],
       "additionalProperties": false
     },
-    "CognitoConfig": {
+    "NativeAuthDriverConfig": {
       "type": "object",
       "properties": {
-        "cognitoUserPoolId": {
-          "type": "string"
-        },
-        "cognitoClientId": {
-          "type": "string"
-        },
-        "region": {
-          "type": "string"
-        },
-        "tokenUse": {
-          "type": "string"
-        },
-        "tokenExpiration": {
+        "sessionTTL": {
           "type": "number"
         }
       },
       "required": [
-        "cognitoUserPoolId",
-        "cognitoClientId",
-        "region",
-        "tokenUse",
-        "tokenExpiration"
+        "sessionTTL"
       ],
       "additionalProperties": false
     },
@@ -187,6 +175,79 @@
       "enum": [
         "ar",
         "en"
+      ]
+    },
+    "QueueConfig": {
+      "type": "object",
+      "properties": {
+        "driver": {
+          "type": "string",
+          "const": "kafka"
+        },
+        "config": {
+          "$ref": "#/definitions/QueueKafkaConfig"
+        }
+      },
+      "required": [
+        "driver",
+        "config"
+      ],
+      "additionalProperties": false
+    },
+    "QueueKafkaConfig": {
+      "type": "object",
+      "properties": {
+        "brokers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "canProduce": {
+          "type": "boolean"
+        },
+        "canConsume": {
+          "type": "boolean"
+        },
+        "groupId": {
+          "type": "string"
+        },
+        "topics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/QueueKafkaTopicConfig"
+          }
+        }
+      },
+      "required": [
+        "brokers",
+        "canProduce",
+        "canConsume",
+        "topics"
+      ],
+      "additionalProperties": false
+    },
+    "QueueKafkaTopicConfig": {
+      "type": "object",
+      "properties": {
+        "use": {
+          "$ref": "#/definitions/QueueKafkaTopicUse"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "use",
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "QueueKafkaTopicUse": {
+      "type": "string",
+      "enum": [
+        "pushing",
+        "events"
       ]
     }
   }

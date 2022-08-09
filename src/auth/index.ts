@@ -1,4 +1,6 @@
-export interface UserExtraAttirbutes {
+import { Context } from "@/tracing";
+
+export interface SessionExtraAttirbutes {
   roles: string[];
 }
 
@@ -8,10 +10,17 @@ export interface LoginResult {
 }
 
 export interface AuthDriver {
-  login(username: string, password: string): Promise<LoginResult>;
-  register(
+  login(
+    ctx: Context | null,
     username: string,
     password: string,
-    extraAttributes: UserExtraAttirbutes
+    extraAttributes: SessionExtraAttirbutes
+  ): Promise<LoginResult>;
+
+  register(
+    ctx: Context | null,
+    username: string,
+    password: string,
+    extraAttributes: SessionExtraAttirbutes
   ): Promise<LoginResult>;
 }

@@ -144,16 +144,18 @@ export interface PersistenceConfig {
   };
 }
 
-export function createPersistenceDriver({
-  driver,
-  config,
-}: PersistenceConfig): PersistenceDriver {
-  switch (driver) {
-    case "dynamodb":
-      return new DynamoPersistenceDriver(config);
-    default:
-      throw new Error(
-        "Couldn't create persistence driver for driver with current config"
-      );
+export class Persistence {
+  primaryDB: PersistenceDriver;
+
+  constructor(private persistenceConfig: PersistenceConfig) {
+    switch (persistenceConfig.driver) {
+      case "dynamodb":
+        this.primaryDB = new DynamoPersistenceDriver(persistenceConfig.config);
+        break;
+      default:
+        throw new Error(
+          "Couldn't create persistence driver for driver with current config"
+        );
+    }
   }
 }

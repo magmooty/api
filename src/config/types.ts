@@ -1,6 +1,7 @@
-import { CognitoConfig } from "@/auth/cognito";
+import { NativeAuthDriverConfig } from "@/auth/native";
 import { AppLocale } from "@/graph/objects/types";
 import { PersistenceConfig } from "@/persistence";
+import { QueueConfig } from "@/queue";
 
 export interface AppConfig {
   $schema?: string;
@@ -8,12 +9,13 @@ export interface AppConfig {
     port: number;
   };
   auth: {
-    driver: "cognito";
-    config: CognitoConfig;
+    driver: "native";
+    config: NativeAuthDriverConfig;
   };
   persistence: PersistenceConfig;
   i18n: {
     defaultLocale: AppLocale;
     locales: AppLocale[];
   };
+  queue: QueueConfig;
 }

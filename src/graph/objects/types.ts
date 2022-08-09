@@ -19,6 +19,7 @@ export interface User {
   id: ObjectId;
   object_type: "user";
   email: string;
+  hash: string;
   email_verified: boolean;
   status: UserStatusVS;
   last_read_notification: string;

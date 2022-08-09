@@ -15,6 +15,11 @@ export default {
       POST: [],
       PATCH: [],
     },
+    system_private: {
+      GET: [],
+      POST: [],
+      PATCH: [],
+    },
     private: {
       GET: ["virtual:owner"],
       POST: [],
@@ -34,6 +39,11 @@ export default {
       type: "string",
       unique: true,
       required: true,
+    },
+    hash: {
+      type: "string",
+      required: true,
+      view: "system_private",
     },
     email_verified: {
       type: "boolean",
