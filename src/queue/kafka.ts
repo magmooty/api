@@ -1,8 +1,8 @@
 import { wrapper } from "@/components";
 import { Context } from "@/tracing";
-import { Consumer, Kafka, Producer } from "kafkajs";
+import { Consumer, EachMessageHandler, Kafka, Producer } from "kafkajs";
 import { v4 as uuid } from "uuid";
-import { QueueDriver } from ".";
+import { QueueDriver, QueueEvent, QueueEventProcessor } from ".";
 
 export enum QueueKafkaTopicUse {
   Pushing = "pushing",
@@ -25,13 +25,12 @@ export interface QueueKafkaConfig {
 export class QueueKafkaDriver implements QueueDriver {
   kafka: Kafka;
   producer: Producer | null = null;
-  consumer: Consumer | null = null;
   topicsToConsumeFrom: QueueKafkaTopicConfig[];
   topicsToProduceTo: QueueKafkaTopicConfig[];
 
   constructor(private kafkaConfig: QueueKafkaConfig) {
     this.kafka = new Kafka({
-      clientId: `${kafkaConfig.groupId}-${uuid()}`,
+      clientId: kafkaConfig.groupId,
       brokers: kafkaConfig.brokers,
     });
 
@@ -56,48 +55,17 @@ export class QueueKafkaDriver implements QueueDriver {
         ctx.log.debug("Producer connected");
       }
 
-      if (this.kafkaConfig.canConsume && !this.kafkaConfig.groupId) {
-        ctx.fatal(
-          "Service is configured to consume from kafka, but no group id is specified in config"
-        );
-      }
-
-      if (this.kafkaConfig.canConsume && this.kafkaConfig.groupId) {
-        ctx.log.debug("Connecting consumer");
-        this.consumer = this.kafka.consumer({
-          groupId: this.kafkaConfig.groupId,
-        });
-        await this.consumer.connect();
-        ctx.log.debug("Consumer connected");
-      }
-
-      if (this.topicsToConsumeFrom.length && !this.consumer) {
+      if (this.topicsToConsumeFrom.length && !this.kafkaConfig.canConsume) {
         ctx.fatal(
           "Service is configured to listen on topics, but the consumer isn't configured properly"
         );
-      }
-
-      for (const topic of this.topicsToConsumeFrom) {
-        await this.consumer?.subscribe({ topic: topic.name });
-      }
-
-      if (this.consumer) {
-        await this.consumer.run({
-          eachMessage: async ({ topic, partition, message }) => {
-            console.log({
-              topic,
-              partition,
-              message,
-            });
-          },
-        });
       }
     }
   );
 
   send = wrapper(
     { name: "send", file: __filename },
-    async (ctx: Context, message: string): Promise<void> => {
+    async (ctx: Context, event: QueueEvent): Promise<void> => {
       if (!this.producer) {
         ctx.fatal(
           "No producer is configured, but the service is trying to send a message"
@@ -110,7 +78,13 @@ export class QueueKafkaDriver implements QueueDriver {
         return;
       }
 
+      const message = JSON.stringify(event);
+
+      ctx.log.debug("Event body", { message });
+
       for (const topic of this.topicsToProduceTo) {
+        ctx.log.debug("Sending event", { topic });
+
         this.producer.send({
           topic: topic.name,
           messages: [{ value: message }],
@@ -121,6 +95,47 @@ export class QueueKafkaDriver implements QueueDriver {
 
   subscribe = wrapper(
     { name: "subscribe", file: __filename },
-    (ctx: Context, path: string) => {}
+    async (
+      ctx: Context,
+      groupId: string,
+      callback: QueueEventProcessor
+    ): Promise<void> => {
+      if (!this.kafkaConfig.canConsume) {
+        ctx.fatal("Service is not configured to consume events");
+        return;
+      }
+
+      ctx.log.debug("Connecting consumer");
+
+      const consumer = this.kafka.consumer({
+        groupId,
+      });
+
+      await consumer.connect();
+
+      ctx.log.debug("Consumer connected");
+
+      for (const topic of this.topicsToConsumeFrom) {
+        await consumer?.subscribe({ topic: topic.name });
+      }
+
+      if (consumer) {
+        await consumer.run({
+          autoCommit: true,
+          eachMessage: async ({ message }) => {
+            const value = message.value?.toString();
+
+            if (!value) {
+              console.error("Failed to parse kafka message", message);
+              process.exit();
+            }
+
+            console.log(value);
+
+            callback(JSON.parse(value) as QueueEvent);
+          },
+        });
+      }
+    }
   );
 }

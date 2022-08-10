@@ -14,13 +14,12 @@ const startServer = wrapper(
   { name: "startServer", file: __filename },
   async (ctx: Context) => {
     // Initialize components
-    // await persistence.init();
+    await persistence.init();
     await errors.init();
 
     await queue.init();
 
     //TODO: object field 'required' checks will be done in the API
-    await queue.send(null, "Test message");
 
     const app = express();
 

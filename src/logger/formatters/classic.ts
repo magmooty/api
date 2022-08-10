@@ -20,7 +20,7 @@ export class ClassicMessageFormatter implements MessageFormatter {
       timestamp,
       service,
       version,
-      level,
+      level: level.toUpperCase(),
       message,
       data,
     });

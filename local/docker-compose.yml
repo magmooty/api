@@ -17,8 +17,6 @@ services:
       - "zookeeper_data:/bitnami"
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
-    networks:
-      - mq
   kafka:
     image: docker.io/bitnami/kafka:3.2
     hostname: localhost
@@ -31,15 +29,9 @@ services:
       - ALLOW_PLAINTEXT_LISTENER=yes
     depends_on:
       - zookeeper
-    networks:
-      - mq
 
 volumes:
   zookeeper_data:
     driver: local
   kafka_data:
     driver: local
-
-networks:
-  mq:
-    driver: bridge

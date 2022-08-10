@@ -47,6 +47,12 @@ export type ObjectFieldValue = string | number | boolean | Date | ObjectId;
 
 export type AppLocale = 'ar' | 'en';
 
+export interface IEdge {
+  src: string;
+  edgeName: string;
+  dst: string;
+}
+
 export interface GraphObject {
   id: ObjectId;
   object_type: ObjectType;
