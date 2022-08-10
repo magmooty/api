@@ -41,9 +41,9 @@ export interface PersistenceDriver {
 
   /* Locks */
 
-  getLock?(ctx: Context, key: string): Promise<string>;
+  getLock?(ctx: Context | null, key: string): Promise<string>;
 
-  freeLock?(ctx: Context, key: string, lockHolder: string): Promise<void>;
+  freeLock?(ctx: Context | null, key: string, lockHolder: string): Promise<void>;
 
   // /* Objects */
 
@@ -157,5 +157,9 @@ export class Persistence {
           "Couldn't create persistence driver for driver with current config"
         );
     }
+  }
+
+  async init() {
+    await this.primaryDB.init();
   }
 }
