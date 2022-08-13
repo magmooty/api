@@ -114,6 +114,8 @@ export class QueueKafkaDriver implements QueueDriver {
       groupId: string,
       cb: QueueEventProcessor
     ): Promise<void> => {
+      ctx.register({ groupId });
+
       if (!this.kafkaConfig.canConsume) {
         ctx.fatal("Service is not configured to consume events");
         return;

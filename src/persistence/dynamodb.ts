@@ -250,6 +250,8 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
 
     ctx.log.debug("Fetched table names", { tableNames });
 
+    let willNeedToWait = false;
+
     for (const table of DYNAMO_TABLES) {
       const isCreated = tableNames.includes(this.prefixTableName(table));
 
@@ -258,6 +260,7 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
       }
 
       if (!isCreated) {
+        willNeedToWait = true;
         await this.createTable(ctx, table);
 
         if (table === "objects") {
@@ -273,14 +276,15 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
         }
       }
     }
+    if (willNeedToWait) {
+      ctx.log.debug(
+        `Waiting ${
+          this.dynamoConfig.waitTimeAfterTableCreation / 1000
+        } seconds for all tables to be created`
+      );
 
-    ctx.log.debug(
-      `Waiting ${
-        this.dynamoConfig.waitTimeAfterTableCreation / 1000
-      } for all tables to be created`
-    );
-
-    await wait(this.dynamoConfig.waitTimeAfterTableCreation);
+      await wait(this.dynamoConfig.waitTimeAfterTableCreation);
+    }
 
     ctx.log.debug("All tables are ensured to exist");
   });
