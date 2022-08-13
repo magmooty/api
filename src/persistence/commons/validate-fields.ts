@@ -214,8 +214,6 @@ export async function uniqueValidation(
         (previous && current && previous[fieldName] !== current[fieldName]))
   );
 
-  console.log({ uniqueFieldNames, current, previous });
-
   // Only check all the unique fields first
   for (const fieldName of uniqueFieldNames) {
     if (!current || !current[fieldName]) {

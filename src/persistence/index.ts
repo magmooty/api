@@ -317,8 +317,6 @@ export class Persistence {
         updated_at: serializeDate(new Date()),
       });
 
-      console.log("sending event", { updatedObject, previous });
-
       await queue.send(ctx, {
         method: "PATCH",
         path: objectType,
