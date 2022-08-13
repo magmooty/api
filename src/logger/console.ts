@@ -5,11 +5,11 @@ export class ConsoleLogger implements Logger {
   constructor(private formatter: MessageFormatter) {}
 
   debug(message: string, data?: LogData) {
-    // console.debug(this.formatter.format({ level: "debug" }, message, data));
+    console.debug(this.formatter.format({ level: "debug" }, message, data));
   }
 
   info(message: string, data?: LogData) {
-    // console.info(this.formatter.format({ level: "info" }, message, data));
+    console.info(this.formatter.format({ level: "info" }, message, data));
   }
 
   warn(message: string, data?: LogData) {
