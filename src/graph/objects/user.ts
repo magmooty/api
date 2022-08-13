@@ -35,10 +35,14 @@ export default {
     },
   },
   fields: {
+    name: {
+      type: "string",
+    },
     email: {
       type: "string",
       unique: true,
       required: true,
+      schema: "email",
     },
     hash: {
       type: "string",

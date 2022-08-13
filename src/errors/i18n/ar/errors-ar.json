@@ -54,5 +54,33 @@
   {
     "code": "GetReverseEdgesFailed",
     "template": "فشل في الحصول على الاتصالات العكسية بين الكيانات"
+  },
+  {
+    "code": "ValidationErrorRequiredField",
+    "template": "{fieldName} يجب ان يكون من النوع {fieldType}"
+  },
+  {
+    "code": "ValidationErrorUniqueField",
+    "template": "{fieldName} يجب ان لا يكون قد استخدم من قبل"
+  },
+  {
+    "code": "ValidationErrorBadDataType",
+    "template": "{fieldName} يجب ان يكون من النوع {fieldType}"
+  },
+  {
+    "code": "ValidationErrorFieldNotFound",
+    "template": "{fieldName} لا يوجد في هذا الكيان"
+  },
+  {
+    "code": "AddUniqueFailed",
+    "template": "فشل في إضافة عنصر مميز"
+  },
+  {
+    "code": "CheckUniqueFailed",
+    "template": "فشل في التحقق من العنصر المميز"
+  },
+  {
+    "code": "RemoveUniqueFailed",
+    "template": "فشل في مسح عنصر مميز"
   }
 ]

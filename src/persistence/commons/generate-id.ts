@@ -1,4 +1,4 @@
-import { getObjectConfigFromObjectType, objects } from "@/graph";
+import { getObjectConfigFromObjectType } from "@/graph";
 import { ObjectType } from "@/graph/objects/types";
 import { Context } from "@/tracing";
 import { v4 as uuid } from "uuid";

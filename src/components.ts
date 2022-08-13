@@ -42,4 +42,9 @@ import { createQueueDriver } from "@/queue";
 
 const queue = createQueueDriver(config.queue);
 
-export { wrapper, metrics, config, persistence, errors, queue };
+// Message queue
+import { createSyncDriver, SyncDriver } from "@/sync";
+
+const sync = createSyncDriver(config.sync) as SyncDriver;
+
+export { wrapper, metrics, config, persistence, errors, queue, sync };

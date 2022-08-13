@@ -1,5 +1,5 @@
-import { GraphObject, IEdge } from "@/graph/objects/types";
-import { Context } from "@/tracing";
+import { AppLocale, GraphObject, IEdge } from "@/graph/objects/types";
+import { Context, RootContext } from "@/tracing";
 import { QueueKafkaConfig, QueueKafkaDriver } from "./kafka";
 
 export interface QueueConfig {
@@ -9,7 +9,10 @@ export interface QueueConfig {
 
 export interface QueueDriver {
   init(ctx?: Context | null): Promise<void>;
-  send(ctx: Context | null, message: QueueEvent): Promise<void>;
+  send<T = GraphObject | IEdge>(
+    ctx: Context | null,
+    message: BaseQueueEvent<T>
+  ): Promise<void>;
   subscribe(
     ctx: Context | null,
     groupId: string,
@@ -17,15 +20,30 @@ export interface QueueDriver {
   ): Promise<void>;
 }
 
-export interface QueueEvent {
+export interface BaseQueueEvent<T = GraphObject | IEdge> {
   method: "POST" | "PATCH" | "DELETE";
   type: "edge" | "object";
   path: string;
-  previous?: GraphObject | IEdge;
-  current?: GraphObject | IEdge;
+  previous?: T;
+  current?: T;
 }
 
-export type QueueEventProcessor = (event: QueueEvent) => Promise<void>;
+export interface QueueEvent<T = GraphObject | IEdge> extends BaseQueueEvent<T> {
+  method: "POST" | "PATCH" | "DELETE";
+  type: "edge" | "object";
+  path: string;
+  previous?: T;
+  current?: T;
+  spanId: string;
+  parentId: string;
+  traceId: string;
+  locale: AppLocale;
+}
+
+export type QueueEventProcessor = (
+  ctx: RootContext | null,
+  event: QueueEvent
+) => Promise<void>;
 
 export const createQueueDriver = ({
   driver,

@@ -25,12 +25,15 @@ import {
   QueryCommandOutput,
   UpdateItemCommand,
   UpdateItemCommandOutput,
+  UpdateTableCommand,
+  UpdateTableCommandOutput,
 } from "@aws-sdk/client-dynamodb";
 import { Command } from "@aws-sdk/smithy-client";
 import AWS from "aws-sdk";
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import http from "http";
-import { generateID } from "./common";
+import { generateID } from "./commons/generate-id";
+import { wait } from "./commons/wait";
 import AttributeMap = DocumentClient.AttributeMap;
 
 const { marshall, unmarshall } = AWS.DynamoDB.Converter;
@@ -42,6 +45,7 @@ export interface DynamoDBConfig {
   allowedRetryErrorCodes: string[];
   endpoint?: string;
   retryAfter: number;
+  waitTimeAfterTableCreation: number;
 }
 
 export interface CommandOutput<T = unknown> {
@@ -54,9 +58,17 @@ const DYNAMO_TABLES = [
   "edges",
   "reverse_edges",
   "counters",
-  "uniques",
+  "unique",
   "lookups",
 ] as const;
+
+function formatUniqueId(
+  objectType: ObjectType,
+  fieldName: string,
+  value: string | number
+) {
+  return `${objectType}-${fieldName}-${value}`;
+}
 
 export class DynamoPersistenceDriver implements PersistenceDriver {
   client: DynamoDBClient;
@@ -95,11 +107,7 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
     }
   );
 
-  private constructTableSchema(
-    tableName: string,
-    primaryKey: string,
-    secondaryPrimaryKey?: string
-  ) {
+  private constructTableSchema(tableName: string, primaryKey: string) {
     return {
       TableName: this.prefixTableName(tableName),
       BillingMode: "PAY_PER_REQUEST",
@@ -108,14 +116,6 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
           AttributeName: primaryKey,
           AttributeType: "S",
         },
-        ...(secondaryPrimaryKey
-          ? [
-              {
-                AttributeName: secondaryPrimaryKey,
-                AttributeType: "S",
-              },
-            ]
-          : []),
       ],
       KeySchema: [
         {
@@ -123,22 +123,42 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
           KeyType: "HASH",
         },
       ],
-      ...(secondaryPrimaryKey && {
-        GlobalSecondaryIndexUpdates: [
-          {
-            IndexName: secondaryPrimaryKey,
+    };
+  }
+
+  private constructGlobalSecondaryIndexSchema(
+    tableName: string,
+    primaryKey: string,
+    indexKey: string
+  ) {
+    return {
+      TableName: this.prefixTableName(tableName),
+      AttributeDefinitions: [
+        {
+          AttributeName: primaryKey,
+          AttributeType: "S",
+        },
+        {
+          AttributeName: indexKey,
+          AttributeType: "S",
+        },
+      ],
+      GlobalSecondaryIndexUpdates: [
+        {
+          Create: {
+            IndexName: indexKey,
             Projection: {
               ProjectionType: "ALL",
             },
             KeySchema: [
               {
                 KeyType: "HASH",
-                AttributeName: secondaryPrimaryKey,
+                AttributeName: indexKey,
               },
             ],
           },
-        ],
-      }),
+        },
+      ],
     };
   }
 
@@ -155,7 +175,7 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
       switch (table) {
         case "objects":
           command = new CreateTableCommand(
-            this.constructTableSchema("objects", "id", "object_type")
+            this.constructTableSchema("objects", "id")
           );
           break;
         case "counters":
@@ -173,9 +193,9 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
             this.constructTableSchema("lookups", "code")
           );
           break;
-        case "uniques":
+        case "unique":
           command = new CreateTableCommand(
-            this.constructTableSchema("uniques", "id")
+            this.constructTableSchema("unique", "id")
           );
           break;
         case "reverse_edges":
@@ -194,6 +214,37 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
     }
   );
 
+  private createTableGlobalSecondaryIndex = wrapper(
+    { name: "createTableGlobalSecondaryIndex", file: __filename },
+    (ctx: Context, table: typeof DYNAMO_TABLES[number]) => {
+      ctx.register({ table });
+
+      let command: UpdateTableCommand;
+
+      switch (table) {
+        case "objects":
+          command = new UpdateTableCommand(
+            this.constructGlobalSecondaryIndexSchema(
+              "objects",
+              "id",
+              "object_type"
+            )
+          );
+          break;
+        default:
+          ctx.fatal(
+            "Couldn't create global secondary index on table, configuration doesn't exist",
+            { table }
+          );
+          return;
+      }
+
+      return this.sendCommand(ctx, command) as Promise<
+        CommandOutput<UpdateTableCommandOutput>
+      >;
+    }
+  );
+
   init = wrapper({ name: "init", file: __filename }, async (ctx: Context) => {
     const tableNames = await this.listTableNames();
 
@@ -208,8 +259,28 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
 
       if (!isCreated) {
         await this.createTable(ctx, table);
+
+        if (table === "objects") {
+          ctx.log.debug(
+            `Waiting ${
+              this.dynamoConfig.waitTimeAfterTableCreation / 1000
+            } seconds for objects table full creation to create index`
+          );
+
+          await wait(this.dynamoConfig.waitTimeAfterTableCreation);
+
+          await this.createTableGlobalSecondaryIndex(ctx, "objects");
+        }
       }
     }
+
+    ctx.log.debug(
+      `Waiting ${
+        this.dynamoConfig.waitTimeAfterTableCreation / 1000
+      } for all tables to be created`
+    );
+
+    await wait(this.dynamoConfig.waitTimeAfterTableCreation);
 
     ctx.log.debug("All tables are ensured to exist");
   });
@@ -431,7 +502,7 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
     async <T = GraphObject>(
       ctx: Context,
       id: string,
-      payload: CreateObjectPayload
+      payload: Partial<T>
     ): Promise<T> => {
       ctx.startTrackTime(
         "dynamo_update_object_duration",
@@ -923,7 +994,10 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
 
         ctx.metrics
           .getCounter("dynamo_retries")
-          .inc({ method: "deleteReverseEdge", srcObjectType, edgeName }, retries);
+          .inc(
+            { method: "deleteReverseEdge", srcObjectType, edgeName },
+            retries
+          );
 
         totalRetries += retries;
 
@@ -1097,6 +1171,207 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
       ctx.metrics.getCounter("dynamo_get_reverse_edges").inc({
         dstObjectType: ctx.getParam("dstObjectType"),
         edgeName: ctx.getParam("edgeName"),
+      });
+    }
+  );
+
+  addUnique = wrapper(
+    { name: "addUnique", file: __filename },
+    async (
+      ctx: Context,
+      objectType: ObjectType,
+      fieldName: string,
+      value: string | number
+    ): Promise<void> => {
+      ctx.startTrackTime(
+        "dynamo_create_unique_duration",
+        "dynamo_create_unique_error_duration"
+      );
+
+      ctx.register({ objectType, fieldName, value });
+
+      ctx.setParam("objectType", objectType);
+      ctx.setParam("fieldName", fieldName);
+
+      ctx.setErrorDurationMetricLabels({ objectType, fieldName });
+
+      const TableName = this.prefixTableName("unique");
+
+      const Item: AttributeMap = marshall({
+        id: formatUniqueId(objectType, fieldName, value),
+      });
+
+      const command = new PutItemCommand({
+        TableName,
+        Item,
+      });
+
+      const { result, retries } = (await this.sendCommand(
+        ctx,
+        command
+      )) as CommandOutput<PutItemCommandOutput>;
+
+      ctx.metrics
+        .getCounter("dynamo_retries")
+        .inc({ method: "addUnique", objectType }, retries);
+
+      if (result?.$metadata?.httpStatusCode !== 200) {
+        return errors.createError(ctx, "AddUniqueFailed", {
+          objectType,
+          fieldName,
+          value,
+        });
+      }
+
+      ctx.setDurationMetricLabels({ objectType, fieldName, retries });
+    },
+    (ctx, error) => {
+      ctx.metrics.getCounter("dynamo_create_unique_error").inc({
+        objectType: ctx.getParam("objectType"),
+        fieldName: ctx.getParam("fieldName"),
+        error: error.message,
+      });
+    },
+    (ctx) => {
+      ctx.metrics.getCounter("dynamo_create_unique").inc({
+        objectType: ctx.getParam("objectType"),
+        fieldName: ctx.getParam("fieldName"),
+      });
+    }
+  );
+
+  checkUnique = wrapper(
+    { name: "checkUnique", file: __filename },
+    async (
+      ctx: Context,
+      objectType: ObjectType,
+      fieldName: string,
+      value: string | number
+    ): Promise<boolean> => {
+      ctx.startTrackTime(
+        "dynamo_check_unique_duration",
+        "dynamo_check_unique_error_duration"
+      );
+
+      ctx.register({ objectType, fieldName, value });
+
+      ctx.setParam("objectType", objectType);
+      ctx.setParam("fieldName", fieldName);
+
+      ctx.setErrorDurationMetricLabels({ objectType, fieldName });
+
+      const TableName = this.prefixTableName("unique");
+
+      const Key: AttributeMap = marshall({
+        id: formatUniqueId(objectType, fieldName, value),
+      });
+
+      const command = new GetItemCommand({
+        TableName,
+        Key,
+      });
+
+      const { result, retries } = (await this.sendCommand(
+        ctx,
+        command
+      )) as CommandOutput<GetItemCommandOutput>;
+
+      ctx.metrics
+        .getCounter("dynamo_retries")
+        .inc({ method: "checkUnique", objectType }, retries);
+
+      if (result?.$metadata?.httpStatusCode !== 200) {
+        return errors.createError(ctx, "CheckUniqueFailed", {
+          objectType,
+          fieldName,
+          value,
+        });
+      }
+
+      ctx.setDurationMetricLabels({ objectType, fieldName, retries });
+
+      if (result.Item) {
+        return false;
+      }
+
+      return true;
+    },
+    (ctx, error) => {
+      ctx.metrics.getCounter("dynamo_check_unique_error").inc({
+        objectType: ctx.getParam("objectType"),
+        fieldName: ctx.getParam("fieldName"),
+        error: error.message,
+      });
+    },
+    (ctx) => {
+      ctx.metrics.getCounter("dynamo_check_unique").inc({
+        objectType: ctx.getParam("objectType"),
+        fieldName: ctx.getParam("fieldName"),
+      });
+    }
+  );
+
+  removeUnique = wrapper(
+    { name: "removeUnique", file: __filename },
+    async (
+      ctx: Context,
+      objectType: ObjectType,
+      fieldName: string,
+      value: string | number
+    ): Promise<void> => {
+      ctx.startTrackTime(
+        "dynamo_remove_unique_duration",
+        "dynamo_remove_unique_error_duration"
+      );
+
+      ctx.register({ objectType, fieldName, value });
+
+      ctx.setParam("objectType", objectType);
+      ctx.setParam("fieldName", fieldName);
+
+      ctx.setErrorDurationMetricLabels({ objectType, fieldName });
+
+      const TableName = this.prefixTableName("unique");
+
+      const Key: AttributeMap = marshall({
+        id: formatUniqueId(objectType, fieldName, value),
+      });
+
+      const command = new DeleteItemCommand({
+        TableName,
+        Key,
+      });
+
+      const { result, retries } = (await this.sendCommand(
+        ctx,
+        command
+      )) as CommandOutput<DeleteItemCommandOutput>;
+
+      ctx.metrics
+        .getCounter("dynamo_retries")
+        .inc({ method: "removeUnique", objectType }, retries);
+
+      if (result?.$metadata?.httpStatusCode !== 200) {
+        return errors.createError(ctx, "RemoveUniqueFailed", {
+          objectType,
+          fieldName,
+          value,
+        });
+      }
+
+      ctx.setDurationMetricLabels({ objectType, fieldName, retries });
+    },
+    (ctx, error) => {
+      ctx.metrics.getCounter("dynamo_remove_unique_error").inc({
+        objectType: ctx.getParam("objectType"),
+        fieldName: ctx.getParam("fieldName"),
+        error: error.message,
+      });
+    },
+    (ctx) => {
+      ctx.metrics.getCounter("dynamo_remove_unique").inc({
+        objectType: ctx.getParam("objectType"),
+        fieldName: ctx.getParam("fieldName"),
       });
     }
   );

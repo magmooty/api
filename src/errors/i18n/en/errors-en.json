@@ -54,5 +54,33 @@
   {
     "code": "GetReverseEdgesFailed",
     "template": "Failed to get reverse edges between objects"
+  },
+  {
+    "code": "ValidationErrorRequiredField",
+    "template": "{fieldName} must be of type {fieldType}"
+  },
+  {
+    "code": "ValidationErrorUniqueField",
+    "template": "{fieldName} already exists"
+  },
+  {
+    "code": "ValidationErrorBadDataType",
+    "template": "{fieldName} must be of type {fieldType}"
+  },
+  {
+    "code": "ValidationErrorFieldNotFound",
+    "template": "{fieldName} doesn't exist in this object type"
+  },
+  {
+    "code": "AddUniqueFailed",
+    "template": "Failed to add unique value"
+  },
+  {
+    "code": "CheckUniqueFailed",
+    "template": "Failed to check unique value"
+  },
+  {
+    "code": "RemoveUniqueFailed",
+    "template": "Failed to remove unique value"
   }
 ]

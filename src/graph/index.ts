@@ -32,6 +32,8 @@ export interface ObjectField {
   view?: string;
   struct?: string;
   unique?: boolean;
+  required?: boolean;
+  schema?: string;
 }
 
 export interface ObjectEdge {

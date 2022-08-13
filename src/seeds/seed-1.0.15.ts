@@ -4,7 +4,7 @@ import { config } from "@/components";
 import {
   DescribeTableCommand,
   DynamoDBClient,
-  UpdateTableCommand,
+  UpdateTableCommand
 } from "@aws-sdk/client-dynamodb";
 import AWS from "aws-sdk";
 import http from "http";

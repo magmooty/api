@@ -24,6 +24,7 @@ export type UserStatusVS = "created";
 export interface User {
   id: ObjectId;
   object_type: "user";
+  name: string;
   email: string;
   hash: string;
   email_verified: boolean;

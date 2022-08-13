@@ -68,6 +68,34 @@ const errors = [
     code: "GetReverseEdgesFailed",
     templateProps: [],
   },
+  {
+    code: "ValidationErrorRequiredField",
+    templateProps: ["fieldName", "fieldType"],
+  },
+  {
+    code: "ValidationErrorUniqueField",
+    templateProps: ["fieldName"],
+  },
+  {
+    code: "ValidationErrorBadDataType",
+    templateProps: ["fieldName", "fieldType"],
+  },
+  {
+    code: "ValidationErrorFieldNotFound",
+    templateProps: ["fieldName"],
+  },
+  {
+    code: "AddUniqueFailed",
+    templateProps: [],
+  },
+  {
+    code: "CheckUniqueFailed",
+    templateProps: [],
+  },
+  {
+    code: "RemoveUniqueFailed",
+    templateProps: [],
+  },
 ] as const;
 
 export type ErrorType = typeof errors[number]["code"];

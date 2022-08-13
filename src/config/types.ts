@@ -2,6 +2,7 @@ import { NativeAuthDriverConfig } from "@/auth/native";
 import { AppLocale } from "@/graph/objects/types";
 import { PersistenceConfig } from "@/persistence";
 import { QueueConfig } from "@/queue";
+import { SyncConfig } from "@/sync";
 
 export interface AppConfig {
   $schema?: string;
@@ -18,4 +19,5 @@ export interface AppConfig {
     locales: AppLocale[];
   };
   queue: QueueConfig;
+  sync: SyncConfig;
 }

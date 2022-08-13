@@ -1,8 +1,13 @@
 import { wrapper } from "@/components";
+import { GraphObject, IEdge } from "@/graph/objects/types";
 import { Context } from "@/tracing";
-import { Consumer, EachMessageHandler, Kafka, Producer } from "kafkajs";
-import { v4 as uuid } from "uuid";
-import { QueueDriver, QueueEvent, QueueEventProcessor } from ".";
+import { Kafka, Producer } from "kafkajs";
+import {
+  BaseQueueEvent,
+  QueueDriver,
+  QueueEvent,
+  QueueEventProcessor,
+} from ".";
 
 export enum QueueKafkaTopicUse {
   Pushing = "pushing",
@@ -23,17 +28,12 @@ export interface QueueKafkaConfig {
 }
 
 export class QueueKafkaDriver implements QueueDriver {
-  kafka: Kafka;
+  kafka?: Kafka;
   producer: Producer | null = null;
   topicsToConsumeFrom: QueueKafkaTopicConfig[];
   topicsToProduceTo: QueueKafkaTopicConfig[];
 
   constructor(private kafkaConfig: QueueKafkaConfig) {
-    this.kafka = new Kafka({
-      clientId: kafkaConfig.groupId,
-      brokers: kafkaConfig.brokers,
-    });
-
     this.topicsToProduceTo = this.kafkaConfig.topics.filter(
       (topic) => topic.use === QueueKafkaTopicUse.Pushing
     );
@@ -47,6 +47,11 @@ export class QueueKafkaDriver implements QueueDriver {
     { name: "init", file: __filename },
     async (ctx: Context): Promise<void> => {
       ctx.register({ kafkaConfig: this.kafkaConfig });
+
+      this.kafka = new Kafka({
+        clientId: this.kafkaConfig.groupId,
+        brokers: this.kafkaConfig.brokers,
+      });
 
       if (this.kafkaConfig.canProduce) {
         ctx.log.debug("Connecting producer");
@@ -65,7 +70,10 @@ export class QueueKafkaDriver implements QueueDriver {
 
   send = wrapper(
     { name: "send", file: __filename },
-    async (ctx: Context, event: QueueEvent): Promise<void> => {
+    async <T = GraphObject | IEdge>(
+      ctx: Context,
+      event: BaseQueueEvent<T>
+    ): Promise<void> => {
       if (!this.producer) {
         ctx.fatal(
           "No producer is configured, but the service is trying to send a message"
@@ -78,7 +86,13 @@ export class QueueKafkaDriver implements QueueDriver {
         return;
       }
 
-      const message = JSON.stringify(event);
+      const message = JSON.stringify({
+        ...event,
+        locale: ctx.traceInfo.locale,
+        spanId: ctx.spanId,
+        parentId: ctx.parentId,
+        traceId: ctx.traceId,
+      } as QueueEvent);
 
       ctx.log.debug("Event body", { message });
 
@@ -98,10 +112,15 @@ export class QueueKafkaDriver implements QueueDriver {
     async (
       ctx: Context,
       groupId: string,
-      callback: QueueEventProcessor
+      cb: QueueEventProcessor
     ): Promise<void> => {
       if (!this.kafkaConfig.canConsume) {
         ctx.fatal("Service is not configured to consume events");
+        return;
+      }
+
+      if (!this.kafka) {
+        ctx.fatal("Kafka is not initialized yet");
         return;
       }
 
@@ -130,9 +149,19 @@ export class QueueKafkaDriver implements QueueDriver {
               process.exit();
             }
 
-            console.log(value);
+            const event = JSON.parse(value) as QueueEvent;
 
-            callback(JSON.parse(value) as QueueEvent);
+            const { locale, spanId, traceId, parentId } = event;
+
+            await cb(
+              {
+                traceInfo: { locale },
+                spanId,
+                traceId,
+                parentId,
+              },
+              event
+            );
           },
         });
       }

@@ -4,7 +4,6 @@ import { Logger } from "@/logger";
 import { MetricsHandler } from "@/metrics";
 import { HistogramName } from "@/metrics/histogram";
 import { nanoid } from "nanoid";
-import Prometheus from "prom-client";
 
 /**
  * Obtain the parameters of a function type in a tuple
@@ -47,13 +46,22 @@ interface LocalTrackingMetrics {
   errorDurationMetric?: LocalDurationMetric;
 }
 
+export interface RootContext {
+  traceInfo: {
+    locale: AppLocale;
+  };
+  traceId: string;
+  spanId: string;
+  parentId?: string;
+}
+
 export interface Context {
   log: Logger;
   register: RegisterFunction;
   traceId: string;
   spanId: string;
-  metrics: MetricsHandler;
   parentId?: string;
+  metrics: MetricsHandler;
   setLocale: (locale: AppLocale) => void;
   getParam: (name: string) => any;
   setParam: (name: string, value: any) => any;
@@ -83,10 +91,10 @@ export class Tracer {
     errorCb?: (ctx: Context, error: Error) => void,
     successCb?: (ctx: Context, result: ExtractReturnType<T>) => void
   ): <G = ExtractReturnType<T>>(
-    rootCtx?: Context | null,
+    rootCtx?: Context | RootContext | null,
     ...funcArgs: ExtractParametersWithoutFirstParam<T>
   ) => G extends never ? ExtractReturnType<T> : G {
-    return ((rootCtx?: Context | null, ...args: unknown[]) => {
+    return ((rootCtx?: Context | RootContext | null, ...args: unknown[]) => {
       const traceInfo: TraceInfo = {
         name,
         file,
@@ -164,6 +172,8 @@ export class Tracer {
 
         return func(ctx, ...args)
           .then((result: ExtractReturnType<T>) => {
+            ctx.log.debug(`${name} successful`);
+
             if (successCb) {
               successCb(ctx, result);
             }
@@ -199,6 +209,10 @@ export class Tracer {
                   })
                 );
             }
+
+            if (ctx.parentId) {
+              throw e;
+            }
           });
       } catch (e: unknown) {
         log.error(
@@ -222,6 +236,10 @@ export class Tracer {
                 ...trackingMetrics.errorDurationMetric.labels,
               })
             );
+        }
+
+        if (ctx.parentId) {
+          throw e;
         }
       }
     }).bind(this);
