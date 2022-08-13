@@ -8,7 +8,7 @@ import { mappings } from "./mapping";
 import syncers from "./syncers";
 import { SyncOperation } from "./types";
 
-export interface ElasticSearchConfig {
+export interface ElasticSearchSyncConfig {
   numberOfShards: number;
   numberOfReplicas: number;
   node: string;
@@ -68,7 +68,7 @@ const INDEX_SETTINGS = {
 export class ElasticSearchSyncDriver implements SyncDriver {
   client: Client;
 
-  constructor(private elasticSearchConfig: ElasticSearchConfig) {
+  constructor(private elasticSearchConfig: ElasticSearchSyncConfig) {
     const { node } = elasticSearchConfig;
 
     this.client = new Client({
@@ -126,8 +126,6 @@ export class ElasticSearchSyncDriver implements SyncDriver {
       { method, index, id, data }: SyncOperation
     ): Promise<void> => {
       const prefixedIndex = this.prefixIndex(index);
-
-      console.log({ prefixedIndex, method, data, index, id });
 
       switch (method) {
         case "create":

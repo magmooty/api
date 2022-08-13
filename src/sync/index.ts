@@ -1,10 +1,10 @@
 import { QueueEvent } from "@/queue";
 import { Context } from "@/tracing";
-import { ElasticSearchConfig, ElasticSearchSyncDriver } from "./elasticsearch";
+import { ElasticSearchSyncConfig, ElasticSearchSyncDriver } from "./elasticsearch";
 
 export interface SyncConfig {
   driver: "elasticsearch";
-  config: ElasticSearchConfig;
+  config: ElasticSearchSyncConfig;
 }
 
 export interface SyncDriver {

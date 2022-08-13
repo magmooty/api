@@ -82,5 +82,9 @@
   {
     "code": "RemoveUniqueFailed",
     "template": "Failed to remove unique value"
+  },
+  {
+    "code": "InvalidSearchCriteria",
+    "template": "Invalid search criteria"
   }
 ]

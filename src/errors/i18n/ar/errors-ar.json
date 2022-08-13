@@ -82,5 +82,9 @@
   {
     "code": "RemoveUniqueFailed",
     "template": "فشل في مسح عنصر مميز"
+  },
+  {
+    "code": "InvalidSearchCriteria",
+    "template": "شروط البحث غير صحيحه"
   }
 ]
