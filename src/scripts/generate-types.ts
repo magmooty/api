@@ -99,8 +99,7 @@ const object = {
     const typeName = capitalize(objectType);
 
     return [
-      `export interface ${typeName} {`,
-      "id: ObjectId",
+      `export interface ${typeName} extends GraphObject {`,
       `object_type: "${objectType}"`,
     ].join("\n");
   },

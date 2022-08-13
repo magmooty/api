@@ -1,10 +1,10 @@
-import { errors, wrapper } from "@/components";
+import { errors } from "@/components";
 import objects from "@/graph/objects";
 import {
   GraphObject,
   ObjectFieldValue,
   ObjectType,
-  User,
+  User
 } from "@/graph/objects/types";
 import { Context } from "@/tracing";
 

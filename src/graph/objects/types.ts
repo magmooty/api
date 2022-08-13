@@ -21,8 +21,7 @@ export interface GraphObject {
 export type ValueSet = "UserStatus";
 export type UserStatusVS = "created";
 
-export interface User {
-  id: ObjectId;
+export interface User extends GraphObject {
   object_type: "user";
   name: string;
   email: string;

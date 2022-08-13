@@ -1,6 +1,7 @@
 import { getObjectConfigFromObjectType } from "@/graph";
 import { ObjectType, GraphObject } from "@/graph/objects/types";
 import { Context } from "@/tracing";
+import { serializeDate } from "./serialize-date";
 
 export async function fillDefaults<T = GraphObject>(
   ctx: Context,
@@ -9,7 +10,7 @@ export async function fillDefaults<T = GraphObject>(
 ): Promise<T> {
   const objectConfig = await getObjectConfigFromObjectType(ctx, objectType);
 
-  const output: any = { ...data };
+  const output: any = { ...data, created_at: serializeDate(new Date()) };
 
   for (const fieldName of Object.keys(objectConfig.fields)) {
     const fieldConfig = objectConfig.fields[fieldName];

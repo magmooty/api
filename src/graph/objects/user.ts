@@ -1,5 +1,6 @@
 import { ObjectConfig } from "@/graph";
 import { OwnerViewVirtualExecutor } from "@/graph/common";
+import { serializeDate } from "@/persistence/commons/serialize-date";
 
 export default {
   code: "Z1",
@@ -60,7 +61,7 @@ export default {
     },
     last_read_notification: {
       type: "date",
-      default: () => new Date(),
+      default: () => serializeDate(new Date()),
     },
   },
   edges: {

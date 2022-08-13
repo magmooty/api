@@ -207,8 +207,14 @@ export async function uniqueValidation(
   const objectConfig = objects[objectType];
 
   const uniqueFieldNames = Object.keys(objectConfig.fields).filter(
-    (fieldName) => objectConfig.fields[fieldName].unique
+    (fieldName) =>
+      objectConfig.fields[fieldName].unique &&
+      ((!previous && current && current[fieldName]) ||
+        (previous && previous[fieldName] && !current) ||
+        (previous && current && previous[fieldName] !== current[fieldName]))
   );
+
+  console.log({ uniqueFieldNames, current, previous });
 
   // Only check all the unique fields first
   for (const fieldName of uniqueFieldNames) {

@@ -1,7 +1,6 @@
 import config from "@/config";
 import { Kafka } from "kafkajs";
 import yargs from "yargs/yargs";
-import { hideBin } from "yargs/helpers";
 
 async function main() {
   const argv: any = yargs(process.argv).argv;

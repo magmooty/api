@@ -7,6 +7,8 @@ import {
   ObjectType,
 } from "@/graph/objects/types";
 import { Context } from "@/tracing";
+import { fillDefaults } from "./commons/fill-defaults";
+import { serializeDate } from "./commons/serialize-date";
 import { dryValidation, uniqueValidation } from "./commons/validate-fields";
 import { DynamoDBConfig, DynamoPersistenceDriver } from "./dynamodb";
 
@@ -238,18 +240,20 @@ export class Persistence {
 
       ctx.setErrorDurationMetricLabels({ objectType });
 
-      await dryValidation(ctx, objectType, payload as any, false);
+      let object = await fillDefaults(ctx, objectType, payload);
+
+      await dryValidation(ctx, objectType, object as any, false);
 
       await uniqueValidation(
         ctx,
         objectType,
         null,
-        payload as GraphObject,
+        object as GraphObject,
         this.primaryDB,
         "create"
       );
 
-      const object = await this.primaryDB.createObject(ctx, payload);
+      object = await this.primaryDB.createObject(ctx, object);
 
       await queue.send(ctx, {
         method: "POST",
@@ -297,18 +301,23 @@ export class Persistence {
 
       await dryValidation(ctx, objectType, payload as any, true);
 
+      const previous = await this.primaryDB.getObject(ctx, id);
+
       await uniqueValidation(
         ctx,
         objectType,
-        null,
+        previous as GraphObject,
         payload as Partial<GraphObject>,
         this.primaryDB,
         "update"
       );
 
-      const previous = await this.primaryDB.getObject(ctx, id);
+      const updatedObject = await this.primaryDB.updateObject(ctx, id, {
+        ...payload,
+        updated_at: serializeDate(new Date()),
+      });
 
-      const updatedObject = await this.primaryDB.updateObject(ctx, id, payload);
+      console.log("sending event", { updatedObject, previous });
 
       await queue.send(ctx, {
         method: "PATCH",
@@ -356,18 +365,21 @@ export class Persistence {
 
       await dryValidation(ctx, objectType, payload as any, true);
 
+      const previous = await this.primaryDB.getObject(ctx, id);
+
       await uniqueValidation(
         ctx,
         objectType,
-        null,
+        previous as GraphObject,
         payload as GraphObject,
         this.primaryDB,
         "update"
       );
 
-      const previous = await this.primaryDB.getObject(ctx, id);
-
-      const object = await this.primaryDB.replaceObject(ctx, id, payload);
+      const object = await this.primaryDB.replaceObject(ctx, id, {
+        ...payload,
+        updated_at: serializeDate(new Date()),
+      });
 
       await queue.send(ctx, {
         method: "PATCH",
@@ -416,17 +428,22 @@ export class Persistence {
       await uniqueValidation(
         ctx,
         objectType,
-        null,
         previous as GraphObject,
+        null,
         this.primaryDB,
         "delete"
       );
+
+      const current = await this.primaryDB.updateObject(ctx, id, {
+        deleted_at: serializeDate(new Date()),
+      });
 
       await queue.send(ctx, {
         method: "DELETE",
         path: objectType,
         type: "object",
         previous,
+        current: current as any,
       });
 
       ctx.setDurationMetricLabels({ objectType });

@@ -5,12 +5,10 @@ import {
   persistence,
   queue,
   sync,
-  wrapper,
+  wrapper
 } from "@/components";
-import { User } from "@/graph/objects/types";
 import { Context } from "@/tracing";
 import express from "express";
-import { wait } from "./persistence/commons/wait";
 
 const startServer = wrapper(
   { name: "startServer", file: __filename },

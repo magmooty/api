@@ -1,9 +1,9 @@
-import { wrapper, config } from "@/components";
+import { config } from "@/components";
 import { AppLocale } from "@/graph/objects/types";
 import { Context } from "@/tracing";
-import format from "string-template";
 import fs from "fs";
 import path from "path";
+import format from "string-template";
 
 export interface AppErrorConfig {
   readonly code: string;

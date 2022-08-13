@@ -1,4 +1,4 @@
-import { QueueDriver, QueueEvent } from "@/queue";
+import { QueueEvent } from "@/queue";
 import { Context } from "@/tracing";
 import { ElasticSearchConfig, ElasticSearchSyncDriver } from "./elasticsearch";
 

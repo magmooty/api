@@ -4,6 +4,7 @@ import { Context } from "@/tracing";
 import { User } from "@/graph/objects/types";
 import { SyncOperation, SyncOperationMethod } from "@/sync/types";
 import { IndexName } from "@/sync/mapping";
+import { universalDeleteGenerator } from "../commons/universal-delete-generator";
 
 const INDEX_NAME: IndexName = "user";
 
@@ -56,5 +57,21 @@ export const onPatch = wrapper(
     }
 
     return universalUserGenerator("update", event.current);
+  }
+);
+
+export const onDelete = wrapper(
+  { name: "onDelete", file: __filename },
+  async (
+    ctx: Context,
+    event: QueueEvent<User>
+  ): Promise<SyncOperation<User>[]> => {
+    ctx.register(event);
+
+    if (!event.previous) {
+      return [];
+    }
+
+    return universalDeleteGenerator(INDEX_NAME, event.previous);
   }
 );
