@@ -86,5 +86,9 @@
   {
     "code": "InvalidSearchCriteria",
     "template": "Invalid search criteria"
+  },
+  {
+    "code": "UserNotFound",
+    "template": "Unable to find the user"
   }
 ]

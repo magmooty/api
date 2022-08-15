@@ -28,6 +28,7 @@
   "homepage": "https://github.com/magmooty/api#readme",
   "devDependencies": {
     "@tsconfig/node16": "^1.0.3",
+    "@types/bcryptjs": "^2.4.2",
     "@types/express": "^4.17.13",
     "@types/node": "^18.0.1",
     "@types/string-template": "^1.0.2",
@@ -47,6 +48,7 @@
     "@elastic/elasticsearch": "^8.2.1",
     "@stdlib/error-to-json": "^0.0.7",
     "aws-sdk": "^2.1189.0",
+    "bcryptjs": "^2.4.3",
     "express": "^4.18.1",
     "joi": "^17.6.0",
     "kafkajs": "^2.1.0",

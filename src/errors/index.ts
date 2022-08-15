@@ -100,6 +100,10 @@ const errors = [
     code: "InvalidSearchCriteria",
     templateProps: [],
   },
+  {
+    code: "UserNotFound",
+    templateProps: [],
+  },
 ] as const;
 
 export type ErrorType = typeof errors[number]["code"];

@@ -1,4 +1,6 @@
+import { SearchDriver } from "@/search";
 import { Context } from "@/tracing";
+import { NativeAuthDriver, NativeAuthDriverConfig } from "./native";
 
 export interface SessionExtraAttirbutes {
   roles: string[];
@@ -24,3 +26,18 @@ export interface AuthDriver {
     extraAttributes: SessionExtraAttirbutes
   ): Promise<LoginResult>;
 }
+
+export interface AuthConfig {
+  driver: "native";
+  config: NativeAuthDriverConfig;
+}
+
+export const createAuthDriver = (
+  { driver, config }: AuthConfig,
+  search: SearchDriver
+) => {
+  switch (driver) {
+    case "native":
+      return new NativeAuthDriver(config, search);
+  }
+};

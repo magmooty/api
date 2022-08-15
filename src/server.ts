@@ -1,4 +1,5 @@
 import {
+  auth,
   config,
   errors,
   metrics,
@@ -21,6 +22,13 @@ const startServer = wrapper(
     await sync.init();
 
     //TODO: object field 'required' checks will be done in the API
+
+    const r = await auth.register(null, "ziadalzarka@gmail.com", "loVeA6irl", {
+      roles: ["user"],
+    });
+
+    console.log({ r });
+
     const app = express();
 
     metrics.installApp(app);

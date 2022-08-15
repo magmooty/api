@@ -10,10 +10,7 @@ export interface AppConfig {
   server: {
     port: number;
   };
-  auth: {
-    driver: "native";
-    config: NativeAuthDriverConfig;
-  };
+  auth: ;
   persistence: PersistenceConfig;
   i18n: {
     defaultLocale: AppLocale;

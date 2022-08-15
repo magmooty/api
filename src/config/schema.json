@@ -83,11 +83,15 @@
     "NativeAuthDriverConfig": {
       "type": "object",
       "properties": {
+        "hashSaltLevel": {
+          "type": "number"
+        },
         "sessionTTL": {
           "type": "number"
         }
       },
       "required": [
+        "hashSaltLevel",
         "sessionTTL"
       ],
       "additionalProperties": false
