@@ -4,6 +4,7 @@ export type LogData = Object;
 
 export interface LogMessageOptions {
   level: LogLevel;
+  stripped?: boolean;
 }
 
 export interface MessageFormatterOptions {

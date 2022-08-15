@@ -54,10 +54,10 @@ export class QueueKafkaDriver implements QueueDriver {
       });
 
       if (this.kafkaConfig.canProduce) {
-        ctx.log.debug("Connecting producer");
+        ctx.log.info("Connecting producer");
         this.producer = this.kafka.producer();
         await this.producer.connect();
-        ctx.log.debug("Producer connected");
+        ctx.log.info("Producer connected");
       }
 
       if (this.topicsToConsumeFrom.length && !this.kafkaConfig.canConsume) {
@@ -94,10 +94,10 @@ export class QueueKafkaDriver implements QueueDriver {
         traceId: ctx.traceId,
       } as QueueEvent);
 
-      ctx.log.debug("Event body", { message });
+      ctx.log.info("Event body", { message });
 
       for (const topic of this.topicsToProduceTo) {
-        ctx.log.debug("Sending event", { topic });
+        ctx.log.info("Sending event", { topic });
 
         this.producer.send({
           topic: topic.name,
@@ -126,7 +126,7 @@ export class QueueKafkaDriver implements QueueDriver {
         return;
       }
 
-      ctx.log.debug("Connecting consumer");
+      ctx.log.info("Connecting consumer");
 
       const consumer = this.kafka.consumer({
         groupId,
@@ -134,7 +134,7 @@ export class QueueKafkaDriver implements QueueDriver {
 
       await consumer.connect();
 
-      ctx.log.debug("Consumer connected");
+      ctx.log.info("Consumer connected");
 
       for (const topic of this.topicsToConsumeFrom) {
         await consumer?.subscribe({ topic: topic.name });

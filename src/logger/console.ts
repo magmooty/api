@@ -5,7 +5,12 @@ export class ConsoleLogger implements Logger {
   constructor(private formatter: MessageFormatter) {}
 
   debug(message: string, data?: LogData) {
-    console.debug(this.formatter.format({ level: "debug" }, message, data));
+    const formatted = this.formatter.format(
+      { level: "debug", stripped: true },
+      message,
+      data
+    );
+    console.debug(`\x1b[34m${formatted}\x1b[0m`);
   }
 
   info(message: string, data?: LogData) {

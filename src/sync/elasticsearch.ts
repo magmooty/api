@@ -88,16 +88,16 @@ export class ElasticSearchSyncDriver implements SyncDriver {
 
       const prefixedIndexName = this.prefixIndex(indexName);
 
-      ctx.log.debug("Check if index exists", { prefixedIndexName });
+      ctx.log.info("Check if index exists", { prefixedIndexName });
 
       const exists = await this.client.indices.exists({
         index: prefixedIndexName,
       });
 
       if (exists) {
-        ctx.log.debug("Index found, skipping", { prefixedIndexName });
+        ctx.log.info("Index found, skipping", { prefixedIndexName });
       } else {
-        ctx.log.debug("Index not found, creating index", {
+        ctx.log.info("Index not found, creating index", {
           prefixedIndexName,
           indexConfig,
           indexSettings: INDEX_SETTINGS,
@@ -114,7 +114,7 @@ export class ElasticSearchSyncDriver implements SyncDriver {
           },
         });
 
-        ctx.log.debug("Index created", { prefixedIndexName });
+        ctx.log.info("Index created", { prefixedIndexName });
       }
     }
   });

@@ -2,6 +2,7 @@ import { NativeAuthDriverConfig } from "@/auth/native";
 import { AppLocale } from "@/graph/objects/types";
 import { PersistenceConfig } from "@/persistence";
 import { QueueConfig } from "@/queue";
+import { SearchConfig } from "@/search";
 import { SyncConfig } from "@/sync";
 
 export interface AppConfig {
@@ -20,4 +21,5 @@ export interface AppConfig {
   };
   queue: QueueConfig;
   sync: SyncConfig;
+  search: SearchConfig;
 }

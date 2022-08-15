@@ -4,8 +4,9 @@ import {
   metrics,
   persistence,
   queue,
+  search,
   sync,
-  wrapper
+  wrapper,
 } from "@/components";
 import { Context } from "@/tracing";
 import express from "express";
@@ -20,7 +21,6 @@ const startServer = wrapper(
     await sync.init();
 
     //TODO: object field 'required' checks will be done in the API
-
     const app = express();
 
     metrics.installApp(app);

@@ -64,6 +64,9 @@
         },
         "sync": {
           "$ref": "#/definitions/SyncConfig"
+        },
+        "search": {
+          "$ref": "#/definitions/SearchConfig"
         }
       },
       "required": [
@@ -72,7 +75,8 @@
         "persistence",
         "i18n",
         "queue",
-        "sync"
+        "sync",
+        "search"
       ],
       "additionalProperties": false
     },
@@ -266,7 +270,7 @@
           "const": "elasticsearch"
         },
         "config": {
-          "$ref": "#/definitions/ElasticSearchConfig"
+          "$ref": "#/definitions/ElasticSearchSyncConfig"
         }
       },
       "required": [
@@ -275,7 +279,7 @@
       ],
       "additionalProperties": false
     },
-    "ElasticSearchConfig": {
+    "ElasticSearchSyncConfig": {
       "type": "object",
       "properties": {
         "numberOfShards": {
@@ -294,6 +298,39 @@
       "required": [
         "numberOfShards",
         "numberOfReplicas",
+        "node",
+        "prefix"
+      ],
+      "additionalProperties": false
+    },
+    "SearchConfig": {
+      "type": "object",
+      "properties": {
+        "driver": {
+          "type": "string",
+          "const": "elasticsearch"
+        },
+        "config": {
+          "$ref": "#/definitions/ElasticSearchSearchConfig"
+        }
+      },
+      "required": [
+        "driver",
+        "config"
+      ],
+      "additionalProperties": false
+    },
+    "ElasticSearchSearchConfig": {
+      "type": "object",
+      "properties": {
+        "node": {
+          "type": "string"
+        },
+        "prefix": {
+          "type": "string"
+        }
+      },
+      "required": [
         "node",
         "prefix"
       ],

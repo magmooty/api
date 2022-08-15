@@ -98,7 +98,7 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
           null,
           command
         )) as CommandOutput<ListTablesCommandOutput>;
-        ctx.log.debug("Got table names", { result });
+        ctx.log.info("Got table names", { result });
         return result.TableNames || [];
       } catch (error) {
         ctx.log.error(error, "Failed to fetch table names");
@@ -248,7 +248,7 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
   init = wrapper({ name: "init", file: __filename }, async (ctx: Context) => {
     const tableNames = await this.listTableNames();
 
-    ctx.log.debug("Fetched table names", { tableNames });
+    ctx.log.info("Fetched table names", { tableNames });
 
     let willNeedToWait = false;
 
@@ -256,7 +256,7 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
       const isCreated = tableNames.includes(this.prefixTableName(table));
 
       if (isCreated) {
-        ctx.log.debug("Found table", { table, isCreated });
+        ctx.log.info("Found table", { table, isCreated });
       }
 
       if (!isCreated) {
@@ -264,7 +264,7 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
         await this.createTable(ctx, table);
 
         if (table === "objects") {
-          ctx.log.debug(
+          ctx.log.info(
             `Waiting ${
               this.dynamoConfig.waitTimeAfterTableCreation / 1000
             } seconds for objects table full creation to create index`
@@ -276,8 +276,9 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
         }
       }
     }
+
     if (willNeedToWait) {
-      ctx.log.debug(
+      ctx.log.info(
         `Waiting ${
           this.dynamoConfig.waitTimeAfterTableCreation / 1000
         } seconds for all tables to be created`
@@ -286,7 +287,7 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
       await wait(this.dynamoConfig.waitTimeAfterTableCreation);
     }
 
-    ctx.log.debug("All tables are ensured to exist");
+    ctx.log.info("All tables are ensured to exist");
   });
 
   private prefixTableName(table: string) {
@@ -329,7 +330,7 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
       try {
         const result = await this.client.send(command);
 
-        ctx.log.debug("Command result", { result });
+        ctx.log.info("Command result", { result });
 
         return { result, retries };
       } catch (error) {
@@ -430,7 +431,7 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
 
       ctx.setErrorDurationMetricLabels({ objectType });
 
-      ctx.log.debug("Generating new id for object", { objectType });
+      ctx.log.info("Generating new id for object", { objectType });
 
       const id = await generateID(ctx, objectType);
 

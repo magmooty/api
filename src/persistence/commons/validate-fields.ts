@@ -127,7 +127,7 @@ async function dryValidateField(
   data: GraphObject,
   fieldName: string
 ): Promise<void> {
-  ctx.log.debug("Validating field", { fieldName });
+  ctx.log.info("Validating field", { fieldName });
 
   if (
     ["id", "object_type", "updated_at", "created_at", "deleted_at"].includes(

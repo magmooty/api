@@ -172,7 +172,7 @@ export class Tracer {
 
         return func(ctx, ...args)
           .then((result: ExtractReturnType<T>) => {
-            ctx.log.debug(`${name} successful`);
+            ctx.log.info(`${name} successful`);
 
             if (successCb) {
               successCb(ctx, result);

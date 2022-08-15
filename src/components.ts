@@ -47,4 +47,9 @@ import { createSyncDriver, SyncDriver } from "@/sync";
 
 const sync = createSyncDriver(config.sync) as SyncDriver;
 
-export { wrapper, metrics, config, persistence, errors, queue, sync };
+// Message queue
+import { createSearchDriver, SearchDriver } from "@/search";
+
+const search = createSearchDriver(config.search) as SearchDriver;
+
+export { wrapper, metrics, config, persistence, errors, queue, sync, search };
