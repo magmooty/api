@@ -1,3 +1,5 @@
+import { CacheConfig, CacheDriver } from "@/cache";
+import { RedisCacheDriver } from "@/cache/redis";
 import { queue, wrapper } from "@/components";
 import { getObjectTypeFromId } from "@/graph";
 import {
@@ -7,14 +9,12 @@ import {
   ObjectType,
 } from "@/graph/objects/types";
 import { Context } from "@/tracing";
+import { randomBytes } from "crypto";
 import { fillDefaults } from "./commons/fill-defaults";
 import { serializeDate } from "./commons/serialize-date";
 import { dryValidation, uniqueValidation } from "./commons/validate-fields";
-import { randomBytes } from "crypto";
-import { DynamoDBConfig, DynamoPersistenceDriver } from "./dynamodb";
-import { RedisCacheDriver, RedisCacheDriverConfig } from "@/cache/redis";
-import { CacheConfig, CacheDriver } from "@/cache";
 import { wait } from "./commons/wait";
+import { DynamoDBConfig, DynamoPersistenceDriver } from "./dynamodb";
 
 /**
  * Prefix a cache key with the lock prefix
@@ -214,6 +214,7 @@ export class Persistence {
 
   async init() {
     await this.primaryDB.init();
+    await this.cache.init();
   }
 
   getLock = wrapper(
@@ -268,9 +269,9 @@ export class Persistence {
     async (ctx: Context, key: string, lockHolder: string): Promise<void> => {
       const prefixedKey = generateLockKey(key);
 
-      const existingLockHolder = await this.cache.get(ctx, prefixedKey, true);
+      ctx.register({ key, prefixedKey, lockHolder });
 
-      ctx.log.info("Freeing lock", { prefixedKey, existingLockHolder });
+      const existingLockHolder = await this.cache.get(ctx, prefixedKey, true);
 
       if (!existingLockHolder) {
         ctx.log.info("Lock is already free");
@@ -405,6 +406,11 @@ export class Persistence {
 
       await dryValidation(ctx, objectType, payload as any, true);
 
+      const lockHolder = await this.getLock(ctx, id);
+
+      ctx.setParam("lockKey", id);
+      ctx.setParam("lockHolder", lockHolder);
+
       const previous = await this.primaryDB.getObject(ctx, id);
 
       await uniqueValidation(
@@ -421,6 +427,8 @@ export class Persistence {
         updated_at: serializeDate(new Date()),
       });
 
+      await this.freeLock(ctx, id, lockHolder);
+
       await queue.send(ctx, {
         method: "PATCH",
         path: objectType,
@@ -433,10 +441,18 @@ export class Persistence {
 
       return updatedObject as any;
     },
-    (ctx, error) => {
-      ctx.metrics
-        .getCounter("persistence_update_object_error")
-        .inc({ objectType: ctx.getParam("objectType"), error: error.message });
+    async (ctx, error) => {
+      {
+        ctx.metrics.getCounter("persistence_update_object_error").inc({
+          objectType: ctx.getParam("objectType"),
+          error: error.message,
+        });
+
+        const lockKey = ctx.getParam("lockKey");
+        const lockHolder = ctx.getParam("lockHolder");
+
+        await this.freeLock(ctx, lockKey, lockHolder);
+      }
     },
     (ctx) => {
       ctx.metrics
@@ -467,6 +483,11 @@ export class Persistence {
 
       await dryValidation(ctx, objectType, payload as any, true);
 
+      const lockHolder = await this.getLock(ctx, id);
+
+      ctx.setParam("lockKey", id);
+      ctx.setParam("lockHolder", lockHolder);
+
       const previous = await this.primaryDB.getObject(ctx, id);
 
       await uniqueValidation(
@@ -483,6 +504,8 @@ export class Persistence {
         updated_at: serializeDate(new Date()),
       });
 
+      await this.freeLock(ctx, id, lockHolder);
+
       await queue.send(ctx, {
         method: "PATCH",
         path: objectType,
@@ -495,10 +518,18 @@ export class Persistence {
 
       return object as any;
     },
-    (ctx, error) => {
-      ctx.metrics
-        .getCounter("persistence_replace_object_error")
-        .inc({ objectType: ctx.getParam("objectType"), error: error.message });
+    async (ctx, error) => {
+      {
+        ctx.metrics.getCounter("persistence_replace_object_error").inc({
+          objectType: ctx.getParam("objectType"),
+          error: error.message,
+        });
+
+        const lockKey = ctx.getParam("lockKey");
+        const lockHolder = ctx.getParam("lockHolder");
+
+        await this.freeLock(ctx, lockKey, lockHolder);
+      }
     },
     (ctx) => {
       ctx.metrics
@@ -525,6 +556,11 @@ export class Persistence {
 
       ctx.setErrorDurationMetricLabels({ objectType });
 
+      const lockHolder = await this.getLock(ctx, id);
+
+      ctx.setParam("lockKey", id);
+      ctx.setParam("lockHolder", lockHolder);
+
       const previous = await this.primaryDB.getObject(ctx, id);
 
       await uniqueValidation(
@@ -540,6 +576,8 @@ export class Persistence {
         deleted_at: serializeDate(new Date()),
       });
 
+      await this.freeLock(ctx, id, lockHolder);
+
       await queue.send(ctx, {
         method: "DELETE",
         path: objectType,
@@ -552,10 +590,18 @@ export class Persistence {
 
       return;
     },
-    (ctx, error) => {
-      ctx.metrics
-        .getCounter("persistence_delete_object_error")
-        .inc({ objectType: ctx.getParam("objectType"), error: error.message });
+    async (ctx, error) => {
+      {
+        ctx.metrics.getCounter("persistence_delete_object_error").inc({
+          objectType: ctx.getParam("objectType"),
+          error: error.message,
+        });
+
+        const lockKey = ctx.getParam("lockKey");
+        const lockHolder = ctx.getParam("lockHolder");
+
+        await this.freeLock(ctx, lockKey, lockHolder);
+      }
     },
     (ctx) => {
       ctx.metrics
@@ -586,7 +632,16 @@ export class Persistence {
 
       ctx.setErrorDurationMetricLabels({ srcObjectType, edgeName });
 
+      const lockKey = `${src}-${edgeName}-${dst}`;
+
+      const lockHolder = await this.getLock(ctx, lockKey);
+
+      ctx.setParam("lockKey", lockKey);
+      ctx.setParam("lockHolder", lockHolder);
+
       await this.primaryDB.createEdge(ctx, src, edgeName, dst);
+
+      await this.freeLock(ctx, lockKey, lockHolder);
 
       await queue.send(ctx, {
         method: "POST",
@@ -601,12 +656,17 @@ export class Persistence {
 
       ctx.setDurationMetricLabels({ srcObjectType });
     },
-    (ctx, error) => {
+    async (ctx, error) => {
       ctx.metrics.getCounter("persistence_create_edge_error").inc({
         srcObjectType: ctx.getParam("srcObjectType"),
         edgeName: ctx.getParam("edgeName"),
         error: error.message,
       });
+
+      const lockKey = ctx.getParam("lockKey");
+      const lockHolder = ctx.getParam("lockHolder");
+
+      await this.freeLock(ctx, lockKey, lockHolder);
     },
     (ctx) => {
       ctx.metrics.getCounter("persistence_create_edge").inc({
@@ -638,7 +698,16 @@ export class Persistence {
 
       ctx.setErrorDurationMetricLabels({ srcObjectType, edgeName });
 
+      const lockKey = `${src}-${edgeName}-${dst}`;
+
+      const lockHolder = await this.getLock(ctx, lockKey);
+
+      ctx.setParam("lockKey", lockKey);
+      ctx.setParam("lockHolder", lockHolder);
+
       await this.primaryDB.deleteEdge(ctx, src, edgeName, dst);
+
+      await this.freeLock(ctx, lockKey, lockHolder);
 
       await queue.send(ctx, {
         method: "DELETE",
@@ -653,12 +722,17 @@ export class Persistence {
 
       ctx.setDurationMetricLabels({ srcObjectType });
     },
-    (ctx, error) => {
+    async (ctx, error) => {
       ctx.metrics.getCounter("persistence_delete_edge_error").inc({
         srcObjectType: ctx.getParam("srcObjectType"),
         edgeName: ctx.getParam("edgeName"),
         error: error.message,
       });
+
+      const lockKey = ctx.getParam("lockKey");
+      const lockHolder = ctx.getParam("lockHolder");
+
+      await this.freeLock(ctx, lockKey, lockHolder);
     },
     (ctx) => {
       ctx.metrics.getCounter("persistence_delete_edge").inc({

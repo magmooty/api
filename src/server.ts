@@ -23,11 +23,15 @@ const startServer = wrapper(
 
     //TODO: object field 'required' checks will be done in the API
 
-    const r = await auth.register(null, "ziadalzarka@gmail.com", "loVeA6irl", {
-      roles: ["user"],
-    });
+    await persistence.updateObject(
+      null,
+      "005763e0-6d38-448e-9683-3eefc633f93e-Z1",
+      { name: "Ziad Alzarka 2" }
+    );
 
-    console.log({ r });
+    // const r = await auth.register(null, "ziadalzarka@gmail.com", "loVeA6irl", {
+    //   roles: ["user"],
+    // });
 
     const app = express();
 

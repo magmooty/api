@@ -171,12 +171,14 @@ export class Tracer {
         log.info(`${name} start`);
 
         return func(ctx, ...args)
-          .then((result: ExtractReturnType<T>) => {
+          .then(async (result: ExtractReturnType<T>) => {
             ctx.log.info(`${name} successful`);
 
-            if (successCb) {
-              successCb(ctx, result);
-            }
+            try {
+              if (successCb) {
+                await successCb(ctx, result);
+              }
+            } catch {}
 
             if (end && trackingMetrics.durationMetric) {
               ctx.metrics
@@ -186,7 +188,7 @@ export class Tracer {
 
             return result;
           })
-          .catch((e: unknown) => {
+          .catch(async (e: unknown) => {
             log.error(
               e as Error,
               (e as Error).message || "Uncaught error",
@@ -195,7 +197,7 @@ export class Tracer {
 
             try {
               if (errorCb) {
-                errorCb(ctx, e as Error);
+                await errorCb(ctx, e as Error);
               }
             } catch {}
 
