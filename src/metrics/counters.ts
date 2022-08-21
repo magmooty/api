@@ -250,6 +250,41 @@ export const metricsCounters = [
       "dstObjectType",
     ],
   },
+  {
+    name: "redis_get_requests",
+    help: "Total number of redis get requests",
+    labelNames: ["result"],
+  },
+  {
+    name: "redis_get_errors",
+    help: "Total number of redis get requests errors",
+    labelNames: ["error"],
+  },
+  {
+    name: "redis_mget_requests",
+    help: "Total number of redis get requests",
+    labelNames: ["hits", "misses", "rate"],
+  },
+  {
+    name: "redis_mget_errors",
+    help: "Total number of redis get requests errors",
+    labelNames: ["error"],
+  },
+  {
+    name: "redis_scanned_keys",
+    help: "Total number of scanned redis keys",
+    labelNames: ["match"],
+  },
+  {
+    name: "redis_requests",
+    help: "Total number of redis requests",
+    labelNames: ["method"],
+  },
+  {
+    name: "redis_errors",
+    help: "Total number of redis requests errors",
+    labelNames: ["method", "error"],
+  },
 ] as const;
 
 export type CounterName = typeof metricsCounters[number]["name"];

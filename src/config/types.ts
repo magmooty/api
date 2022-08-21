@@ -1,4 +1,4 @@
-import { NativeAuthDriverConfig } from "@/auth/native";
+import { AuthConfig } from "@/auth";
 import { AppLocale } from "@/graph/objects/types";
 import { PersistenceConfig } from "@/persistence";
 import { QueueConfig } from "@/queue";
@@ -10,7 +10,7 @@ export interface AppConfig {
   server: {
     port: number;
   };
-  auth: ;
+  auth: AuthConfig;
   persistence: PersistenceConfig;
   i18n: {
     defaultLocale: AppLocale;

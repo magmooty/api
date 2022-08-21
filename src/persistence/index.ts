@@ -10,7 +10,28 @@ import { Context } from "@/tracing";
 import { fillDefaults } from "./commons/fill-defaults";
 import { serializeDate } from "./commons/serialize-date";
 import { dryValidation, uniqueValidation } from "./commons/validate-fields";
+import { randomBytes } from "crypto";
 import { DynamoDBConfig, DynamoPersistenceDriver } from "./dynamodb";
+import { RedisCacheDriver, RedisCacheDriverConfig } from "@/cache/redis";
+import { CacheConfig, CacheDriver } from "@/cache";
+import { wait } from "./commons/wait";
+
+/**
+ * Prefix a cache key with the lock prefix
+ * @param {string} key The key to obtain a lock for
+ * @returns {string} Prefixed key
+ */
+function generateLockKey(key: string): string {
+  return `lock_${key}`;
+}
+
+/**
+ * Get a stream of random characters to hold a lock with
+ * @returns {string} Random string of 40 characters (20 bytes in hex)
+ */
+function generateLockHolder(): string {
+  return randomBytes(20).toString("hex");
+}
 
 export interface CreateObjectPayload {
   object_type: ObjectType;
@@ -156,18 +177,18 @@ export interface PersistenceDriver {
 export interface PersistenceConfig {
   driver: "dynamodb";
   config: DynamoDBConfig;
-  cache: {
-    driver: "redis";
-    config: {
-      host: string;
-      port: number;
-      prefix: string;
-    };
+  constants: {
+    lockTimeout: number;
+    lockObtainerTimeout: number;
+    lockAttemptInterval: number;
+    lookupsTTL: number;
   };
+  cache: CacheConfig;
 }
 
 export class Persistence {
   primaryDB: PersistenceDriver;
+  cache: CacheDriver;
 
   constructor(private persistenceConfig: PersistenceConfig) {
     switch (persistenceConfig.driver) {
@@ -176,7 +197,17 @@ export class Persistence {
         break;
       default:
         throw new Error(
-          "Couldn't create persistence driver for driver with current config"
+          "Couldn't create database driver for persistence with current config"
+        );
+    }
+
+    switch (persistenceConfig.cache.driver) {
+      case "redis":
+        this.cache = new RedisCacheDriver(persistenceConfig.cache.config);
+        break;
+      default:
+        throw new Error(
+          "Couldn't create cache driver for persistence with current config"
         );
     }
   }
@@ -184,6 +215,79 @@ export class Persistence {
   async init() {
     await this.primaryDB.init();
   }
+
+  getLock = wrapper(
+    { name: "getLock", file: __filename },
+    async (ctx: Context, key: string): Promise<string> => {
+      const prefixedKey = generateLockKey(key);
+      const lockHolder = generateLockHolder();
+
+      ctx.log.info("Trying to obtain a lock for key", { key, lockHolder });
+
+      let retries = 0;
+
+      while (true) {
+        const lockObtained = await this.cache.set(
+          ctx,
+          prefixedKey,
+          lockHolder,
+          this.persistenceConfig.constants.lockTimeout,
+          true
+        );
+
+        if (lockObtained) {
+          ctx.log.info("Obtained a lock for key", { key, lockHolder });
+          return lockHolder;
+        }
+
+        if (
+          retries * this.persistenceConfig.constants.lockAttemptInterval >=
+          this.persistenceConfig.constants.lockObtainerTimeout
+        ) {
+          ctx.log.warn("Failed to obtain a lock for key", {
+            key,
+            retries,
+            lockHolder,
+            prefixedKey,
+          });
+          throw new Error(`Failed to obtain a lock for key: ${key}`);
+        }
+
+        ctx.log.warn("Retrying to obtain a lock for key", {
+          key,
+          lockHolder,
+        });
+        retries++;
+        await wait(this.persistenceConfig.constants.lockAttemptInterval);
+      }
+    }
+  );
+
+  freeLock = wrapper(
+    { name: "freeLock", file: __filename },
+    async (ctx: Context, key: string, lockHolder: string): Promise<void> => {
+      const prefixedKey = generateLockKey(key);
+
+      const existingLockHolder = await this.cache.get(ctx, prefixedKey, true);
+
+      ctx.log.info("Freeing lock", { prefixedKey, existingLockHolder });
+
+      if (!existingLockHolder) {
+        ctx.log.info("Lock is already free");
+        return;
+      }
+
+      if (existingLockHolder === lockHolder) {
+        await this.cache.del(ctx, prefixedKey);
+        ctx.log.info("Lock freed", { lockHolder });
+        return;
+      }
+
+      ctx.log.info("Resource has been locked by another process", {
+        existingLockHolder,
+      });
+    }
+  );
 
   getObject = wrapper(
     { name: "getObject", file: __filename },

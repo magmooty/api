@@ -139,38 +139,31 @@ export class RedisPersistenceDriver implements PersistenceDriver {
     }
   );
 
-  async freeLock(
-    key: string,
-    lockHolder: string,
-    rootSpan?: Span
-  ): Promise<void> {
-    return controllerLogWrapper(
-      { topic: "freeLock", location: __dirname, rootSpan },
-      async (_, Log) => {
-        const prefixedKey = generateLockKey(key);
+  freeLock = wrapper(
+    { name: "freeLock", file: __filename },
+    async (ctx: Context, key: string, lockHolder: string): Promise<void> => {
+      const prefixedKey = generateLockKey(key);
 
-        const existingLockHolder = await driver.get(prefixedKey, true);
+      const existingLockHolder = await driver.get(prefixedKey, true);
 
-        ctx.log.info("Freeing lock", { prefixedKey, existingLockHolder });
+      ctx.log.info("Freeing lock", { prefixedKey, existingLockHolder });
 
-        if (!existingLockHolder) {
-          ctx.log.info("Lock is already free");
-          return;
-        }
-
-        if (existingLockHolder === lockHolder) {
-          await driver.del(prefixedKey);
-          ctx.log.info("Lock freed", { lockHolder });
-          return;
-        }
-
-        ctx.log.info("Resource has been locked by another process", {
-          existingLockHolder,
-        });
+      if (!existingLockHolder) {
+        ctx.log.info("Lock is already free");
         return;
       }
-    );
-  }
+
+      if (existingLockHolder === lockHolder) {
+        await driver.del(prefixedKey);
+        ctx.log.info("Lock freed", { lockHolder });
+        return;
+      }
+
+      ctx.log.info("Resource has been locked by another process", {
+        existingLockHolder,
+      });
+    }
+  );
 
   async createObject(
     object: GraphObject,

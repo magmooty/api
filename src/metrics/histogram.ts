@@ -229,6 +229,36 @@ export const metricsHistogram = [
     help: "Duration of get reverse edges requests to persistence",
     labelNames: ["dstObjectType", "edgeName", "error"],
   },
+  {
+    name: "redis_get_requests_duration",
+    help: "Total duration of redis get requests",
+    labelNames: ["result"],
+  },
+  {
+    name: "redis_get_errors_duration",
+    help: "Total duration of redis get requests errors",
+    labelNames: ["error"],
+  },
+  {
+    name: "redis_mget_requests_duration",
+    help: "Total duration of redis mget requests",
+    labelNames: ["hits", "misses"],
+  },
+  {
+    name: "redis_mget_errors_duration",
+    help: "Total duration of redis mget requests errors",
+    labelNames: ["error"],
+  },
+  {
+    name: "redis_requests_duration",
+    help: "Total duration of redis requests",
+    labelNames: ["method"],
+  },
+  {
+    name: "redis_errors_duration",
+    help: "Total duration of redis requests errors",
+    labelNames: ["method", "error"],
+  },
 ] as const;
 
 export type HistogramName = typeof metricsHistogram[number]["name"];

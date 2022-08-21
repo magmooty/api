@@ -21,21 +21,7 @@
           "additionalProperties": false
         },
         "auth": {
-          "type": "object",
-          "properties": {
-            "driver": {
-              "type": "string",
-              "const": "native"
-            },
-            "config": {
-              "$ref": "#/definitions/NativeAuthDriverConfig"
-            }
-          },
-          "required": [
-            "driver",
-            "config"
-          ],
-          "additionalProperties": false
+          "$ref": "#/definitions/AuthConfig"
         },
         "persistence": {
           "$ref": "#/definitions/PersistenceConfig"
@@ -80,6 +66,23 @@
       ],
       "additionalProperties": false
     },
+    "AuthConfig": {
+      "type": "object",
+      "properties": {
+        "driver": {
+          "type": "string",
+          "const": "native"
+        },
+        "config": {
+          "$ref": "#/definitions/NativeAuthDriverConfig"
+        }
+      },
+      "required": [
+        "driver",
+        "config"
+      ],
+      "additionalProperties": false
+    },
     "NativeAuthDriverConfig": {
       "type": "object",
       "properties": {
@@ -106,44 +109,38 @@
         "config": {
           "$ref": "#/definitions/DynamoDBConfig"
         },
-        "cache": {
+        "constants": {
           "type": "object",
           "properties": {
-            "driver": {
-              "type": "string",
-              "const": "redis"
+            "lockTimeout": {
+              "type": "number"
             },
-            "config": {
-              "type": "object",
-              "properties": {
-                "host": {
-                  "type": "string"
-                },
-                "port": {
-                  "type": "number"
-                },
-                "prefix": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "host",
-                "port",
-                "prefix"
-              ],
-              "additionalProperties": false
+            "lockObtainerTimeout": {
+              "type": "number"
+            },
+            "lockAttemptInterval": {
+              "type": "number"
+            },
+            "lookupsTTL": {
+              "type": "number"
             }
           },
           "required": [
-            "driver",
-            "config"
+            "lockTimeout",
+            "lockObtainerTimeout",
+            "lockAttemptInterval",
+            "lookupsTTL"
           ],
           "additionalProperties": false
+        },
+        "cache": {
+          "$ref": "#/definitions/CacheConfig"
         }
       },
       "required": [
         "driver",
         "config",
+        "constants",
         "cache"
       ],
       "additionalProperties": false
@@ -183,6 +180,63 @@
         "allowedRetryErrorCodes",
         "retryAfter",
         "waitTimeAfterTableCreation"
+      ],
+      "additionalProperties": false
+    },
+    "CacheConfig": {
+      "type": "object",
+      "properties": {
+        "driver": {
+          "type": "string",
+          "const": "redis"
+        },
+        "config": {
+          "$ref": "#/definitions/RedisCacheDriverConfig"
+        }
+      },
+      "required": [
+        "driver",
+        "config"
+      ],
+      "additionalProperties": false
+    },
+    "RedisCacheDriverConfig": {
+      "type": "object",
+      "properties": {
+        "driverName": {
+          "type": "string"
+        },
+        "host": {
+          "type": "string"
+        },
+        "port": {
+          "type": "number"
+        },
+        "prefix": {
+          "type": "string"
+        },
+        "cacheType": {
+          "type": "string",
+          "enum": [
+            "single",
+            "cluster"
+          ]
+        },
+        "databaseNumber": {
+          "type": "number"
+        },
+        "slotsRefreshTimeout": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "driverName",
+        "host",
+        "port",
+        "prefix",
+        "cacheType",
+        "databaseNumber",
+        "slotsRefreshTimeout"
       ],
       "additionalProperties": false
     },
