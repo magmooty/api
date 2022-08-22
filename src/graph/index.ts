@@ -7,6 +7,7 @@ import {
   User,
 } from "@/graph/objects/types";
 import { Context } from "@/tracing";
+import ms from "milliseconds";
 
 export type ObjectFieldType =
   | "string"
@@ -56,9 +57,15 @@ export interface ObjectViewVirtual {
   execute: ObjectViewVirtualExecutor;
 }
 
+export enum ObjectTTL {
+  Minimal = ms.minutes(10),
+  Active = ms.days(3),
+}
+
 export interface ObjectConfig {
   code: string;
   cacheLevel: "external" | "none" | "onlyCache";
+  ttl?: ObjectTTL;
   deletedBy?: string[];
   views: { [key: string]: ObjectView };
   virtuals: { views: { [key: string]: ObjectViewVirtual } };

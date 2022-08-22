@@ -90,5 +90,25 @@
   {
     "code": "UserNotFound",
     "template": "Unable to find the user"
+  },
+  {
+    "code": "WrongPassword",
+    "template": "Please check your password"
+  },
+  {
+    "code": "InvalidPassword",
+    "template": "Pasword cannot be used. It should contain letters, numbers and must not be less than 8 characters"
+  },
+  {
+    "code": "NeedToLoginAgain",
+    "template": "You need to log in again"
+  },
+  {
+    "code": "InvalidToken",
+    "template": "User not authorized, please log in again"
+  },
+  {
+    "code": "SessionExpired",
+    "template": "Session has expired, please refresh the token"
   }
 ]

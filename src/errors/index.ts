@@ -104,6 +104,26 @@ const errors = [
     code: "UserNotFound",
     templateProps: [],
   },
+  {
+    code: "WrongPassword",
+    templateProps: [],
+  },
+  {
+    code: "InvalidPassword",
+    templateProps: [],
+  },
+  {
+    code: "NeedToLoginAgain",
+    templateProps: [],
+  },
+  {
+    code: "InvalidToken",
+    templateProps: [],
+  },
+  {
+    code: "SessionExpired",
+    templateProps: [],
+  },
 ] as const;
 
 export type ErrorType = typeof errors[number]["code"];

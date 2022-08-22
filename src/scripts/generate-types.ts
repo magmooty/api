@@ -43,7 +43,7 @@ export type ObjectType = ${Object.keys(objects)
   .map((objectType) => `"${objectType}"`)
   .join(" | ")}
 
-export type ObjectFieldValue = string | number | boolean | Date | ObjectId;
+export type ObjectFieldValue = string | string[] | number | number[] | boolean | Date | ObjectId | GraphObject;
 
 export type AppLocale = 'ar' | 'en';
 

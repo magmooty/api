@@ -2,7 +2,15 @@ export type ObjectId = string;
 
 export type ObjectType = "user" | "session";
 
-export type ObjectFieldValue = string | number | boolean | Date | ObjectId;
+export type ObjectFieldValue =
+  | string
+  | string[]
+  | number
+  | number[]
+  | boolean
+  | Date
+  | ObjectId
+  | GraphObject;
 
 export type AppLocale = "ar" | "en";
 
@@ -33,7 +41,7 @@ export interface User extends GraphObject {
 
 export interface Session extends GraphObject {
   object_type: "session";
-  name: string;
+  token: string;
   user: string | GraphObject;
   roles: string[];
   expiresAt: string;

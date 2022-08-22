@@ -91,11 +91,26 @@
         },
         "sessionTTL": {
           "type": "number"
+        },
+        "activeRefreshTokenSecret": {
+          "type": "string"
+        },
+        "deprecatedRefreshTokenSecrets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "refreshTokenTTL": {
+          "type": "number"
         }
       },
       "required": [
         "hashSaltLevel",
-        "sessionTTL"
+        "sessionTTL",
+        "activeRefreshTokenSecret",
+        "deprecatedRefreshTokenSecrets",
+        "refreshTokenTTL"
       ],
       "additionalProperties": false
     },

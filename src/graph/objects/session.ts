@@ -20,7 +20,7 @@ export default {
     },
   },
   fields: {
-    name: {
+    token: {
       type: "string",
     },
     user: {

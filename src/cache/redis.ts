@@ -1,7 +1,13 @@
 import { wrapper } from "@/components";
 import { Context } from "@/tracing";
 import IORedis, { RedisCommander } from "ioredis";
-import { CacheDriver, CacheValue, ScanOptions, ScanResult } from ".";
+import {
+  ApplicationCachedValue,
+  CacheDriver,
+  CacheValue,
+  ScanOptions,
+  ScanResult,
+} from ".";
 
 export interface RedisCacheDriverConfig {
   driverName: string;
@@ -81,7 +87,7 @@ export class RedisCacheDriver implements CacheDriver {
     async (
       ctx: Context,
       key: string,
-      value: CacheValue,
+      value: ApplicationCachedValue,
       ttl: number | null = null,
       isNX = false
     ): Promise<boolean> => {
@@ -155,7 +161,7 @@ export class RedisCacheDriver implements CacheDriver {
       ctx: Context,
       key: string,
       raw = false
-    ): Promise<CacheValue | null> => {
+    ): Promise<ApplicationCachedValue | null> => {
       ctx.startTrackTime(
         "redis_get_requests_duration",
         "redis_get_errors_duration"
@@ -240,16 +246,18 @@ export class RedisCacheDriver implements CacheDriver {
     },
     (ctx: Context, error: Error) => {
       ctx.metrics.getCounter("redis_mget_errors").inc({
-        hits: ctx.getParam("hits"),
-        misses: ctx.getParam("misses"),
-        rate: ctx.getParam("rate"),
         error: error.message,
       });
     },
     (ctx: Context) => {
       ctx.metrics
         .getCounter("redis_mget_requests")
-        .inc({ method: ctx.traceInfo.name });
+        .inc({
+          method: ctx.traceInfo.name,
+          hits: ctx.getParam("hits"),
+          misses: ctx.getParam("misses"),
+          rate: ctx.getParam("rate"),
+        });
     }
   );
 
@@ -544,7 +552,7 @@ export class RedisCacheDriver implements CacheDriver {
 
   lpos = wrapper(
     { name: "lpos", file: __filename },
-    (ctx: Context, key: string, value: CacheValue): Promise<number | null> => {
+    async (ctx: Context, key: string, value: CacheValue): Promise<number> => {
       ctx.startTrackTime("redis_requests_duration", "redis_errors_duration");
 
       ctx.register({ key });
@@ -552,7 +560,9 @@ export class RedisCacheDriver implements CacheDriver {
       ctx.setDurationMetricLabels({ method: ctx.traceInfo.name });
       ctx.setErrorDurationMetricLabels({ method: ctx.traceInfo.name });
 
-      return this.cluster.lpos(key, value);
+      const position = await this.cluster.lpos(key, value);
+
+      return position && position >= 0 ? position : -1;
     },
     (ctx: Context, error: Error) => {
       ctx.metrics

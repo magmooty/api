@@ -1,4 +1,4 @@
-import { GraphObject } from "@/graph/objects/types";
+import { GraphObject, ObjectFieldValue } from "@/graph/objects/types";
 import { Context } from "@/tracing";
 import { RedisCacheDriverConfig } from "./redis";
 
@@ -13,6 +13,12 @@ export interface ScanResult {
 }
 
 export type CacheValue = string | number | Buffer;
+export type ApplicationCachedValue =
+  | CacheValue
+  | GraphObject
+  | Partial<GraphObject>
+  | Object
+  | ObjectFieldValue;
 
 export interface CacheConfig {
   driver: "redis";
@@ -25,7 +31,7 @@ export interface CacheDriver {
   set(
     ctx: Context,
     key: string,
-    value: CacheValue | GraphObject,
+    value: ApplicationCachedValue,
     ttl?: number | null,
     isNX?: boolean
   ): Promise<boolean>;
@@ -34,7 +40,7 @@ export interface CacheDriver {
     ctx: Context,
     key: string,
     raw?: boolean
-  ): Promise<CacheValue | GraphObject | null>;
+  ): Promise<ApplicationCachedValue | null>;
   del(ctx: Context, key: string): Promise<number>;
   mget(
     ctx: Context,
@@ -56,7 +62,7 @@ export interface CacheDriver {
   exists(ctx: Context, key: string): Promise<boolean>;
   lpush(ctx: Context, key: string, values: CacheValue[]): Promise<number>;
   lpushx(ctx: Context, key: string, value: CacheValue): Promise<number>;
-  lpos(ctx: Context, key: string, value: CacheValue): Promise<number | null>;
+  lpos(ctx: Context, key: string, value: CacheValue): Promise<number>;
   llen(ctx: Context, key: string): Promise<number>;
   lrange(
     ctx: Context,

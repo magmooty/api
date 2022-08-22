@@ -16,6 +16,7 @@ import { serializeDate } from "./commons/serialize-date";
 import { dryValidation, uniqueValidation } from "./commons/validate-fields";
 import { wait } from "./commons/wait";
 import { DynamoDBConfig, DynamoPersistenceDriver } from "./dynamodb";
+import cacheHijackRules from "./extra/cache-hijack";
 
 /**
  * Prefix a cache key with the lock prefix
@@ -189,8 +190,8 @@ export interface PersistenceConfig {
 }
 
 export class Persistence {
-  primaryDB: PersistenceDriver;
-  cache: CacheDriver;
+  private primaryDB: PersistenceDriver;
+  public cache: CacheDriver;
 
   constructor(private persistenceConfig: PersistenceConfig) {
     switch (persistenceConfig.driver) {
@@ -356,6 +357,7 @@ export class Persistence {
 
       const { object_type: objectType } = payload;
 
+      const path = `POST ${objectType}`;
       const objectConfig = await getObjectConfigFromObjectType(ctx, objectType);
 
       ctx.setParam("objectType", objectType);
@@ -386,7 +388,11 @@ export class Persistence {
       switch (objectConfig.cacheLevel) {
         case "external":
         case "onlyCache":
-          await this.cache.set(ctx, id, object);
+          if (cacheHijackRules[path]) {
+            await cacheHijackRules[path](ctx, object);
+          } else {
+            await this.cache.set(ctx, id, object);
+          }
           break;
       }
 
@@ -433,6 +439,7 @@ export class Persistence {
       });
 
       const objectType = await getObjectTypeFromId(ctx, id);
+      const objectConfig = await getObjectConfigFromObjectType(ctx, objectType);
 
       ctx.setParam("objectType", objectType);
 
@@ -456,20 +463,28 @@ export class Persistence {
         "update"
       );
 
+      const updatePayload = {
+        ...payload,
+        updated_at: serializeDate(new Date()),
+      };
+
+      const updatedObject = {
+        ...previous,
+        ...updatePayload,
+        id,
+        object_type: objectType,
+      };
+
       switch (objectConfig.cacheLevel) {
         case "external":
         case "onlyCache":
-          await this.cache.set(ctx, id, object);
+          await this.cache.set(ctx, id, updatedObject);
           break;
       }
 
       if (objectConfig.cacheLevel !== "onlyCache") {
+        await this.primaryDB.updateObject(ctx, id, updatePayload);
       }
-
-      const updatedObject = await this.primaryDB.updateObject(ctx, id, {
-        ...payload,
-        updated_at: serializeDate(new Date()),
-      });
 
       await this.freeLock(ctx, id, lockHolder);
 
@@ -520,6 +535,7 @@ export class Persistence {
       ctx.register({ id, payload });
 
       const objectType = await getObjectTypeFromId(ctx, id);
+      const objectConfig = await getObjectConfigFromObjectType(ctx, objectType);
 
       ctx.setParam("objectType", objectType);
 
@@ -543,10 +559,21 @@ export class Persistence {
         "update"
       );
 
-      const object = await this.primaryDB.replaceObject(ctx, id, {
+      const replacedObject = {
         ...payload,
+        id,
+        object_type: objectType,
         updated_at: serializeDate(new Date()),
-      });
+      };
+
+      switch (objectConfig.cacheLevel) {
+        case "external":
+        case "onlyCache":
+          await this.cache.set(ctx, id, replacedObject);
+          break;
+      }
+
+      await this.primaryDB.replaceObject(ctx, id, replacedObject);
 
       await this.freeLock(ctx, id, lockHolder);
 
@@ -555,12 +582,12 @@ export class Persistence {
         path: objectType,
         type: "object",
         previous,
-        current: object,
+        current: replacedObject,
       });
 
       ctx.setDurationMetricLabels({ objectType });
 
-      return object as any;
+      return replacedObject as any;
     },
     async (ctx, error) => {
       {
@@ -584,7 +611,7 @@ export class Persistence {
 
   deleteObject = wrapper(
     { name: "deleteObject", file: __filename },
-    async (ctx: Context, id: string): Promise<void> => {
+    async (ctx: Context, id: string): Promise<GraphObject> => {
       ctx.startTrackTime(
         "persistence_delete_object_duration",
         "persistence_delete_object_error_duration"
@@ -595,6 +622,7 @@ export class Persistence {
       });
 
       const objectType = await getObjectTypeFromId(ctx, id);
+      const objectConfig = await getObjectConfigFromObjectType(ctx, objectType);
 
       ctx.setParam("objectType", objectType);
 
@@ -616,9 +644,29 @@ export class Persistence {
         "delete"
       );
 
-      const current = await this.primaryDB.updateObject(ctx, id, {
+      const deleteUpdatePayload = {
         deleted_at: serializeDate(new Date()),
-      });
+      };
+
+      const deletedObject = {
+        ...previous,
+        ...deleteUpdatePayload,
+        id,
+        object_type: objectType,
+      };
+
+      switch (objectConfig.cacheLevel) {
+        case "external":
+        case "onlyCache":
+          await this.cache.set(ctx, id, deletedObject);
+          break;
+      }
+
+      const current = await this.primaryDB.updateObject(
+        ctx,
+        id,
+        deleteUpdatePayload
+      );
 
       await this.freeLock(ctx, id, lockHolder);
 
@@ -632,7 +680,7 @@ export class Persistence {
 
       ctx.setDurationMetricLabels({ objectType });
 
-      return;
+      return deletedObject;
     },
     async (ctx, error) => {
       {
@@ -677,11 +725,37 @@ export class Persistence {
       ctx.setErrorDurationMetricLabels({ srcObjectType, edgeName });
 
       const lockKey = `${src}-${edgeName}-${dst}`;
+      const cacheKey = `e_${src}-${edgeName}`;
 
       const lockHolder = await this.getLock(ctx, lockKey);
 
       ctx.setParam("lockKey", lockKey);
       ctx.setParam("lockHolder", lockHolder);
+
+      const position = await this.cache.lpos(ctx, cacheKey, dst);
+
+      if (position >= 0) {
+        return;
+      }
+
+      const existingEdgesList = await this.primaryDB.getEdges(
+        ctx,
+        src,
+        edgeName
+      );
+
+      if (existingEdgesList.includes(dst)) {
+        return;
+      }
+
+      const isCacheKeyExistingInCache = await this.cache.exists(ctx, cacheKey);
+
+      // Populate
+      if (isCacheKeyExistingInCache) {
+        await this.cache.lpush(ctx, cacheKey, [dst]);
+      } else {
+        await this.cache.lpush(ctx, cacheKey, [...existingEdgesList, dst]);
+      }
 
       await this.primaryDB.createEdge(ctx, src, edgeName, dst);
 
@@ -743,11 +817,14 @@ export class Persistence {
       ctx.setErrorDurationMetricLabels({ srcObjectType, edgeName });
 
       const lockKey = `${src}-${edgeName}-${dst}`;
+      const cacheKey = `e_${src}-${edgeName}`;
 
       const lockHolder = await this.getLock(ctx, lockKey);
 
       ctx.setParam("lockKey", lockKey);
       ctx.setParam("lockHolder", lockHolder);
+
+      await this.cache.lrem(ctx, cacheKey, dst);
 
       await this.primaryDB.deleteEdge(ctx, src, edgeName, dst);
 
@@ -807,7 +884,17 @@ export class Persistence {
 
       ctx.setErrorDurationMetricLabels({ srcObjectType, edgeName });
 
-      const result = await this.primaryDB.getEdges(ctx, src, edgeName);
+      const cacheKey = `e_${src}-${edgeName}`;
+
+      const isCacheKeyExistingInCache = await this.cache.exists(ctx, cacheKey);
+
+      let result = [];
+
+      if (isCacheKeyExistingInCache) {
+        result = (await this.cache.get(ctx, cacheKey)) as string[];
+      } else {
+        result = await this.primaryDB.getEdges(ctx, src, edgeName);
+      }
 
       ctx.setDurationMetricLabels({ srcObjectType });
 

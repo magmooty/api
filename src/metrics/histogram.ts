@@ -259,6 +259,26 @@ export const metricsHistogram = [
     help: "Total duration of redis requests errors",
     labelNames: ["method", "error"],
   },
+  {
+    name: "login_requests_duration",
+    help: "Total duration of login requests",
+    labelNames: ["provider"],
+  },
+  {
+    name: "login_errors_duration",
+    help: "Total duration of login requests errors",
+    labelNames: ["provider", "error"],
+  },
+  {
+    name: "signup_requests_duration",
+    help: "Total duration of signup requests",
+    labelNames: ["provider"],
+  },
+  {
+    name: "signup_errors_duration",
+    help: "Total duration of signup requests errors",
+    labelNames: ["provider", "error"],
+  },
 ] as const;
 
 export type HistogramName = typeof metricsHistogram[number]["name"];

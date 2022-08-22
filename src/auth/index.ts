@@ -1,8 +1,10 @@
+import { User } from "@/graph/objects/types";
 import { SearchDriver } from "@/search";
 import { Context } from "@/tracing";
 import { NativeAuthDriver, NativeAuthDriverConfig } from "./native";
 
 export interface SessionExtraAttirbutes {
+  user?: string;
   roles: string[];
 }
 
@@ -25,6 +27,14 @@ export interface AuthDriver {
     password: string,
     extraAttributes: SessionExtraAttirbutes
   ): Promise<LoginResult>;
+
+  refreshToken(
+    ctx: Context | null,
+    refreshToken: string,
+    extraAttributes: SessionExtraAttirbutes
+  ): Promise<void | LoginResult>;
+
+  validateToken(ctx: Context | null, token: string): Promise<void | User>;
 }
 
 export interface AuthConfig {

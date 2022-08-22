@@ -90,5 +90,25 @@
   {
     "code": "UserNotFound",
     "template": "هذا المستخدم غير موجود"
+  },
+  {
+    "code": "WrongPassword",
+    "template": "برجاء التحقق من كلمة المرور"
+  },
+  {
+    "code": "InvalidPassword",
+    "template": "لا يمكن استخدام كلمة المرور. يجب أن تحتوي على حروف وأرقام وأن لا تقل عن ٨ حروف"
+  },
+  {
+    "code": "NeedToLoginAgain",
+    "template": "يجب تسجيل الدخول من جديد"
+  },
+  {
+    "code": "InvalidToken",
+    "template": "المستخدم ليس له صلاحية، برجاء تسجيل الدخول مرة أخرى"
+  },
+  {
+    "code": "SessionExpired",
+    "template": "برجاء تسجيل الدخول مرة أخرى"
   }
 ]

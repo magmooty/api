@@ -1,15 +1,5 @@
 export const metricsCounters = [
   {
-    name: "phone_user_logins",
-    help: "Total number of users logging in using a phone number",
-    labelNames: ["phone"],
-  },
-  {
-    name: "email_user_logins",
-    help: "Total number of users logging in using an email",
-    labelNames: ["email"],
-  },
-  {
     name: "dynamo_get_object",
     help: "Total number of get requests to dynamo",
     labelNames: ["objectType"],
@@ -284,6 +274,26 @@ export const metricsCounters = [
     name: "redis_errors",
     help: "Total number of redis requests errors",
     labelNames: ["method", "error"],
+  },
+  {
+    name: "login_requests",
+    help: "Total number of login requests",
+    labelNames: ["provider"],
+  },
+  {
+    name: "login_errors",
+    help: "Total number of login requests errors",
+    labelNames: ["provider", "error"],
+  },
+  {
+    name: "signup_requests",
+    help: "Total number of signup requests",
+    labelNames: ["provider"],
+  },
+  {
+    name: "signup_errors",
+    help: "Total number of signup requests errors",
+    labelNames: ["provider", "error"],
   },
 ] as const;
 
