@@ -16,7 +16,7 @@ export async function fillDefaults<T = GraphObject>(
     const fieldConfig = objectConfig.fields[fieldName];
 
     if (fieldConfig.default && !output[fieldName]) {
-      output[fieldName] = fieldConfig.default(data as any);
+      output[fieldName] = fieldConfig.default(output as any);
     }
   }
 

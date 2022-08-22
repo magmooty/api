@@ -1,6 +1,6 @@
 export type ObjectId = string;
 
-export type ObjectType = "user";
+export type ObjectType = "user" | "session";
 
 export type ObjectFieldValue = string | number | boolean | Date | ObjectId;
 
@@ -29,4 +29,12 @@ export interface User extends GraphObject {
   email_verified: boolean;
   status: UserStatusVS;
   last_read_notification: string;
+}
+
+export interface Session extends GraphObject {
+  object_type: "session";
+  name: string;
+  user: string | GraphObject;
+  roles: string[];
+  expiresAt: string;
 }

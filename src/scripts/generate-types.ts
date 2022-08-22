@@ -128,6 +128,18 @@ const object = {
         "-"
       )}VS;`;
     },
+    "array:string": (fieldName) => {
+      return `${fieldName}: string[];`;
+    },
+    "array:number": (fieldName) => {
+      return `${fieldName}: number[];`;
+    },
+    "array:boolean": (fieldName: string) => {
+      return `${fieldName}: boolean[];`;
+    },
+    "array:date": (fieldName: string) => {
+      return `${fieldName}: string[];`;
+    },
   } as {
     [key: string]: (fieldName: string, fieldConfig: ObjectField) => string;
   },

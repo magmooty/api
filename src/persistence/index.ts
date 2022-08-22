@@ -1,7 +1,7 @@
 import { CacheConfig, CacheDriver } from "@/cache";
 import { RedisCacheDriver } from "@/cache/redis";
 import { queue, wrapper } from "@/components";
-import { getObjectTypeFromId } from "@/graph";
+import { getObjectConfigFromObjectType, getObjectTypeFromId } from "@/graph";
 import {
   GraphObject,
   ObjectFieldValue,
@@ -11,6 +11,7 @@ import {
 import { Context } from "@/tracing";
 import { randomBytes } from "crypto";
 import { fillDefaults } from "./commons/fill-defaults";
+import { generateID } from "./commons/generate-id";
 import { serializeDate } from "./commons/serialize-date";
 import { dryValidation, uniqueValidation } from "./commons/validate-fields";
 import { wait } from "./commons/wait";
@@ -74,6 +75,7 @@ export interface PersistenceDriver {
 
   createObject<T = GraphObject>(
     ctx: Context | null,
+    id: string,
     object: CreateObjectPayload
   ): Promise<T>;
 
@@ -304,15 +306,28 @@ export class Persistence {
 
       const objectType = await getObjectTypeFromId(ctx, id);
 
+      const objectConfig = await getObjectConfigFromObjectType(ctx, objectType);
+
       ctx.setParam("objectType", objectType);
 
       ctx.setErrorDurationMetricLabels({ objectType });
 
-      const object = await this.primaryDB.getObject<T>(ctx, id);
+      let object;
+
+      switch (objectConfig.cacheLevel) {
+        case "external":
+        case "onlyCache":
+          object = await this.cache.get(ctx, id);
+          break;
+      }
+
+      if (!object) {
+        object = await this.primaryDB.getObject<T>(ctx, id);
+      }
 
       ctx.setDurationMetricLabels({ objectType });
 
-      return object;
+      return object as T;
     },
     (ctx, error) => {
       ctx.metrics
@@ -341,11 +356,17 @@ export class Persistence {
 
       const { object_type: objectType } = payload;
 
+      const objectConfig = await getObjectConfigFromObjectType(ctx, objectType);
+
       ctx.setParam("objectType", objectType);
 
       ctx.setErrorDurationMetricLabels({ objectType });
 
-      let object = await fillDefaults(ctx, objectType, payload);
+      let object = (await fillDefaults(
+        ctx,
+        objectType,
+        payload
+      )) as GraphObject;
 
       await dryValidation(ctx, objectType, object as any, false);
 
@@ -353,12 +374,25 @@ export class Persistence {
         ctx,
         objectType,
         null,
-        object as GraphObject,
+        object,
         this.primaryDB,
         "create"
       );
 
-      object = await this.primaryDB.createObject(ctx, object);
+      const id = await generateID(ctx, objectType);
+
+      object = { ...object, id };
+
+      switch (objectConfig.cacheLevel) {
+        case "external":
+        case "onlyCache":
+          await this.cache.set(ctx, id, object);
+          break;
+      }
+
+      if (objectConfig.cacheLevel !== "onlyCache") {
+        await this.primaryDB.createObject(ctx, id, object);
+      }
 
       await queue.send(ctx, {
         method: "POST",
@@ -421,6 +455,16 @@ export class Persistence {
         this.primaryDB,
         "update"
       );
+
+      switch (objectConfig.cacheLevel) {
+        case "external":
+        case "onlyCache":
+          await this.cache.set(ctx, id, object);
+          break;
+      }
+
+      if (objectConfig.cacheLevel !== "onlyCache") {
+      }
 
       const updatedObject = await this.primaryDB.updateObject(ctx, id, {
         ...payload,

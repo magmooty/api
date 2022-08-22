@@ -416,6 +416,7 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
     { name: "createObject", file: __filename },
     async <T = GraphObject>(
       ctx: Context,
+      id: string,
       payload: CreateObjectPayload
     ): Promise<T> => {
       ctx.startTrackTime(
@@ -432,8 +433,6 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
       ctx.setErrorDurationMetricLabels({ objectType });
 
       ctx.log.info("Generating new id for object", { objectType });
-
-      const id = await generateID(ctx, objectType);
 
       const object: GraphObject = { ...payload, id };
 

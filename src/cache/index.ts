@@ -1,3 +1,4 @@
+import { GraphObject } from "@/graph/objects/types";
 import { Context } from "@/tracing";
 import { RedisCacheDriverConfig } from "./redis";
 
@@ -24,12 +25,16 @@ export interface CacheDriver {
   set(
     ctx: Context,
     key: string,
-    value: CacheValue,
+    value: CacheValue | GraphObject,
     ttl?: number | null,
     isNX?: boolean
   ): Promise<boolean>;
   mset(ctx: Context, keys: string[], objects: CacheValue[]): Promise<void>;
-  get(ctx: Context, key: string, raw?: boolean): Promise<CacheValue | null>;
+  get(
+    ctx: Context,
+    key: string,
+    raw?: boolean
+  ): Promise<CacheValue | GraphObject | null>;
   del(ctx: Context, key: string): Promise<number>;
   mget(
     ctx: Context,

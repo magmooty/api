@@ -4,7 +4,7 @@ import {
   GraphObject,
   ObjectFieldValue,
   ObjectType,
-  User
+  User,
 } from "@/graph/objects/types";
 import { Context } from "@/tracing";
 
@@ -58,7 +58,7 @@ export interface ObjectViewVirtual {
 
 export interface ObjectConfig {
   code: string;
-  cacheLevel: "external" | "none";
+  cacheLevel: "external" | "none" | "onlyCache";
   deletedBy?: string[];
   views: { [key: string]: ObjectView };
   virtuals: { views: { [key: string]: ObjectViewVirtual } };
