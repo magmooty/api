@@ -1,5 +1,13 @@
 version: "3.3"
 services:
+  app:
+    container_name: app
+    build: 
+      context: "../.."
+      args:
+        SELECTED_CONFIG: dev
+    ports:
+      - "7200:7200"
   redis:
     container_name: redis
     image: redis
@@ -9,6 +17,7 @@ services:
     ports:
       - "6379:6379"
   zookeeper:
+    container_name: "zookeeper"
     image: docker.io/bitnami/zookeeper:3.8
     ports:
       - "2181:2181"
@@ -17,6 +26,7 @@ services:
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
   kafka:
+    container_name: "kafka"
     image: docker.io/bitnami/kafka:3.2
     hostname: localhost
     ports:
@@ -29,6 +39,7 @@ services:
     depends_on:
       - zookeeper
   es:
+    container_name: "elasticsearch"
     image: docker.elastic.co/elasticsearch/elasticsearch:8.3.3
     container_name: es01
     ports:

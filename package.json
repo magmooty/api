@@ -7,8 +7,8 @@
     "registry": "https://npm.pkg.github.com/@magmooty"
   },
   "scripts": {
-    "start": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register dist/server.js",
-    "build": "tsc",
+    "start": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register ./dist/src/server.js",
+    "build": "tsc && cp -r ./src/errors/i18n ./dist/src/errors/i18n && cp -r ./src/value-sets/i18n ./dist/src/value-sets/i18n && cp -r ./src/value-sets/sets ./dist/src/value-sets/sets",
     "gen:types": "ts-node -r tsconfig-paths/register src/scripts/generate-types.ts",
     "start:dev": "nodemon",
     "test": "echo \"No tests specified\"",
