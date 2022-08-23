@@ -8,7 +8,7 @@
       "and": [
         {
           "match": {
-            "type": "payload-hash-sha1",
+            "type": "payload-hmac-sha1",
             "secret": "8E11ABC26DF78A95EAD814418B568",
             "parameter": {
               "source": "header",
