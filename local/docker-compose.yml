@@ -1,6 +1,7 @@
 version: "3.3"
 services:
   dynamodb-local:
+    container_name: local_dynamo
     ports:
       - "8000:8000"
     image: amazon/dynamodb-local
@@ -8,7 +9,7 @@ services:
     volumes:
       - dynamodb_data:/data
   redis:
-    container_name: redis
+    container_name: local_redis
     image: redis
     command: redis-server --save 60 1
     volumes:
@@ -16,6 +17,7 @@ services:
     ports:
       - "6379:6379"
   zookeeper:
+    container_name: local_zookeeper
     image: docker.io/bitnami/zookeeper:3.8
     ports:
       - "2181:2181"
@@ -24,6 +26,7 @@ services:
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
   kafka:
+    container_name: local_kafka
     image: docker.io/bitnami/kafka:3.2
     hostname: localhost
     ports:
@@ -36,8 +39,8 @@ services:
     depends_on:
       - zookeeper
   es:
+    container_name: local_elasticsearch
     image: docker.elastic.co/elasticsearch/elasticsearch:8.3.3
-    container_name: es01
     ports:
       - "9200:9200"
       - "9300:9300"
