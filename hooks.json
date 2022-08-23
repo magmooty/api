@@ -1,0 +1,7 @@
+[
+  {
+    "id": "redeploy",
+    "execute-command": "/root/magmooty/api/redeploy.sh",
+    "command-working-directory": "/root/magmooty/api"
+  }
+]
