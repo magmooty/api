@@ -1,4 +1,4 @@
-name: Patch
+name: Patch version
 
 on:
   push:
