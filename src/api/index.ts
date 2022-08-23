@@ -51,7 +51,7 @@ export const init = wrapper(
 
     // Private middleware
     app.get("/hello-world", (req, res) => {
-      res.json({ hello: "world" });
+      res.json({ hello: "world2" });
     });
 
     // Error handler
