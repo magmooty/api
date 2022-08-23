@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register ./dist/src/server.js",
-    "build": "tsc && cp -r ./src/errors/i18n ./dist/src/errors/i18n && cp -r ./src/value-sets/i18n ./dist/src/value-sets/i18n && cp -r ./src/value-sets/sets ./dist/src/value-sets/sets",
+    "build": "npx typescript-transpile-only && cp -r ./src/errors/i18n ./dist/src/errors/i18n && cp -r ./src/value-sets/i18n ./dist/src/value-sets/i18n && cp -r ./src/value-sets/sets ./dist/src/value-sets/sets",
     "gen:types": "ts-node -r tsconfig-paths/register src/scripts/generate-types.ts",
     "start:dev": "nodemon",
     "test": "echo \"No tests specified\"",
@@ -70,6 +70,7 @@
     "prometheus-api-metrics": "^3.2.2",
     "string-template": "^1.0.0",
     "tiny-timestamp": "^1.0.0",
+    "typescript-transpile-only": "^0.0.4",
     "uuid": "^8.3.2",
     "yargs": "^17.5.1"
   }
