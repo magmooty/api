@@ -110,5 +110,9 @@
   {
     "code": "SessionExpired",
     "template": "برجاء تسجيل الدخول مرة أخرى"
+  },
+  {
+    "code": "InvalidUsername",
+    "template": "بريد إلكتروني أو رقم هاتف غير صحيح: {username}"
   }
 ]

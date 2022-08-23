@@ -4,9 +4,15 @@ services:
     ports:
       - "8000:8000"
     image: amazon/dynamodb-local
+    command: -jar DynamoDBLocal.jar -sharedDb -dbPath /data
+    volumes:
+      - dynamodb_data:/data
   redis:
     container_name: redis
     image: redis
+    command: redis-server --save 60 1
+    volumes:
+      - "redis_data:/data"
     ports:
       - "6379:6379"
   zookeeper:
@@ -51,4 +57,8 @@ volumes:
   kafka_data:
     driver: local
   esdata:
+    driver: local
+  redis_data:
+    driver: local
+  dynamodb_data:
     driver: local

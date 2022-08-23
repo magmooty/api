@@ -3,11 +3,6 @@ import { SearchDriver } from "@/search";
 import { Context } from "@/tracing";
 import { NativeAuthDriver, NativeAuthDriverConfig } from "./native";
 
-export interface SessionExtraAttirbutes {
-  user?: string;
-  roles: string[];
-}
-
 export interface LoginResult {
   token: string;
   refresh_token: string;
@@ -17,22 +12,19 @@ export interface AuthDriver {
   login(
     ctx: Context | null,
     username: string,
-    password: string,
-    extraAttributes: SessionExtraAttirbutes
-  ): Promise<LoginResult>;
+    password: string
+  ): Promise<LoginResult | void>;
 
-  register(
+  signup(
     ctx: Context | null,
     username: string,
-    password: string,
-    extraAttributes: SessionExtraAttirbutes
-  ): Promise<LoginResult>;
+    password: string
+  ): Promise<LoginResult | void>;
 
   refreshToken(
     ctx: Context | null,
-    refreshToken: string,
-    extraAttributes: SessionExtraAttirbutes
-  ): Promise<void | LoginResult>;
+    refreshToken: string
+  ): Promise<void | LoginResult | void>;
 
   validateToken(ctx: Context | null, token: string): Promise<void | User>;
 }

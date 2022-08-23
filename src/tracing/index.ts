@@ -1,8 +1,10 @@
+import { APINextFunction, APIRequest, APIResponse } from "@/api/types";
 import config from "@/config";
 import { AppLocale } from "@/graph/objects/types";
 import { Logger } from "@/logger";
 import { MetricsHandler } from "@/metrics";
 import { HistogramName } from "@/metrics/histogram";
+import { parse as parseAcceptLanguage } from "@escapace/accept-language-parser";
 import { nanoid } from "nanoid";
 
 /**
@@ -32,6 +34,7 @@ interface RegisterTraceInfo {
   file: string;
   locale?: AppLocale;
   data?: Object;
+  isAPIEndpoint?: boolean;
 }
 
 type RegisterFunction = (info: Object) => void;
@@ -85,8 +88,26 @@ export interface TracerOptions {
 export class Tracer {
   constructor(private options: TracerOptions) {}
 
+  apiWrapper<T extends (...args: any[]) => any>(
+    info: RegisterTraceInfo,
+    func: T,
+    errorCb?: (ctx: Context, error: Error) => void,
+    successCb?: (ctx: Context, result: ExtractReturnType<T>) => void
+  ): <G = ExtractReturnType<T>>(
+    ...funcArgs: ExtractParametersWithoutFirstParam<T>
+  ) => G extends never ? ExtractReturnType<T> : G {
+    const handler = this.wrapper(
+      { ...info, name: `[ENDPOINT] ${info.name}`, isAPIEndpoint: true },
+      func,
+      errorCb,
+      successCb
+    );
+
+    return (...args: any) => handler(null, ...args);
+  }
+
   wrapper<T extends (...args: any[]) => any>(
-    { name, file }: RegisterTraceInfo,
+    { name, file, isAPIEndpoint }: RegisterTraceInfo,
     func: T,
     errorCb?: (ctx: Context, error: Error) => void,
     successCb?: (ctx: Context, result: ExtractReturnType<T>) => void
@@ -167,6 +188,20 @@ export class Tracer {
         ...traceIds,
       };
 
+      if (isAPIEndpoint) {
+        const req = args[0] as APIRequest;
+        const res = args[1] as APIResponse;
+
+        const acceptLanguageHeader =
+          req.headers["accept-language"] || config.i18n.defaultLocale;
+
+        const locale = parseAcceptLanguage(acceptLanguageHeader)[0].code;
+
+        ctx.setLocale(locale as AppLocale);
+        req.ctx = ctx;
+        res.header("X-Trace-Id", traceIds.traceId);
+      }
+
       try {
         log.info(`${name} start`);
 
@@ -215,6 +250,11 @@ export class Tracer {
             if (ctx.parentId) {
               throw e;
             }
+
+            if (isAPIEndpoint) {
+              const next = args[2] as APINextFunction;
+              next(e);
+            }
           });
       } catch (e: unknown) {
         log.error(
@@ -242,6 +282,11 @@ export class Tracer {
 
         if (ctx.parentId) {
           throw e;
+        }
+
+        if (isAPIEndpoint) {
+          const next = args[2] as APINextFunction;
+          next(e);
         }
       }
     }).bind(this);

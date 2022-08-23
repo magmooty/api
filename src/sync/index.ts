@@ -1,6 +1,10 @@
+import { ObjectType } from "@/graph/objects/types";
 import { QueueEvent } from "@/queue";
 import { Context } from "@/tracing";
-import { ElasticSearchSyncConfig, ElasticSearchSyncDriver } from "./elasticsearch";
+import {
+  ElasticSearchSyncConfig,
+  ElasticSearchSyncDriver,
+} from "./elasticsearch";
 
 export interface SyncConfig {
   driver: "elasticsearch";
@@ -8,8 +12,14 @@ export interface SyncConfig {
 }
 
 export interface SyncDriver {
-  init(ctx?: Context | null): Promise<void>;
+  init(ctx?: Context | null, seedMode?: boolean): Promise<void>;
   processEvent(ctx: Context | null, event: QueueEvent): Promise<void>;
+  reseedObject(
+    ctx: Context | null,
+    objectType: ObjectType,
+    after?: string | null,
+    completeRecreation?: boolean
+  ): Promise<void>;
 }
 
 export const createSyncDriver = ({

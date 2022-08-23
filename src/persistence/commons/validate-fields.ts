@@ -33,7 +33,7 @@ async function validateFieldType(
 
   switch (fieldConfig.type) {
     case "array:string":
-      error = joi.array().items(joi.string()).validate(fieldName).error;
+      error = joi.array().items(joi.string()).validate(fieldValue).error;
       break;
     case "array:number":
       error = joi.array().items(joi.number()).validate(fieldValue).error;

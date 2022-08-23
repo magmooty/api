@@ -4,13 +4,9 @@ import toJSON from "@stdlib/error-to-json";
 export class ConsoleLogger implements Logger {
   constructor(private formatter: MessageFormatter) {}
 
-  debug(message: string, data?: LogData) {
-    const formatted = this.formatter.format(
-      { level: "debug", stripped: true },
-      message,
-      data
-    );
-    console.debug(`\x1b[34m${formatted}\x1b[0m`);
+  debug(message: string, data?: any) {
+    const formatted = JSON.stringify(data, null, 2);
+    console.debug(`\x1b[34m${message} ${formatted}\x1b[0m`);
   }
 
   info(message: string, data?: LogData) {

@@ -1,4 +1,6 @@
-import { queue, wrapper } from "@/components";
+import { persistence, queue, wrapper } from "@/components";
+import { GraphObject, ObjectType } from "@/graph/objects/types";
+import { SeedObjectsResult } from "@/persistence";
 import { QueueEvent } from "@/queue";
 import { Context } from "@/tracing";
 import { Client } from "@elastic/elasticsearch";
@@ -80,44 +82,49 @@ export class ElasticSearchSyncDriver implements SyncDriver {
     return `${this.elasticSearchConfig.prefix}${indexName}`;
   };
 
-  init = wrapper({ name: "init", file: __filename }, async (ctx: Context) => {
-    queue.subscribe(null, "sync", this.processEvent);
+  init = wrapper(
+    { name: "init", file: __filename },
+    async (ctx: Context, seedMode = false) => {
+      if (!seedMode) {
+        queue.subscribe(null, "sync", this.processEvent);
+      }
 
-    for (const indexName of Object.keys(mappings)) {
-      const indexConfig = mappings[indexName as keyof typeof mappings];
+      for (const indexName of Object.keys(mappings)) {
+        const indexConfig = mappings[indexName as keyof typeof mappings];
 
-      const prefixedIndexName = this.prefixIndex(indexName);
+        const prefixedIndexName = this.prefixIndex(indexName);
 
-      ctx.log.info("Check if index exists", { prefixedIndexName });
+        ctx.log.info("Check if index exists", { prefixedIndexName });
 
-      const exists = await this.client.indices.exists({
-        index: prefixedIndexName,
-      });
-
-      if (exists) {
-        ctx.log.info("Index found, skipping", { prefixedIndexName });
-      } else {
-        ctx.log.info("Index not found, creating index", {
-          prefixedIndexName,
-          indexConfig,
-          indexSettings: INDEX_SETTINGS,
-        });
-
-        await this.client.indices.create({
+        const exists = await this.client.indices.exists({
           index: prefixedIndexName,
-          body: {
-            mappings: {
-              dynamic: false,
-              properties: indexConfig.mapping,
-            },
-            settings: INDEX_SETTINGS,
-          },
         });
 
-        ctx.log.info("Index created", { prefixedIndexName });
+        if (exists) {
+          ctx.log.info("Index found, skipping", { prefixedIndexName });
+        } else {
+          ctx.log.info("Index not found, creating index", {
+            prefixedIndexName,
+            indexConfig,
+            indexSettings: INDEX_SETTINGS,
+          });
+
+          await this.client.indices.create({
+            index: prefixedIndexName,
+            body: {
+              mappings: {
+                dynamic: false,
+                properties: indexConfig.mapping,
+              },
+              settings: INDEX_SETTINGS,
+            },
+          });
+
+          ctx.log.info("Index created", { prefixedIndexName });
+        }
       }
     }
-  });
+  );
 
   private applyOperation = wrapper(
     { name: "applyOperation", file: __filename },
@@ -129,7 +136,7 @@ export class ElasticSearchSyncDriver implements SyncDriver {
 
       switch (method) {
         case "create":
-          await this.client.create({
+          await this.client.index({
             index: prefixedIndex,
             id,
             document: { ...data, id },
@@ -148,6 +155,82 @@ export class ElasticSearchSyncDriver implements SyncDriver {
             id,
           });
           break;
+      }
+    }
+  );
+
+  reseedObject = wrapper(
+    { name: "reseed", file: __filename },
+    async (
+      ctx: Context,
+      objectType: ObjectType,
+      pointer: string | null = null,
+      completeRecreation = true
+    ) => {
+      ctx.register({ objectType });
+
+      const prefixedIndex = this.prefixIndex(objectType);
+
+      if (!pointer && completeRecreation) {
+        ctx.log.info("Deleting index", { prefixedIndex });
+
+        await this.client.indices.delete({
+          index: prefixedIndex,
+        });
+
+        ctx.log.info("Index deleted", { prefixedIndex });
+      }
+
+      await this.init(ctx, true);
+
+      let allFetched = false;
+      let after = pointer;
+
+      while (!allFetched) {
+        const { results, nextKey }: SeedObjectsResult<GraphObject> =
+          await persistence.primaryDB.queryObjects<GraphObject>(
+            null,
+            objectType,
+            null,
+            after
+          );
+
+        try {
+          await Promise.all(
+            results.map(async (object) => {
+              const event: QueueEvent<GraphObject> = {
+                method: "POST",
+                type: "object",
+                path: objectType,
+                current: object,
+                spanId: ctx.spanId,
+                parentId: ctx.parentId,
+                traceId: ctx.traceId,
+                locale: "en",
+              };
+
+              await this.processEvent(ctx, event);
+            })
+          );
+        } catch (error) {
+          ctx.log.error(error, "An error occurred");
+
+          if (after) {
+            ctx.fatal(
+              `An error occurred, please check it and you can continue seeding by using --after=${after}`
+            );
+          } else {
+            ctx.fatal(
+              "Failed to reseed the object, please check the config and make sure it's correct"
+            );
+          }
+        }
+
+        if (nextKey) {
+          after = nextKey;
+        } else {
+          allFetched = true;
+        }
       }
     }
   );

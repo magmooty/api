@@ -697,7 +697,7 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
       ctx: Context,
       objectType: ObjectType,
       projection?: string[] | null,
-      after?: SeedObjectsAfterKey | null
+      after?: SeedObjectsAfterKey | string | null
     ): Promise<SeedObjectsResult<T>> => {
       ctx.startTrackTime(
         "dynamo_query_objects_duration",
@@ -731,7 +731,7 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
       const command = new QueryCommand({
         TableName,
         ScanIndexForward: false,
-        IndexName: "objectTypes",
+        IndexName: "object_type",
         KeyConditionExpression: "#object_type = :object_type",
         ExpressionAttributeNames: { "#object_type": "object_type" },
         ExpressionAttributeValues: {

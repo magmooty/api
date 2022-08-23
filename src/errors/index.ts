@@ -9,120 +9,154 @@ export interface AppErrorConfig {
   readonly code: string;
   readonly template: string;
   readonly templateProps: readonly string[];
+  readonly statusCode: number;
 }
 
 const errors = [
   {
     code: "ObjectDoesNotExist",
+    statusCode: 404,
     templateProps: [],
   },
   {
     code: "ObjectTypeDoesNotExist",
+    statusCode: 404,
     templateProps: [],
   },
   {
     code: "InvalidObjectId",
+    statusCode: 400,
     templateProps: [],
   },
   {
     code: "ErrorDataMissing",
+    statusCode: 400,
     templateProps: [],
   },
   {
     code: "ObjectCreationFailed",
+    statusCode: 400,
     templateProps: [],
   },
   {
     code: "ObjectUpdateFailed",
+    statusCode: 400,
     templateProps: [],
   },
   {
     code: "ObjectDeleteFailed",
+    statusCode: 400,
     templateProps: [],
   },
   {
     code: "ObjectQueryFailed",
+    statusCode: 400,
     templateProps: [],
   },
   {
     code: "AfterKeyIsInvalid",
+    statusCode: 400,
     templateProps: [],
   },
   {
     code: "ObjectReplaceFailed",
+    statusCode: 400,
     templateProps: [],
   },
   {
     code: "EdgeCreationFailed",
+    statusCode: 400,
     templateProps: [],
   },
   {
     code: "EdgeDeleteFailed",
+    statusCode: 400,
     templateProps: [],
   },
   {
     code: "GetEdgesFailed",
+    statusCode: 400,
     templateProps: [],
   },
   {
     code: "GetReverseEdgesFailed",
+    statusCode: 400,
     templateProps: [],
   },
   {
     code: "ValidationErrorRequiredField",
+    statusCode: 400,
     templateProps: ["fieldName", "fieldType"],
   },
   {
     code: "ValidationErrorUniqueField",
+    statusCode: 400,
     templateProps: ["fieldName"],
   },
   {
     code: "ValidationErrorBadDataType",
+    statusCode: 400,
     templateProps: ["fieldName", "fieldType"],
   },
   {
     code: "ValidationErrorFieldNotFound",
+    statusCode: 400,
     templateProps: ["fieldName"],
   },
   {
     code: "AddUniqueFailed",
+    statusCode: 409,
     templateProps: [],
   },
   {
     code: "CheckUniqueFailed",
+    statusCode: 400,
     templateProps: [],
   },
   {
     code: "RemoveUniqueFailed",
+    statusCode: 400,
     templateProps: [],
   },
   {
     code: "InvalidSearchCriteria",
+    statusCode: 400,
     templateProps: [],
   },
   {
     code: "UserNotFound",
+    statusCode: 404,
     templateProps: [],
   },
   {
     code: "WrongPassword",
+    statusCode: 401,
     templateProps: [],
   },
   {
     code: "InvalidPassword",
+    statusCode: 400,
     templateProps: [],
   },
   {
     code: "NeedToLoginAgain",
+    statusCode: 401,
     templateProps: [],
   },
   {
     code: "InvalidToken",
+    statusCode: 400,
     templateProps: [],
   },
   {
     code: "SessionExpired",
+    statusCode: 401,
     templateProps: [],
+  },
+  {
+    code: "InvalidUsername",
+    statusCode: 400,
+    templateProps: ["username"],
   },
 ] as const;
 
@@ -130,12 +164,14 @@ export type ErrorType = typeof errors[number]["code"];
 
 export class AppError extends Error {
   data?: Object;
+  statusCode: number;
 
   constructor(code: ErrorType, message: string, data?: Object) {
     super(message);
 
     this.name = code;
     this.data = data;
+    this.statusCode = errorsMap[code].statusCode;
   }
 }
 

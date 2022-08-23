@@ -99,11 +99,11 @@ export class ElasticSearchSearchDriver implements SearchDriver {
         query,
       };
 
-      ctx.log.debug("query options", { options });
+      ctx.log.info("query options", { options });
 
       const result = await this.client.search(options);
 
-      ctx.log.debug("search query result", { result });
+      ctx.log.info("search query result", { result });
 
       return result.hits.hits.map((hit) => hit._id);
     }

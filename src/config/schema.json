@@ -103,6 +103,9 @@
         },
         "refreshTokenTTL": {
           "type": "number"
+        },
+        "passwordRegex": {
+          "type": "string"
         }
       },
       "required": [
@@ -110,7 +113,8 @@
         "sessionTTL",
         "activeRefreshTokenSecret",
         "deprecatedRefreshTokenSecrets",
-        "refreshTokenTTL"
+        "refreshTokenTTL",
+        "passwordRegex"
       ],
       "additionalProperties": false
     },

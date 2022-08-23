@@ -100,7 +100,7 @@ export interface PersistenceDriver {
     ctx: Context | null,
     objectType: ObjectType,
     projection?: string[] | null,
-    after?: SeedObjectsAfterKey | null
+    after?: SeedObjectsAfterKey | string | null
   ): Promise<SeedObjectsResult<T>>;
 
   // /* Counters */
@@ -190,7 +190,7 @@ export interface PersistenceConfig {
 }
 
 export class Persistence {
-  private primaryDB: PersistenceDriver;
+  public primaryDB: PersistenceDriver;
   public cache: CacheDriver;
 
   constructor(private persistenceConfig: PersistenceConfig) {

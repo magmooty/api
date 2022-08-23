@@ -12,7 +12,7 @@ const universalUserGenerator = (
   method: SyncOperationMethod,
   object: User
 ): SyncOperation[] => {
-  const { name, email } = object;
+  const { name, email, phone } = object;
 
   return [
     {
@@ -23,6 +23,8 @@ const universalUserGenerator = (
         name,
         email,
         email_text: email,
+        phone,
+        phone_text: phone,
       },
     },
   ];

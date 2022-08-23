@@ -11,5 +11,11 @@ export default {
     email_text: {
       type: "text",
     },
+    phone: {
+      type: "keyword",
+    },
+    phone_text: {
+      type: "text",
+    },
   },
 } as IndexMapping;

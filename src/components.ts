@@ -26,6 +26,7 @@ import { Tracer } from "@/tracing";
 
 const tracer = new Tracer({ log, metrics });
 const wrapper = tracer.wrapper.bind(tracer);
+const apiWrapper = tracer.apiWrapper.bind(tracer);
 
 // Errors
 import { ErrorThrower } from "./errors";
@@ -58,6 +59,7 @@ import { createAuthDriver, AuthDriver } from "@/auth";
 const auth = createAuthDriver(config.auth, search) as AuthDriver;
 
 export {
+  apiWrapper,
   wrapper,
   metrics,
   config,

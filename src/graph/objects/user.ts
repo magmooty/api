@@ -42,7 +42,6 @@ export default {
     email: {
       type: "string",
       unique: true,
-      required: true,
       schema: "email",
     },
     hash: {
@@ -51,6 +50,15 @@ export default {
       view: "system_private",
     },
     email_verified: {
+      type: "boolean",
+      default: () => false,
+    },
+    phone: {
+      type: "string",
+      unique: true,
+      schema: "phone",
+    },
+    phone_verified: {
       type: "boolean",
       default: () => false,
     },

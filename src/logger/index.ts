@@ -18,7 +18,7 @@ export interface MessageFormatter {
 }
 
 export interface Logger {
-  debug: (message: string, data?: LogData) => void;
+  debug: (message: string, data?: any) => void;
   info: (message: string, data?: LogData) => void;
   warn: (message: string, data?: LogData) => void;
   error: (

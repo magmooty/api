@@ -1,14 +1,37 @@
 import { errors, persistence, wrapper } from "@/components";
+import { Session, User } from "@/graph/objects/types";
+import { serializeDate } from "@/persistence/commons/serialize-date";
 import { SearchDriver } from "@/search";
 import { Context } from "@/tracing";
-import { Session, User } from "@/graph/objects/types";
-import { AuthDriver, LoginResult, SessionExtraAttirbutes } from ".";
 import bcrypt from "bcryptjs";
-import { v4 as uuid } from "uuid";
-import { serializeDate } from "@/persistence/commons/serialize-date";
-import moment from "moment";
 import jwt from "jsonwebtoken";
 import _ from "lodash";
+import moment from "moment";
+import { v4 as uuid } from "uuid";
+import { AuthDriver, LoginResult } from ".";
+import joi from "joi";
+import joiPhoneNumber from "joi-phone-number";
+
+const phoneNumberJoi = joi.extend(joiPhoneNumber);
+
+const predictProvider = (username: string): "phone" | "email" | "unknown" => {
+  const emailValidation = joi.string().email().validate(username);
+
+  if (!emailValidation.error) {
+    return "email";
+  }
+
+  const phoneValidation = phoneNumberJoi
+    .string()
+    .phoneNumber({ format: "international" })
+    .validate(username);
+
+  if (!phoneValidation.error) {
+    return "phone";
+  }
+
+  return "unknown";
+};
 
 export interface NativeAuthDriverConfig {
   hashSaltLevel: number;
@@ -16,6 +39,7 @@ export interface NativeAuthDriverConfig {
   activeRefreshTokenSecret: string;
   deprecatedRefreshTokenSecrets: string[];
   refreshTokenTTL: number;
+  passwordRegex: string;
 }
 
 export interface RefreshTokenPayload {
@@ -34,7 +58,6 @@ export class NativeAuthDriver implements AuthDriver {
     async (
       ctx: Context,
       user: User,
-      extraAttributes: SessionExtraAttirbutes,
       refreshToken?: string
     ): Promise<LoginResult> => {
       const sessionToken = uuid();
@@ -46,7 +69,7 @@ export class NativeAuthDriver implements AuthDriver {
         token: sessionToken,
         user: user.id,
         object_type: "session",
-        roles: extraAttributes.roles,
+        roles: [],
         expiresAt: serializeDate(sessionExpiresAt),
       });
 
@@ -57,7 +80,7 @@ export class NativeAuthDriver implements AuthDriver {
         jwt.sign(
           {
             user: user.id,
-            roles: extraAttributes.roles,
+            roles: [],
           } as RefreshTokenPayload,
           this.nativeAuthDriverConfig.activeRefreshTokenSecret,
           { expiresIn: this.nativeAuthDriverConfig.refreshTokenTTL }
@@ -72,23 +95,48 @@ export class NativeAuthDriver implements AuthDriver {
     async (
       ctx: Context,
       username: string,
-      password: string,
-      extraAttributes: SessionExtraAttirbutes
+      password: string
     ): Promise<LoginResult | void> => {
+      ctx.startTrackTime("login_requests_duration", "login_errors_duration");
+
+      const predictedProvider = predictProvider(username);
+
+      ctx.setErrorDurationMetricLabels({ provider: predictedProvider });
+
+      if (predictedProvider === "unknown") {
+        errors.createError(ctx, "InvalidUsername", {
+          username,
+          predictedProvider,
+        });
+        return;
+      }
+
       const searchResult = await this.search.search(ctx, "user", {
-        filters: { and: [{ email: username }] },
+        filters: { or: [{ email: username }, { phone: username }] },
       });
 
       if (!searchResult.length) {
         errors.createError(ctx, "UserNotFound", { username });
+        return;
       }
 
       const user = await persistence.getObject<User>(ctx, searchResult[0]);
 
-      if (user.email !== username) {
+      if (user.email !== username && user.phone !== username) {
         errors.createError(ctx, "UserNotFound", { username });
         return;
       }
+
+      if (user.email === username) {
+        ctx.setParam("provider", "email");
+      }
+
+      if (user.phone === username) {
+        ctx.setParam("provider", "phone");
+      }
+
+      ctx.setErrorDurationMetricLabels({ provider: ctx.getParam("provider") });
+      ctx.setDurationMetricLabels({ provider: ctx.getParam("provider") });
 
       const hashMatches = bcrypt.compare(password, user.hash);
 
@@ -97,42 +145,85 @@ export class NativeAuthDriver implements AuthDriver {
         return;
       }
 
-      return this.createSession(ctx, user, extraAttributes);
+      return this.createSession(ctx, user);
+    },
+    (ctx: Context, error: Error) => {
+      ctx.metrics
+        .getCounter("login_requests")
+        .inc({ provider: ctx.getParam("provider"), error: error.message });
+    },
+    (ctx: Context) => {
+      ctx.metrics
+        .getCounter("login_requests")
+        .inc({ provider: ctx.getParam("provider") });
     }
   );
 
-  register = wrapper(
-    { name: "register", file: __filename },
+  signup = wrapper(
+    { name: "signup", file: __filename },
     async (
       ctx: Context,
-      email: string,
-      password: string,
-      extraAttributes: SessionExtraAttirbutes
-    ): Promise<LoginResult> => {
-      ctx.register({ email });
+      username: string,
+      password: string
+    ): Promise<LoginResult | void> => {
+      ctx.register({ username });
+
+      ctx.startTrackTime("signup_requests_duration", "signup_errors_duration");
+
+      const predictedProvider = predictProvider(username);
+
+      ctx.setDurationMetricLabels({ provider: predictedProvider });
+      ctx.setErrorDurationMetricLabels({ provider: predictedProvider });
+
+      ctx.setParam("provider", predictedProvider);
+
+      ctx.log.info("Predicted provider", { username, predictedProvider });
+
+      if (predictedProvider === "unknown") {
+        errors.createError(ctx, "InvalidUsername", {
+          username,
+          predictedProvider,
+        });
+        return;
+      }
+
+      const passwordRegex = new RegExp(
+        this.nativeAuthDriverConfig.passwordRegex
+      );
+
+      if (!passwordRegex.test(password)) {
+        errors.createError(ctx, "InvalidPassword", { username });
+        return;
+      }
 
       const hash = await bcrypt.hash(
         password,
         this.nativeAuthDriverConfig.hashSaltLevel
       );
 
-      const user = await persistence.createObject<User>(null, {
-        email,
+      const user = await persistence.createObject<User>(ctx, {
+        [predictedProvider]: username,
         object_type: "user",
         hash,
       } as User);
 
-      return this.createSession(ctx, user, extraAttributes);
+      return this.createSession(ctx, user);
+    },
+    (ctx: Context, error: Error) => {
+      ctx.metrics
+        .getCounter("signup_errors")
+        .inc({ provider: ctx.getParam("provider"), error: error.message });
+    },
+    (ctx: Context) => {
+      ctx.metrics
+        .getCounter("signup_requests")
+        .inc({ provider: ctx.getParam("provider") });
     }
   );
 
   refreshToken = wrapper(
     { name: "refreshToken", file: __filename },
-    async (
-      ctx: Context,
-      refreshToken: string,
-      extraAttributes: SessionExtraAttirbutes
-    ): Promise<void | LoginResult> => {
+    async (ctx: Context, refreshToken: string): Promise<void | LoginResult> => {
       const decodedPayload = jwt.decode(refreshToken) as RefreshTokenPayload;
 
       ctx.register({ decodedPayload });
@@ -152,17 +243,17 @@ export class NativeAuthDriver implements AuthDriver {
         return;
       }
 
-      if (!_.isEqual(extraAttributes.roles, decodedPayload.roles)) {
-        errors.createError(ctx, "NeedToLoginAgain", {
-          decodedPayload,
-          extraAttributes,
-        });
-        return;
-      }
-
       const user = await persistence.getObject<User>(ctx, decodedPayload.user);
 
-      return this.createSession(ctx, user, extraAttributes, refreshToken);
+      // if (!_.isEqual(extraAttributes.roles, decodedPayload.roles)) {
+      //   errors.createError(ctx, "NeedToLoginAgain", {
+      //     decodedPayload,
+      //     extraAttributes,
+      //   });
+      //   return;
+      // }
+
+      return this.createSession(ctx, user, refreshToken);
     }
   );
 

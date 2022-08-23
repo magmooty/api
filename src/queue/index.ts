@@ -35,7 +35,7 @@ export interface QueueEvent<T = GraphObject | IEdge> extends BaseQueueEvent<T> {
   previous?: T;
   current?: T;
   spanId: string;
-  parentId: string;
+  parentId?: string;
   traceId: string;
   locale: AppLocale;
 }

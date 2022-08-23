@@ -35,6 +35,8 @@ export interface User extends GraphObject {
   email: string;
   hash: string;
   email_verified: boolean;
+  phone: string;
+  phone_verified: boolean;
   status: UserStatusVS;
   last_read_notification: string;
 }

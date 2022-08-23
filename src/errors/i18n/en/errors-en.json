@@ -110,5 +110,9 @@
   {
     "code": "SessionExpired",
     "template": "Session has expired, please refresh the token"
+  },
+  {
+    "code": "InvalidUsername",
+    "template": "Invalid email or phone number: {username}"
   }
 ]
