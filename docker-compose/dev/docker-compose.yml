@@ -6,6 +6,8 @@ services:
     restart: always
     ports:
       - "7200:7200"
+    volumes:
+      - $HOME/.aws/credentials:/root/.aws/credentials:ro
   redis:
     container_name: redis
     restart: always
