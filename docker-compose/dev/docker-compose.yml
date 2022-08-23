@@ -1,5 +1,11 @@
 version: "3.3"
 services:
+  app:
+    container_name: app
+    build: ../..
+    restart: always
+    ports:
+      - "7200:7200"
   redis:
     container_name: redis
     restart: always
