@@ -24,7 +24,7 @@ export class RedisCacheDriver implements CacheDriver {
 
   constructor(private redisCacheDriverConfig: RedisCacheDriverConfig) {}
 
-  init = wrapper({ name: "init", file: __filename }, () => {
+  init = wrapper({ name: "init", file: __filename }, async () => {
     const {
       host,
       port,
@@ -250,14 +250,12 @@ export class RedisCacheDriver implements CacheDriver {
       });
     },
     (ctx: Context) => {
-      ctx.metrics
-        .getCounter("redis_mget_requests")
-        .inc({
-          method: ctx.traceInfo.name,
-          hits: ctx.getParam("hits"),
-          misses: ctx.getParam("misses"),
-          rate: ctx.getParam("rate"),
-        });
+      ctx.metrics.getCounter("redis_mget_requests").inc({
+        method: ctx.traceInfo.name,
+        hits: ctx.getParam("hits"),
+        misses: ctx.getParam("misses"),
+        rate: ctx.getParam("rate"),
+      });
     }
   );
 
