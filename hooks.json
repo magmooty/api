@@ -2,6 +2,31 @@
   {
     "id": "redeploy",
     "execute-command": "/root/magmooty/api/redeploy.sh",
-    "command-working-directory": "/root/magmooty/api"
+    "command-working-directory": "/root/magmooty/api",
+    "response-message": "Executing redeploy script...",
+    "trigger-rule": {
+      "and": [
+        {
+          "match": {
+            "type": "payload-hash-sha1",
+            "secret": "8E11ABC26DF78A95EAD814418B568",
+            "parameter": {
+              "source": "header",
+              "name": "X-Hub-Signature"
+            }
+          }
+        },
+        {
+          "match": {
+            "type": "value",
+            "value": "refs/heads/dev",
+            "parameter": {
+              "source": "payload",
+              "name": "ref"
+            }
+          }
+        }
+      ]
+    }
   }
 ]
