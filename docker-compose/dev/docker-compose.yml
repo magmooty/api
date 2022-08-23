@@ -2,10 +2,7 @@ version: "3.3"
 services:
   app:
     container_name: app
-    build: 
-      context: "../.."
-      args:
-        SELECTED_CONFIG: dev
+    build: ../..
     ports:
       - "7200:7200"
   redis:
