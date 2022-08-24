@@ -13,7 +13,7 @@ const CONFIG_JSON_SCHEMA_FILE_PATH = path.join(
 const TSCONFIG_FILE_PATH = path.join(__dirname, "../../tsconfig.json");
 const CONFIG_TYPES_FILE_PATH = path.join(__dirname, "../config/types.ts");
 const TYPES_FILE_PATH = path.join(__dirname, "../graph/objects/types.ts");
-const VALUE_SET_DIR_PATH = path.join(__dirname, "../value-sets");
+const VALUE_SET_DIR_PATH = path.join(__dirname, "../value-sets/sets");
 
 //#region Generate JSON config schema
 
@@ -89,7 +89,7 @@ const valueSet = {
   genericType: (types: string[]): string => {
     return `export type ValueSet = ${types
       .map((type) => `"${type}"`)
-      .join(" | ")}`;
+      .join(" | ")}\n`;
   },
   end: () => "\n",
 };

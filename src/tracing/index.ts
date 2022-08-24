@@ -200,6 +200,10 @@ export class Tracer {
         ctx.setLocale(locale as AppLocale);
         req.ctx = ctx;
         res.header("X-Trace-Id", traceIds.traceId);
+
+        const { query, body, headers } = req;
+
+        log.info(`${name} request`, { query, body, headers });
       }
 
       try {

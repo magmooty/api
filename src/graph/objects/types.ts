@@ -27,6 +27,7 @@ export interface GraphObject {
 }
 
 export type ValueSet = "UserStatus";
+
 export type UserStatusVS = "created";
 
 export interface User extends GraphObject {

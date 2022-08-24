@@ -6,6 +6,12 @@ services:
     restart: always
     ports:
       - "80:7200"
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: eu-central-1
+        awslogs-group: magmooty-dev
+        awslogs-stream: dev-app
     volumes:
       - $HOME/.aws/credentials:/root/.aws/credentials:ro
   redis:

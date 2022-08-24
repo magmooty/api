@@ -33,6 +33,11 @@ import { ErrorThrower } from "./errors";
 
 const errors = new ErrorThrower();
 
+// Value sets
+import { ValueSets } from "./value-sets";
+
+const valueSets = new ValueSets();
+
 // Persistence
 import { Persistence } from "./persistence";
 
@@ -58,15 +63,22 @@ import { createAuthDriver, AuthDriver } from "@/auth";
 
 const auth = createAuthDriver(config.auth, search) as AuthDriver;
 
+// Services
+import { twilio } from "@/services/twilio";
+
+const services = { twilio };
+
 export {
   apiWrapper,
   wrapper,
   metrics,
   config,
+  valueSets,
   persistence,
   errors,
   queue,
   sync,
   search,
   auth,
+  services,
 };

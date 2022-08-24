@@ -70,6 +70,7 @@
     "prometheus-api-metrics": "^3.2.2",
     "string-template": "^1.0.0",
     "tiny-timestamp": "^1.0.0",
+    "twilio": "^3.80.1",
     "typescript-transpile-only": "^0.0.4",
     "uuid": "^8.3.2",
     "yargs": "^17.5.1"

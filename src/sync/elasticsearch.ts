@@ -86,7 +86,7 @@ export class ElasticSearchSyncDriver implements SyncDriver {
     { name: "init", file: __filename },
     async (ctx: Context, seedMode = false) => {
       if (!seedMode) {
-        queue.subscribe(null, "sync", this.processEvent);
+        queue.subscribe(ctx, "sync", this.processEvent);
       }
 
       for (const indexName of Object.keys(mappings)) {

@@ -1,4 +1,4 @@
-import { errors } from "@/components";
+import { errors, valueSets } from "@/components";
 import {
   getObjectConfigFromObjectType,
   ObjectConfig,
@@ -31,58 +31,75 @@ async function validateFieldType(
 
   const fieldValue = data[fieldName] as any;
 
-  switch (fieldConfig.type) {
-    case "array:string":
-      error = joi.array().items(joi.string()).validate(fieldValue).error;
-      break;
-    case "array:number":
-      error = joi.array().items(joi.number()).validate(fieldValue).error;
-      break;
-    case "array:boolean":
-      error = joi.array().items(joi.boolean()).validate(fieldValue).error;
-      break;
-    case "array:date":
-      error = fieldValue
-        .map((value: string) => new Date(value).toString() === "Invalid Date")
-        .includes(true);
-      break;
-    case "array:value-set":
-      if (fieldConfig.valueSet) {
-        //TODO: support value set validation
-      }
-      break;
-    case "array:struct":
-      if (fieldConfig.struct) {
-        //TODO: support struct validation
-      }
-      break;
-    case "string":
-      if (fieldConfig.schema === "email") {
-        error = joi.string().email().validate(fieldValue).error;
-
+  try {
+    switch (fieldConfig.type) {
+      case "array:string":
+        error = joi.array().items(joi.string()).validate(fieldValue).error;
         break;
-      }
-      error = joi.string().validate(fieldValue).error;
-      break;
-    case "number":
-      error = joi.number().validate(fieldValue).error;
-      break;
-    case "boolean":
-      error = joi.boolean().validate(fieldValue).error;
-      break;
-    case "date":
-      error = new Date(fieldValue).toString() == "Invalid Date";
-      break;
-    case "value-set":
-      if (fieldConfig.valueSet) {
-        //TODO: support value set validation
-      }
-      break;
-    case "struct":
-      if (fieldConfig.struct) {
-        //TODO: support struct validation
-      }
-      break;
+      case "array:number":
+        error = joi.array().items(joi.number()).validate(fieldValue).error;
+        break;
+      case "array:boolean":
+        error = joi.array().items(joi.boolean()).validate(fieldValue).error;
+        break;
+      case "array:date":
+        error = fieldValue
+          .map((value: string) => new Date(value).toString() === "Invalid Date")
+          .includes(true);
+        break;
+      case "array:value-set":
+        if (fieldConfig.valueSet) {
+          const valueSet = valueSets.getValueSet(fieldConfig.valueSet);
+
+          error = fieldValue.every((value: string) =>
+            valueSet.some((item) => item.code === value)
+          );
+        }
+        break;
+      case "array:struct":
+        if (fieldConfig.struct) {
+          // TODO: support struct array validation
+        }
+        break;
+      case "string":
+        if (fieldConfig.schema === "email") {
+          error = joi.string().email().validate(fieldValue).error;
+
+          break;
+        }
+        error = joi.string().validate(fieldValue).error;
+        break;
+      case "number":
+        error = joi.number().validate(fieldValue).error;
+        break;
+      case "boolean":
+        error = joi.boolean().validate(fieldValue).error;
+        break;
+      case "date":
+        error = new Date(fieldValue).toString() == "Invalid Date";
+        break;
+      case "value-set":
+        if (fieldConfig.valueSet) {
+          const valueSet = valueSets.getValueSet(fieldConfig.valueSet);
+
+          error = valueSet.some((item) => item.code === fieldValue);
+        }
+        break;
+      case "struct":
+        if (fieldConfig.struct) {
+          //TODO: support struct validation
+        }
+        break;
+    }
+  } catch (_error) {
+    ctx.log.warn("Failed to validate field", {
+      data,
+      fieldConfig,
+      fieldName,
+      fieldValue,
+      error: _error,
+    });
+    error = true;
   }
 
   if (error) {

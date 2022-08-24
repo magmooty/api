@@ -53,6 +53,18 @@
         },
         "search": {
           "$ref": "#/definitions/SearchConfig"
+        },
+        "services": {
+          "type": "object",
+          "properties": {
+            "twilio": {
+              "$ref": "#/definitions/TwilioConfig"
+            }
+          },
+          "required": [
+            "twilio"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [
@@ -62,7 +74,8 @@
         "i18n",
         "queue",
         "sync",
-        "search"
+        "search",
+        "services"
       ],
       "additionalProperties": false
     },
@@ -410,6 +423,26 @@
       "required": [
         "node",
         "prefix"
+      ],
+      "additionalProperties": false
+    },
+    "TwilioConfig": {
+      "type": "object",
+      "properties": {
+        "accountSid": {
+          "type": "string"
+        },
+        "authToken": {
+          "type": "string"
+        },
+        "verificationService": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "accountSid",
+        "authToken",
+        "verificationService"
       ],
       "additionalProperties": false
     }
