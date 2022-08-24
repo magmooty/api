@@ -29,6 +29,7 @@ services:
       - ALLOW_ANONYMOUS_LOGIN=yes
   kafka:
     container_name: "kafka"
+    hostname: 10.114.0.2
     restart: always
     image: docker.io/bitnami/kafka:3.2
     ports:
