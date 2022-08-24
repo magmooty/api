@@ -1,7 +1,7 @@
 import { wrapper } from "@/components";
 import { GraphObject, IEdge } from "@/graph/objects/types";
 import { Context } from "@/tracing";
-import { Kafka, Producer } from "kafkajs";
+import { Kafka, logLevel, Producer } from "kafkajs";
 import {
   BaseQueueEvent,
   QueueDriver,
@@ -51,6 +51,21 @@ export class QueueKafkaDriver implements QueueDriver {
       this.kafka = new Kafka({
         clientId: this.kafkaConfig.groupId,
         brokers: this.kafkaConfig.brokers,
+        logCreator: () => (entry) => {
+          switch (entry.level) {
+            case logLevel.NOTHING:
+            case logLevel.DEBUG:
+            case logLevel.INFO:
+              ctx.log.info(entry.log.message, { logger: "kafka" });
+              break;
+            case logLevel.WARN:
+              ctx.log.warn(entry.log.message, { logger: "kafka" });
+              break;
+            case logLevel.ERROR:
+              ctx.log.error(null, entry.log.message, { logger: "kafka" });
+              break;
+          }
+        },
       });
 
       if (this.kafkaConfig.canProduce) {
