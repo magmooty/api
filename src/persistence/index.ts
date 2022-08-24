@@ -175,6 +175,8 @@ export interface PersistenceDriver {
     edgeName: string,
     dst: string
   ): Promise<string[]>;
+
+  quit(): Promise<void>;
 }
 
 export interface PersistenceConfig {
@@ -965,4 +967,9 @@ export class Persistence {
   ): Promise<boolean> => {
     return this.primaryDB.checkUnique(ctx, objectType, fieldName, value);
   };
+
+  quit = () => {
+    this.primaryDB.quit();
+    this.cache.quit();
+  }
 }

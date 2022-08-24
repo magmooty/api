@@ -1,6 +1,6 @@
 export type ObjectId = string;
 
-export type ObjectType = "user" | "session";
+export type ObjectType = "user" | "session" | "system-user";
 
 export type ObjectFieldValue =
   | string
@@ -40,6 +40,7 @@ export interface User extends GraphObject {
   phone_verified: boolean;
   status: UserStatusVS;
   last_read_notification: string;
+  system_user: string | GraphObject;
 }
 
 export interface Session extends GraphObject {
@@ -48,4 +49,9 @@ export interface Session extends GraphObject {
   user: string | GraphObject;
   roles: string[];
   expiresAt: string;
+}
+
+export interface SystemUser extends GraphObject {
+  object_type: "system-user";
+  hash: string;
 }

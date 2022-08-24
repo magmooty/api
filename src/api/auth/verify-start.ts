@@ -14,6 +14,8 @@ export const verifyStartEndpoint: APIEndpoint = apiWrapper(
   async (ctx: Context, req: APIRequest, res: APIResponse) => {
     const { channel }: VerifyStartEndpointBody = req.body;
 
+    ctx.register({ channel });
+
     res.status(200).send();
   }
 );

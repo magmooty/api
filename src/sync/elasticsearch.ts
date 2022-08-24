@@ -1,6 +1,7 @@
 import { persistence, queue, wrapper } from "@/components";
 import { GraphObject, ObjectType } from "@/graph/objects/types";
 import { SeedObjectsResult } from "@/persistence";
+import { seedQueryObjects } from "@/persistence/commons/query-objects";
 import { QueueEvent } from "@/queue";
 import { Context } from "@/tracing";
 import { Client } from "@elastic/elasticsearch";
@@ -183,19 +184,11 @@ export class ElasticSearchSyncDriver implements SyncDriver {
 
       await this.init(ctx, true);
 
-      let allFetched = false;
-      let after = pointer;
-
-      while (!allFetched) {
-        const { results, nextKey }: SeedObjectsResult<GraphObject> =
-          await persistence.primaryDB.queryObjects<GraphObject>(
-            null,
-            objectType,
-            null,
-            after
-          );
-
-        try {
+      await seedQueryObjects(
+        ctx,
+        objectType,
+        pointer,
+        async (results: GraphObject[]) => {
           await Promise.all(
             results.map(async (object) => {
               const event: QueueEvent<GraphObject> = {
@@ -212,26 +205,8 @@ export class ElasticSearchSyncDriver implements SyncDriver {
               await this.processEvent(ctx, event);
             })
           );
-        } catch (error) {
-          ctx.log.error(error, "An error occurred");
-
-          if (after) {
-            ctx.fatal(
-              `An error occurred, please check it and you can continue seeding by using --after=${after}`
-            );
-          } else {
-            ctx.fatal(
-              "Failed to reseed the object, please check the config and make sure it's correct"
-            );
-          }
         }
-
-        if (nextKey) {
-          after = nextKey;
-        } else {
-          allFetched = true;
-        }
-      }
+      );
     }
   );
 

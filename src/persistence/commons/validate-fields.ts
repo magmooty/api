@@ -1,6 +1,7 @@
 import { errors, valueSets } from "@/components";
 import {
   getObjectConfigFromObjectType,
+  getObjectTypeFromId,
   ObjectConfig,
   ObjectField,
   objects,
@@ -43,11 +44,21 @@ async function validateFieldType(
         error = joi.array().items(joi.boolean()).validate(fieldValue).error;
         break;
       case "array:date":
+        if (!Array.isArray(fieldValue)) {
+          error = true;
+          break;
+        }
+
         error = fieldValue
           .map((value: string) => new Date(value).toString() === "Invalid Date")
           .includes(true);
         break;
       case "array:value-set":
+        if (!Array.isArray(fieldValue)) {
+          error = true;
+          break;
+        }
+
         if (fieldConfig.valueSet) {
           const valueSet = valueSets.getValueSet(fieldConfig.valueSet);
 
@@ -57,9 +68,38 @@ async function validateFieldType(
         }
         break;
       case "array:struct":
+        if (!Array.isArray(fieldValue)) {
+          error = true;
+          break;
+        }
+
         if (fieldConfig.struct) {
           // TODO: support struct array validation
         }
+        break;
+      case "array:object-id":
+        if (!Array.isArray(fieldValue)) {
+          error = true;
+          break;
+        }
+
+        const failedValues = await Promise.all(
+          fieldValue.map(async (value) => {
+            try {
+              const objectType = await getObjectTypeFromId(ctx, value);
+
+              if (!fieldConfig.objectTypes?.includes(objectType)) {
+                return true;
+              }
+            } catch {
+              return true;
+            }
+
+            return false;
+          })
+        );
+
+        error = failedValues.some((value) => value === true);
         break;
       case "string":
         if (fieldConfig.schema === "email") {
@@ -88,6 +128,18 @@ async function validateFieldType(
       case "struct":
         if (fieldConfig.struct) {
           //TODO: support struct validation
+        }
+        break;
+
+      case "object-id":
+        try {
+          const objectType = await getObjectTypeFromId(ctx, fieldValue);
+
+          if (!fieldConfig.objectTypes?.includes(objectType)) {
+            error = true;
+          }
+        } catch {
+          error = true;
         }
         break;
     }

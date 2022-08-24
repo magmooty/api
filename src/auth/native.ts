@@ -1,5 +1,5 @@
 import { errors, persistence, wrapper } from "@/components";
-import { Session, User } from "@/graph/objects/types";
+import { Session, SystemUser, User } from "@/graph/objects/types";
 import { serializeDate } from "@/persistence/commons/serialize-date";
 import { SearchDriver } from "@/search";
 import { Context } from "@/tracing";
@@ -138,7 +138,12 @@ export class NativeAuthDriver implements AuthDriver {
       ctx.setErrorDurationMetricLabels({ provider: ctx.getParam("provider") });
       ctx.setDurationMetricLabels({ provider: ctx.getParam("provider") });
 
-      const hashMatches = bcrypt.compare(password, user.hash);
+      const systemUser = await persistence.getObject<SystemUser>(
+        ctx,
+        user.system_user as string
+      );
+
+      const hashMatches = bcrypt.compare(password, systemUser.hash);
 
       if (!hashMatches) {
         errors.createError(ctx, "WrongPassword", { username });
@@ -201,10 +206,15 @@ export class NativeAuthDriver implements AuthDriver {
         this.nativeAuthDriverConfig.hashSaltLevel
       );
 
+      const systemUser = await persistence.createObject<SystemUser>(ctx, {
+        hash,
+        object_type: "system-user",
+      });
+
       const user = await persistence.createObject<User>(ctx, {
         [predictedProvider]: username,
         object_type: "user",
-        hash,
+        system_user: systemUser.id,
       } as User);
 
       return this.createSession(ctx, user);

@@ -96,7 +96,7 @@ const valueSet = {
 
 const object = {
   start: (objectType: string) => {
-    const typeName = capitalize(objectType);
+    const typeName = capitalize(objectType, "-");
 
     return [
       `export interface ${typeName} extends GraphObject {`,

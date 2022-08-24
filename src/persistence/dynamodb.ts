@@ -476,22 +476,36 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
 
   private constructUpdateExpression = async (payload: Partial<GraphObject>) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id, objectType, ...object } = payload;
+    const { id, object_type: objectType, ...object } = payload;
 
     const marshalled = await this.serializeDocument(object);
 
     const keys = Object.keys(object);
 
-    const UpdateExpression = `set ${keys
-      .map((key) => `#${key} = :${key}`)
-      .join(",")}`;
+    const setKeys = keys.filter((key) => object[key] !== null);
+    const removeKeys = keys.filter((key) => object[key] === null);
+
+    const setOperations =
+      setKeys.length > 0
+        ? `set ${setKeys.map((key) => `#${key} = :${key}`).join(",")}`
+        : "";
+
+    const removeOperations =
+      removeKeys.length > 0
+        ? `remove ${removeKeys.map((key) => `#${key}`).join(",")}`
+        : "";
+
+    const UpdateExpression = [setOperations, removeOperations].join(" ").trim();
 
     const ExpressionAttributeNames: Record<string, string> = {};
     const ExpressionAttributeValues: Record<string, AttributeValue> = {};
 
     keys.forEach((key) => {
       ExpressionAttributeNames[`#${key}`] = key;
-      ExpressionAttributeValues[`:${key}`] = marshalled[key];
+
+      if (object[key]) {
+        ExpressionAttributeValues[`:${key}`] = marshalled[key];
+      }
     });
 
     return {
@@ -1379,4 +1393,8 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
       });
     }
   );
+
+  async quit(): Promise<void> {
+    await this.client.destroy();
+  };
 }

@@ -44,11 +44,6 @@ export default {
       unique: true,
       schema: "email",
     },
-    hash: {
-      type: "string",
-      required: true,
-      view: "system_private",
-    },
     email_verified: {
       type: "boolean",
       default: () => false,
@@ -70,6 +65,10 @@ export default {
     last_read_notification: {
       type: "date",
       default: () => serializeDate(new Date()),
+    },
+    system_user: {
+      type: "object-id",
+      objectTypes: ["system-user"],
     },
   },
   edges: {
