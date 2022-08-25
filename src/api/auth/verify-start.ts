@@ -16,6 +16,16 @@ export const verifyStartEndpoint: APIEndpoint = apiWrapper(
 
     ctx.register({ channel });
 
+    if (!req.user) {
+      return;
+    }
+
+    const { phone, email } = req.user;
+
+    if (channel === "email" && !email) {
+      
+    }
+
     res.status(200).send();
   }
 );

@@ -114,5 +114,13 @@
   {
     "code": "InvalidUsername",
     "template": "Invalid email or phone number: {username}"
+  },
+  {
+    "code": "InvalidVerificationChannelSMS",
+    "template": "User doesn't have a registered phone to send an SMS to"
+  },
+  {
+    "code": "InvalidVerificationChannelEmail",
+    "template": "User doesn't have a registered email to send a verification code to"
   }
 ]

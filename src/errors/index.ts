@@ -158,6 +158,16 @@ const errors = [
     statusCode: 400,
     templateProps: ["username"],
   },
+  {
+    code: "InvalidVerificationChannelSMS",
+    statusCode: 400,
+    templateProps: [],
+  },
+  {
+    code: "InvalidVerificationChannelEmail",
+    statusCode: 400,
+    templateProps: [],
+  },
 ] as const;
 
 export type ErrorType = typeof errors[number]["code"];

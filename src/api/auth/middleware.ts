@@ -31,6 +31,8 @@ export const authMiddleware: APIEndpoint = apiWrapper(
       return;
     }
 
+    ctx.log.info("request for user", { user });
+
     req.user = user;
     next();
   }
