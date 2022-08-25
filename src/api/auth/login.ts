@@ -1,16 +1,15 @@
+import { APIEndpoint, APIRequest, APIResponse } from "@/api/types";
 import { apiWrapper, auth } from "@/components";
-import {
-  APIEndpoint,
-  APINextFunction,
-  APIRequest,
-  APIResponse,
-} from "@/api/types";
 import { Context } from "@/tracing";
+import { Record, Static, String } from "runtypes";
+import { validateRequestBody } from "../common";
 
-interface LoginEndpointBody {
-  username: string;
-  password: string;
-}
+const LoginEndpointBody = Record({
+  username: String,
+  password: String,
+});
+
+type LoginEndpointBody = Static<typeof LoginEndpointBody>;
 
 export const loginEndpoint: APIEndpoint = apiWrapper(
   {
@@ -18,7 +17,15 @@ export const loginEndpoint: APIEndpoint = apiWrapper(
     file: __filename,
   },
   async (ctx: Context, req: APIRequest, res: APIResponse) => {
-    const { username, password }: LoginEndpointBody = req.body;
+    const { body } = req;
+
+    ctx.log.debug("type", {
+      type: LoginEndpointBody.fields.username.toString(),
+    });
+
+    await validateRequestBody(ctx, body, LoginEndpointBody);
+
+    const { username, password }: LoginEndpointBody = body;
 
     const result = await auth.login(ctx, username, password);
 

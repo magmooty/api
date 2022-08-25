@@ -14,8 +14,8 @@ export type TwilioChannel = "email" | "sms";
 export type TwilioVerificationStatus = "pending" | "approved";
 
 class TwilioService {
-  twilioConfig: TwilioConfig;
-  client;
+  private twilioConfig: TwilioConfig;
+  private client;
 
   constructor() {
     this.twilioConfig = config.services.twilio;

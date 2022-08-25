@@ -1,9 +1,9 @@
 import { APIEndpoint, APIRequest, APIResponse } from "@/api/types";
-import { apiWrapper } from "@/components";
+import { apiWrapper, errors, services } from "@/components";
 import { Context } from "@/tracing";
 
 interface VerifyStartEndpointBody {
-  channel: "email" | "phone";
+  channel: "email" | "sms";
 }
 
 export const verifyStartEndpoint: APIEndpoint = apiWrapper(
@@ -23,7 +23,23 @@ export const verifyStartEndpoint: APIEndpoint = apiWrapper(
     const { phone, email } = req.user;
 
     if (channel === "email" && !email) {
-      
+      errors.createError(ctx, "InvalidVerificationChannelEmail", {
+        user: req.user,
+        channel,
+      });
+      return;
+    }
+
+    if (channel === "sms" && !phone) {
+      errors.createError(ctx, "InvalidVerificationChannelSMS", {
+        user: req.user,
+        channel,
+      });
+      return;
+    }
+
+    if (channel === "sms") {
+      await services.twilio.startVerification(ctx, phone, "sms");
     }
 
     res.status(200).send();

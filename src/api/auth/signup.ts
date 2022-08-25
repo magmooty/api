@@ -1,10 +1,8 @@
-import { apiWrapper, auth } from "@/components";
 import {
-  APIEndpoint,
-  APINextFunction,
-  APIRequest,
-  APIResponse,
+  APIEndpoint, APIRequest,
+  APIResponse
 } from "@/api/types";
+import { apiWrapper, auth } from "@/components";
 import { Context } from "@/tracing";
 
 interface SignupEndpointBody {

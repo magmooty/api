@@ -1,12 +1,12 @@
+import authRouter from "@/api/auth";
 import { config, metrics, wrapper } from "@/components";
 import { AppError } from "@/errors";
 import { Context } from "@/tracing";
-import express, { Request } from "express";
+import bodyParser from "body-parser";
+import express from "express";
 import "express-async-errors";
 import { authMiddleware } from "./auth/middleware";
 import { APINextFunction, APIRequest, APIResponse } from "./types";
-import authRouter from "@/api/auth";
-import bodyParser from "body-parser";
 
 const errorHandler = (
   error: Error | AppError,
