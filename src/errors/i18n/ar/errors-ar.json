@@ -114,5 +114,13 @@
   {
     "code": "InvalidUsername",
     "template": "بريد إلكتروني أو رقم هاتف غير صحيح: {username}"
+  },
+  {
+    "code": "InvalidVerificationChannelSMS",
+    "template": "المستخدم ليس لديه هاتف مسجل"
+  },
+  {
+    "code": "InvalidVerificationChannelEmail",
+    "template": "المستخدم ليس لديه بريد الكتروني مسجل"
   }
 ]
