@@ -534,6 +534,8 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
 
       const objectType = await getObjectTypeFromId(ctx, id);
 
+      ctx.setParam("objectType", objectType);
+
       const object: GraphObject = { ...payload, object_type: objectType, id };
 
       ctx.setErrorDurationMetricLabels({ objectType });
@@ -739,6 +741,8 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
       }
 
       ctx.setErrorDurationMetricLabels({ objectType });
+
+      ctx.setParam("objectType", objectType);
 
       const TableName = this.prefixTableName("objects");
 
@@ -1396,5 +1400,5 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
 
   async quit(): Promise<void> {
     await this.client.destroy();
-  };
+  }
 }
