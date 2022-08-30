@@ -1,10 +1,14 @@
+import { validateRequestBody } from "@/api/common";
 import { APIEndpoint, APIRequest, APIResponse } from "@/api/types";
 import { apiWrapper, errors, services } from "@/components";
 import { Context } from "@/tracing";
+import { Literal, Record, Static, Union } from "runtypes";
 
-interface VerifyStartEndpointBody {
-  channel: "email" | "sms";
-}
+const VerifyStartEndpointBody = Record({
+  channel: Union(Literal("sms"), Literal("email")),
+});
+
+type VerifyStartEndpointBody = Static<typeof VerifyStartEndpointBody>;
 
 export const verifyStartEndpoint: APIEndpoint = apiWrapper(
   {
@@ -12,7 +16,11 @@ export const verifyStartEndpoint: APIEndpoint = apiWrapper(
     file: __filename,
   },
   async (ctx: Context, req: APIRequest, res: APIResponse) => {
-    const { channel }: VerifyStartEndpointBody = req.body;
+    const { body } = req;
+
+    await validateRequestBody(ctx, body, VerifyStartEndpointBody);
+
+    const { channel }: VerifyStartEndpointBody = body;
 
     ctx.register({ channel });
 

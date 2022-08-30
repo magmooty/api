@@ -122,5 +122,9 @@
   {
     "code": "InvalidVerificationChannelEmail",
     "template": "User doesn't have a registered email to send a verification code to"
+  },
+  {
+    "code": "VerificationFailed",
+    "template": "Verification failed, please check your code again"
   }
 ]

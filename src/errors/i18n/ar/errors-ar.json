@@ -122,5 +122,9 @@
   {
     "code": "InvalidVerificationChannelEmail",
     "template": "المستخدم ليس لديه بريد الكتروني مسجل"
+  },
+  {
+    "code": "VerificationFailed",
+    "template": "فشل التحقق من الكود برجاء التحقق من صحته"
   }
 ]

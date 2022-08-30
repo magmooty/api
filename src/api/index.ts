@@ -1,4 +1,4 @@
-import authRouter from "@/api/auth";
+import * as authRouters from "@/api/auth";
 import { config, metrics, wrapper } from "@/components";
 import { AppError } from "@/errors";
 import { Context } from "@/tracing";
@@ -44,12 +44,14 @@ export const init = wrapper(
     app.use(bodyParser.json());
 
     // Public endpoints
-    app.use("/auth", authRouter);
+    app.use("/auth", authRouters.publicRouter);
 
     // Auth middleware
     app.use(authMiddleware);
 
-    // Private middleware
+    // Private endpoints
+    app.use("/auth", authRouters.privateRouter);
+
     app.get("/hello-world", (req, res) => {
       res.json({ hello: "world2" });
     });

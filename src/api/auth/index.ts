@@ -2,11 +2,18 @@ import { Router } from "express";
 import { loginEndpoint } from "./login";
 import { refreshTokenEndpoint } from "./refresh-token";
 import { signupEndpoint } from "./signup";
+import { verifyCheckEndpoint } from "./verify-check";
+import { verifyStartEndpoint } from "./verify-start";
 
-const router = Router();
+const publicRouter = Router();
 
-router.post("/login", loginEndpoint);
-router.post("/signup", signupEndpoint);
-router.post("/token/refresh", refreshTokenEndpoint);
+publicRouter.post("/login", loginEndpoint);
+publicRouter.post("/signup", signupEndpoint);
+publicRouter.post("/token/refresh", refreshTokenEndpoint);
 
-export default router;
+const privateRouter = Router();
+
+privateRouter.post("/verify-start", verifyStartEndpoint);
+privateRouter.post("/verify-check", verifyCheckEndpoint);
+
+export { publicRouter, privateRouter };

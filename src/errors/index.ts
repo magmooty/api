@@ -168,6 +168,11 @@ const errors = [
     statusCode: 400,
     templateProps: [],
   },
+  {
+    code: "VerificationFailed",
+    statusCode: 403,
+    templateProps: [],
+  },
 ] as const;
 
 export type ErrorType = typeof errors[number]["code"];

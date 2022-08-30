@@ -1,15 +1,14 @@
+import { APIEndpoint, APIRequest, APIResponse } from "@/api/types";
 import { apiWrapper, auth } from "@/components";
-import {
-  APIEndpoint,
-  APINextFunction,
-  APIRequest,
-  APIResponse,
-} from "@/api/types";
 import { Context } from "@/tracing";
+import { Record, Static, String } from "runtypes";
+import { validateRequestBody } from "@/api/common";
 
-interface RefreshTokenBody {
-  refresh_token: string;
-}
+const RefreshTokenBody = Record({
+  refresh_token: String,
+});
+
+type RefreshTokenBody = Static<typeof RefreshTokenBody>;
 
 export const refreshTokenEndpoint: APIEndpoint = apiWrapper(
   {
@@ -17,7 +16,11 @@ export const refreshTokenEndpoint: APIEndpoint = apiWrapper(
     file: __filename,
   },
   async (ctx: Context, req: APIRequest, res: APIResponse) => {
-    const { refresh_token }: RefreshTokenBody = req.body;
+    const { body } = req;
+
+    await validateRequestBody(ctx, body, RefreshTokenBody);
+
+    const { refresh_token }: RefreshTokenBody = body;
 
     const result = await auth.refreshToken(ctx, refresh_token);
 
