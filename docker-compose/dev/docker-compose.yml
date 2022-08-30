@@ -14,8 +14,8 @@ services:
         awslogs-stream: dev-app
     volumes:
       - type: bind
-        source: /root/.aws
-        target: $HOME/.aws
+        source: /root/.aws/credentials
+        target: $HOME/.aws/credentials
   redis:
     container_name: redis
     restart: always
