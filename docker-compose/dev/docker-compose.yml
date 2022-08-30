@@ -13,8 +13,9 @@ services:
         awslogs-group: magmooty-dev
         awslogs-stream: dev-app
     volumes:
-      - $HOME/.aws:/root/.aws:ro
-      - $HOME/.aws/credentials:/root/.aws/credentials:ro
+      - type: bind
+        source: /root/.aws
+        target: $HOME/.aws
   redis:
     container_name: redis
     restart: always
