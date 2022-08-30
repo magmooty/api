@@ -1,0 +1,14 @@
+[
+  {
+    "code": "male",
+    "display": "ذكر"
+  },
+  {
+    "code": "female",
+    "display": "انثى"
+  },
+  {
+    "code": "unknown",
+    "display": "غير معروف"
+  }
+]

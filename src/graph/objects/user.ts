@@ -57,6 +57,11 @@ export default {
       type: "boolean",
       default: () => false,
     },
+    gender: {
+      type: "value-set",
+      valueSet: "user-gender",
+      default: () => "unknown",
+    },
     status: {
       type: "value-set",
       valueSet: "user-status",
