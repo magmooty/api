@@ -26,7 +26,9 @@ export interface GraphObject {
   [key: string]: ObjectFieldValue;
 }
 
-export type ValueSet = "UserStatus";
+export type ValueSet = "UserGender" | "UserStatus";
+
+export type UserGenderVS = "male" | "female" | "unknown";
 
 export type UserStatusVS = "created";
 
@@ -34,10 +36,10 @@ export interface User extends GraphObject {
   object_type: "user";
   name: string;
   email: string;
-  hash: string;
   email_verified: boolean;
   phone: string;
   phone_verified: boolean;
+  gender: UserGenderVS;
   status: UserStatusVS;
   last_read_notification: string;
   system_user: string | GraphObject;

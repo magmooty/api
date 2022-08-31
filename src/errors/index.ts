@@ -173,6 +173,16 @@ const errors = [
     statusCode: 403,
     templateProps: [],
   },
+  {
+    code: "ObjectMethodNotAllowed",
+    statusCode: 403,
+    templateProps: ["method"],
+  },
+  {
+    code: "ACLDenied",
+    statusCode: 403,
+    templateProps: [],
+  },
 ] as const;
 
 export type ErrorType = typeof errors[number]["code"];

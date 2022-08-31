@@ -2,6 +2,7 @@ import { ObjectConfig } from "@/graph";
 
 export default {
   code: "Z3",
+  systemObject: true,
   cacheLevel: "none",
   views: {
     _default: {

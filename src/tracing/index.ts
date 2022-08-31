@@ -260,8 +260,6 @@ export class Tracer {
                 );
             }
 
-            console.log({ ctx, e });
-
             if (ctx.parentId) {
               throw e;
             }

@@ -126,5 +126,13 @@
   {
     "code": "VerificationFailed",
     "template": "Verification failed, please check your code again"
+  },
+  {
+    "code": "ObjectMethodNotAllowed",
+    "template": "User doesn't have access to this resource, cannot {method} the object"
+  },
+  {
+    "code": "ACLDenied",
+    "template": "User doesn't have access to this resource"
   }
 ]

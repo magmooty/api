@@ -126,5 +126,13 @@
   {
     "code": "VerificationFailed",
     "template": "فشل التحقق من الكود برجاء التحقق من صحته"
+  },
+  {
+    "code": "ObjectMethodNotAllowed",
+    "template": "المستخدم ليس له صلاحية {method} لهذا الكيان"
+  },
+  {
+    "code": "ACLDenied",
+    "template": "المستخدم ليس له الصلاحية لهذا الكيان"
   }
 ]

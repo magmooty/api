@@ -1,6 +1,14 @@
-import { errors } from "@/components";
+import { errors, wrapper } from "@/components";
+import {
+  getObjectConfigFromObjectType,
+  ObjectView,
+  ObjectViewVirtual,
+} from "@/graph";
+import { GraphObject, ObjectType, User } from "@/graph/objects/types";
 import { Context } from "@/tracing";
 import { Record } from "runtypes";
+import _ from "lodash";
+import { FIXED_OBJECT_FIELDS } from "@/graph/common";
 
 const extractType = (fieldName: string, record: Record<any, any>): string => {
   return record.fields[fieldName]
@@ -8,6 +16,226 @@ const extractType = (fieldName: string, record: Record<any, any>): string => {
     .replace(/Runtype<(.+)>/g, "$1")
     .replace(/(.+)[]/, "array:$1");
 };
+
+export interface VerifyACLPayload {
+  object?: GraphObject;
+  objectType: ObjectType;
+  author: User;
+  roles: string[];
+  method: "GET" | "POST" | "PATCH" | "DELETE";
+  singleFieldStrategy: "error" | "strip";
+  aclMode: "soft" | "hard";
+  keys?: string[];
+}
+
+export const verifyObjectACL = wrapper(
+  { name: "verifyObjectACL", file: __filename },
+  async (
+    ctx: Context,
+    payload: VerifyACLPayload
+  ): Promise<void | GraphObject | Pick<GraphObject, string>> => {
+    ctx.register(payload);
+
+    const { objectType } = payload;
+
+    ctx.log.info("Getting object config for object type", { objectType });
+
+    const objectConfig = await getObjectConfigFromObjectType(ctx, objectType);
+
+    const {
+      object,
+      author,
+      roles,
+      method,
+      singleFieldStrategy,
+      aclMode,
+      keys,
+    } = { keys: Object.keys(objectConfig.fields), ...payload };
+
+    // Check if the object even has any permissions for the method in its views
+
+    let noPermissionsForMethod = true;
+
+    ctx.log.info("Looping through views");
+
+    for (const viewName of Object.keys(objectConfig.views)) {
+      const viewRoles = (objectConfig.views[viewName] as any)[
+        method
+      ] as string[];
+
+      const viewRolesHaveVirtuals = viewRoles.some((role) =>
+        role.startsWith("virtual:")
+      );
+
+      ctx.log.info("Looping over view", {
+        viewName,
+        viewRoles,
+        viewRolesHaveVirtuals,
+      });
+
+      // User might be able to fetch the object if the roles match or if there are virtuals that need execution
+
+      if (
+        viewRoles.length > 0 &&
+        (_.intersection(viewRoles, roles).length > 0 || viewRolesHaveVirtuals)
+      ) {
+        noPermissionsForMethod = false;
+      }
+    }
+
+    if (noPermissionsForMethod) {
+      errors.createError(ctx, "ACLDenied", { roles, objectType, method });
+      return;
+    }
+
+    // No need to check fields if access is optional anyway (strip)
+    if (aclMode === "soft" && singleFieldStrategy === "strip") {
+      ctx.log.info(
+        "ACL mode is soft and single field strategy is strip so no need to check fields one by one",
+        { aclMode, singleFieldStrategy }
+      );
+      return;
+    }
+
+    const virtualsCache: any = {};
+    const strippedFields = [];
+
+    let objectKeys: string[] = keys;
+
+    if (object) {
+      objectKeys = _.without(Object.keys(object), ...FIXED_OBJECT_FIELDS);
+    }
+
+    // Loop over fields in the supplied object and check each field's ACL on its own
+
+    ctx.log.info("Looping over fields", { objectKeys, keys, object });
+
+    for (const fieldName of objectKeys) {
+      // Find the field config and current method's view
+
+      const fieldConfig = objectConfig.fields[fieldName];
+      const view = fieldConfig.view
+        ? objectConfig.views[fieldConfig.view]
+        : objectConfig.views._default;
+
+      ctx.log.info("Looping over field", { fieldName, fieldConfig, view });
+
+      let noAccess = true;
+
+      // Loop over each role in the view's method
+      // Keep in mind that ACL checks work as an OR operand
+      // If only one role checks out, then ACL will be verified
+
+      for (const role of (view as any)[method] as string[]) {
+        ctx.log.info("Looping over role", { role });
+
+        // Allowed roles
+        if (["public", "all"].includes(role)) {
+          ctx.log.info(
+            "Access passes: view is allowed because it's public or all",
+            { role }
+          );
+          noAccess = false;
+          break;
+        }
+
+        // Role exists in ACL
+        if (roles.includes(role)) {
+          ctx.log.info("Access passes: role exists in view method roles", {
+            roles,
+            role,
+          });
+          noAccess = false;
+          break;
+        }
+
+        // Run view virtuals
+
+        if (role.startsWith("virtual:")) {
+          const virtualName = role.slice("virtual:".length);
+
+          const virtualCachedValue = virtualsCache[virtualName];
+
+          ctx.log.info("Role is a virtual, checking virtuals cache", {
+            role,
+            virtualName,
+            virtualCachedValue,
+          });
+
+          // Virtual has already been executed before with the pre roles and the executor
+          if (virtualCachedValue === true) {
+            ctx.log.info("Access passes: virtual has been executed before");
+            noAccess = false;
+            if (aclMode === "soft") {
+              virtualsCache[virtualName] = true;
+            }
+            break;
+          }
+
+          const virtual = objectConfig.virtuals.views[virtualName];
+
+          const intersection = _.intersection(virtual.pre, roles);
+
+          if (
+            intersection.length <= 0 &&
+            !virtual.pre.includes("all") &&
+            !virtual.pre.includes("public")
+          ) {
+            // Pre roles failed, no need to execute the virtual, skip to the next ACL view role
+            ctx.log.info("Checking pre roles for virtual failed", {
+              intersection,
+              virtualName,
+              role,
+              pre: virtual.pre,
+              roles,
+            });
+            continue;
+          }
+
+          if (aclMode === "soft" || !object) {
+            // If ACL mode is soft, then we don't have data and virtuals shouldn't be executed
+            ctx.log.info("ACL mode is soft, no need to execute virtuals");
+            continue;
+          }
+
+          ctx.log.info("Executing virtual", { virtualName });
+
+          const virtualResult = await virtual.execute(object, author);
+
+          ctx.log.info("Executed virtual", { virtualResult, virtualName });
+
+          if (virtualResult) {
+            ctx.log.info("Access passes: virtual executed successfully");
+            noAccess = false;
+            virtualsCache[virtualName] = virtualResult;
+            break;
+          }
+        }
+      }
+
+      if (noAccess && singleFieldStrategy === "error") {
+        errors.createError(ctx, "ACLDenied", {
+          fieldName,
+          view,
+          fieldConfig,
+          roles,
+          method,
+        });
+      }
+
+      if (noAccess && singleFieldStrategy === "strip") {
+        strippedFields.push(fieldName);
+      }
+
+      ctx.log.info("ACL field result", { fieldName, noAccess });
+    }
+
+    if (singleFieldStrategy === "strip" && object) {
+      ctx.log.info("ACL strip result", { strippedFields });
+      return _.omit(object, strippedFields);
+    }
+  }
+);
 
 export const validateRequestBody = async (
   ctx: Context,

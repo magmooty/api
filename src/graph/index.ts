@@ -50,7 +50,7 @@ export interface ObjectView {
 export type ObjectViewVirtualExecutor = (
   object: GraphObject,
   author: User
-) => boolean;
+) => Promise<boolean>;
 
 export interface ObjectViewVirtual {
   pre: string[];
@@ -64,10 +64,11 @@ export enum ObjectTTL {
 
 export interface ObjectConfig {
   code: string;
+  systemObject?: boolean;
   cacheLevel: "external" | "none" | "onlyCache";
   ttl?: ObjectTTL;
   deletedBy?: string[];
-  views: { [key: string]: ObjectView };
+  views: { _default: ObjectView; [key: string]: ObjectView };
   virtuals: { views: { [key: string]: ObjectViewVirtual } };
   fields: { [key: string]: ObjectField };
   edges: { [key: string]: ObjectEdge };

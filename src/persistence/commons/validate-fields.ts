@@ -6,6 +6,7 @@ import {
   ObjectField,
   objects,
 } from "@/graph";
+import { FIXED_OBJECT_FIELDS } from "@/graph/common";
 import { GraphObject, ObjectType } from "@/graph/objects/types";
 import { Context } from "@/tracing";
 import joi from "joi";
@@ -198,11 +199,7 @@ async function dryValidateField(
 ): Promise<void> {
   ctx.log.info("Validating field", { fieldName });
 
-  if (
-    ["id", "object_type", "updated_at", "created_at", "deleted_at"].includes(
-      fieldName
-    )
-  ) {
+  if (FIXED_OBJECT_FIELDS.includes(fieldName)) {
     return;
   }
 

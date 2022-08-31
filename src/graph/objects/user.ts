@@ -11,7 +11,7 @@ export default {
       POST: [],
       PATCH: ["virtual:owner"],
     },
-    system: {
+    system_controlled: {
       GET: ["virtual:owner"],
       POST: [],
       PATCH: [],
@@ -20,11 +20,6 @@ export default {
       GET: [],
       POST: [],
       PATCH: [],
-    },
-    private: {
-      GET: ["virtual:owner"],
-      POST: [],
-      PATCH: ["virtual:owner"],
     },
   },
   virtuals: {
@@ -47,6 +42,7 @@ export default {
     email_verified: {
       type: "boolean",
       default: () => false,
+      view: "system_controlled",
     },
     phone: {
       type: "string",
@@ -56,6 +52,7 @@ export default {
     phone_verified: {
       type: "boolean",
       default: () => false,
+      view: "system_controlled",
     },
     gender: {
       type: "value-set",
@@ -66,14 +63,17 @@ export default {
       type: "value-set",
       valueSet: "user-status",
       default: () => "created",
+      view: "system_controlled",
     },
     last_read_notification: {
       type: "date",
       default: () => serializeDate(new Date()),
+      view: "system_controlled",
     },
     system_user: {
       type: "object-id",
       objectTypes: ["system-user"],
+      view: "system_private",
     },
   },
   edges: {
