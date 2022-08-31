@@ -17,6 +17,7 @@ import { dryValidation, uniqueValidation } from "./commons/validate-fields";
 import { wait } from "./commons/wait";
 import { DynamoDBConfig, DynamoPersistenceDriver } from "./dynamodb";
 import cacheHijackRules from "./extra/cache-hijack";
+import preLogicRules from "./extra/pre-logic";
 
 /**
  * Prefix a cache key with the lock prefix
@@ -189,6 +190,15 @@ export interface PersistenceConfig {
     lookupsTTL: number;
   };
   cache: CacheConfig;
+}
+
+export type PreUpdateObjectHook = (
+  previous: GraphObject,
+  updatePayload: { [key: string]: ObjectFieldValue },
+) => Promise<void>;
+
+export interface UpdateObjectHooks {
+  pre?: PreUpdateObjectHook;
 }
 
 export class Persistence {
@@ -428,7 +438,8 @@ export class Persistence {
     async <T = GraphObject>(
       ctx: Context,
       id: string,
-      payload: Partial<T>
+      payload: Partial<T>,
+      hooks: UpdateObjectHooks = {}
     ): Promise<T> => {
       ctx.startTrackTime(
         "persistence_update_object_duration",
@@ -443,6 +454,8 @@ export class Persistence {
       const objectType = await getObjectTypeFromId(ctx, id);
       const objectConfig = await getObjectConfigFromObjectType(ctx, objectType);
 
+      const path = `PATCH ${objectType}`;
+
       ctx.setParam("objectType", objectType);
 
       ctx.setErrorDurationMetricLabels({ objectType });
@@ -454,12 +467,12 @@ export class Persistence {
       ctx.setParam("lockKey", id);
       ctx.setParam("lockHolder", lockHolder);
 
-      const previous = await this.primaryDB.getObject(ctx, id);
+      const previous = await this.getObject<GraphObject>(ctx, id);
 
       await uniqueValidation(
         ctx,
         objectType,
-        previous as GraphObject,
+        previous,
         payload as Partial<GraphObject>,
         this.primaryDB,
         "update"
@@ -470,6 +483,15 @@ export class Persistence {
         updated_at: serializeDate(new Date()),
       };
 
+      if (hooks.pre) {
+        await hooks.pre(previous, updatePayload);
+      }
+
+      if (preLogicRules[path]) {
+        await preLogicRules[path](ctx, previous, updatePayload);
+      }
+
+      // Recompute after pre-logic rules and pre-hooks
       const updatedObject = {
         ...previous,
         ...updatePayload,
@@ -550,12 +572,12 @@ export class Persistence {
       ctx.setParam("lockKey", id);
       ctx.setParam("lockHolder", lockHolder);
 
-      const previous = await this.primaryDB.getObject(ctx, id);
+      const previous = await this.getObject<GraphObject>(ctx, id);
 
       await uniqueValidation(
         ctx,
         objectType,
-        previous as GraphObject,
+        previous,
         payload as GraphObject,
         this.primaryDB,
         "update"
@@ -635,12 +657,12 @@ export class Persistence {
       ctx.setParam("lockKey", id);
       ctx.setParam("lockHolder", lockHolder);
 
-      const previous = await this.primaryDB.getObject(ctx, id);
+      const previous = await this.getObject<GraphObject>(ctx, id);
 
       await uniqueValidation(
         ctx,
         objectType,
-        previous as GraphObject,
+        previous,
         null,
         this.primaryDB,
         "delete"
@@ -971,5 +993,5 @@ export class Persistence {
   quit = () => {
     this.primaryDB.quit();
     this.cache.quit();
-  }
+  };
 }

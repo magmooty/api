@@ -133,6 +133,10 @@
   },
   {
     "code": "ACLDenied",
-    "template": "User doesn't have access to this resource"
+    "template": "User doesn't have access to this resource '{reason}'"
+  },
+  {
+    "code": "FieldUneditable",
+    "template": "This field cannot be modified"
   }
 ]

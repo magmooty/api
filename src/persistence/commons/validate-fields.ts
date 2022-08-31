@@ -307,6 +307,10 @@ export async function uniqueValidation(
 
   // All new fields are checked and correct, create new uniques and remove old ones
   for (const fieldName of uniqueFieldNames) {
+    if (!current || !current[fieldName]) {
+      continue;
+    }
+
     switch (method) {
       case "update":
         // Remove old value before update if it exists

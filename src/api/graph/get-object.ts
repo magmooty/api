@@ -6,11 +6,11 @@ import { Context } from "@/tracing";
 import { Record, Static, String } from "runtypes";
 import { validateRequestBody, verifyObjectACL } from "../common";
 
-const GetObjectQuery = Record({
+const GetObjectParams = Record({
   id: String,
 });
 
-type GetObjectQuery = Static<typeof GetObjectQuery>;
+type GetObjectParams = Static<typeof GetObjectParams>;
 
 export const getObjectEndpoint: APIEndpoint = apiWrapper(
   {
@@ -20,13 +20,9 @@ export const getObjectEndpoint: APIEndpoint = apiWrapper(
   async (ctx: Context, req: APIRequest, res: APIResponse) => {
     const { params } = req;
 
-    await validateRequestBody(ctx, params, GetObjectQuery);
+    await validateRequestBody(ctx, params, GetObjectParams);
 
-    const { id } = params as GetObjectQuery;
-
-    if (!req.user) {
-      return;
-    }
+    const { id } = params as GetObjectParams;
 
     const objectType = await getObjectTypeFromId(ctx, id);
 

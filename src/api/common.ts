@@ -20,12 +20,13 @@ const extractType = (fieldName: string, record: Record<any, any>): string => {
 export interface VerifyACLPayload {
   object?: GraphObject;
   objectType: ObjectType;
-  author: User;
+  author?: User;
   roles: string[];
   method: "GET" | "POST" | "PATCH" | "DELETE";
   singleFieldStrategy: "error" | "strip";
   aclMode: "soft" | "hard";
   keys?: string[];
+  aclCache?: { [key: string]: boolean };
 }
 
 export const verifyObjectACL = wrapper(
@@ -50,7 +51,13 @@ export const verifyObjectACL = wrapper(
       singleFieldStrategy,
       aclMode,
       keys,
+      aclCache,
     } = { keys: Object.keys(objectConfig.fields), ...payload };
+
+    if (!author) {
+      errors.createError(ctx, "ACLDenied", { reason: "no author", author });
+      return;
+    }
 
     // Check if the object even has any permissions for the method in its views
 
@@ -84,7 +91,12 @@ export const verifyObjectACL = wrapper(
     }
 
     if (noPermissionsForMethod) {
-      errors.createError(ctx, "ACLDenied", { roles, objectType, method });
+      errors.createError(ctx, "ACLDenied", {
+        reason: "no permissions for method",
+        roles,
+        objectType,
+        method,
+      });
       return;
     }
 
@@ -97,12 +109,12 @@ export const verifyObjectACL = wrapper(
       return;
     }
 
-    const virtualsCache: any = {};
+    const virtualsCache: any = aclCache || {};
     const strippedFields = [];
 
     let objectKeys: string[] = keys;
 
-    if (object) {
+    if (object && keys.length <= 0) {
       objectKeys = _.without(Object.keys(object), ...FIXED_OBJECT_FIELDS);
     }
 
@@ -111,6 +123,19 @@ export const verifyObjectACL = wrapper(
     ctx.log.info("Looping over fields", { objectKeys, keys, object });
 
     for (const fieldName of objectKeys) {
+      if (
+        [
+          "id",
+          "object_type",
+          "created_at",
+          "updated_at",
+          "deleted_at",
+        ].includes(fieldName)
+      ) {
+        errors.createError(ctx, "FieldUneditable", { fieldName });
+        return;
+      }
+
       // Find the field config and current method's view
 
       const fieldConfig = objectConfig.fields[fieldName];
@@ -192,10 +217,30 @@ export const verifyObjectACL = wrapper(
             continue;
           }
 
-          if (aclMode === "soft" || !object) {
+          if (aclMode === "soft") {
             // If ACL mode is soft, then we don't have data and virtuals shouldn't be executed
-            ctx.log.info("ACL mode is soft, no need to execute virtuals");
+            ctx.log.info(
+              "Access passes: ACL mode is soft, no need to execute virtuals",
+              {
+                aclMode,
+                object,
+              }
+            );
+            noAccess = false;
             continue;
+          }
+
+          if (!object) {
+            ctx.log.warn("ACL mode is hard, but no supplied object", {
+              aclMode,
+              object,
+            });
+            errors.createError(ctx, "ACLDenied", {
+              object,
+              aclMode,
+              reason: "no supplied object for hard acl",
+            });
+            return;
           }
 
           ctx.log.info("Executing virtual", { virtualName });
@@ -220,6 +265,7 @@ export const verifyObjectACL = wrapper(
           fieldConfig,
           roles,
           method,
+          reason: fieldName,
         });
       }
 

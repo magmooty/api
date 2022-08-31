@@ -181,6 +181,11 @@ const errors = [
   {
     code: "ACLDenied",
     statusCode: 403,
+    templateProps: ["reason"],
+  },
+  {
+    code: "FieldUneditable",
+    statusCode: 400,
     templateProps: [],
   },
 ] as const;
