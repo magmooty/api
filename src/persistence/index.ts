@@ -194,7 +194,7 @@ export interface PersistenceConfig {
 
 export type PreUpdateObjectHook = (
   previous: GraphObject,
-  updatePayload: { [key: string]: ObjectFieldValue },
+  updatePayload: { [key: string]: ObjectFieldValue }
 ) => Promise<void>;
 
 export interface UpdateObjectHooks {
@@ -469,15 +469,6 @@ export class Persistence {
 
       const previous = await this.getObject<GraphObject>(ctx, id);
 
-      await uniqueValidation(
-        ctx,
-        objectType,
-        previous,
-        payload as Partial<GraphObject>,
-        this.primaryDB,
-        "update"
-      );
-
       const updatePayload = {
         ...payload,
         updated_at: serializeDate(new Date()),
@@ -498,6 +489,15 @@ export class Persistence {
         id,
         object_type: objectType,
       };
+
+      await uniqueValidation(
+        ctx,
+        objectType,
+        previous,
+        payload as Partial<GraphObject>,
+        this.primaryDB,
+        "update"
+      );
 
       switch (objectConfig.cacheLevel) {
         case "external":
