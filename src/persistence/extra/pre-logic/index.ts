@@ -4,8 +4,8 @@ import { Context } from "@/tracing";
 
 export type PreLogicHandler = (
   ctx: Context,
-  previous: GraphObject,
-  payload: { [key: string]: ObjectFieldValue },
+  object: GraphObject,
+  payload?: { [key: string]: ObjectFieldValue }
 ) => Promise<void>;
 
 export default {

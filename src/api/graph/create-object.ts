@@ -3,39 +3,32 @@ import { apiWrapper, persistence } from "@/components";
 import { getObjectTypeFromId } from "@/graph";
 import { GraphObject } from "@/graph/objects/types";
 import { Context } from "@/tracing";
-import { Record, Static, String } from "runtypes";
-import { validateRequestBody, verifyObjectACL } from "../common";
+import { verifyObjectACL } from "../common";
 
-const GetObjectParams = Record({
-  id: String,
-});
-
-type GetObjectParams = Static<typeof GetObjectParams>;
-
-export const getObjectEndpoint: APIEndpoint = apiWrapper(
+export const createObjectEndpoint: APIEndpoint = apiWrapper(
   {
-    name: "getObject",
+    name: "createObject",
     file: __filename,
   },
   async (ctx: Context, req: APIRequest, res: APIResponse) => {
-    const { params } = req;
-
-    await validateRequestBody(ctx, params, GetObjectParams);
-
-    const { id } = params as GetObjectParams;
+    const { body } = req;
 
     const objectType = await getObjectTypeFromId(ctx, id);
 
+    const aclCache = {};
+
     await verifyObjectACL(ctx, {
       author: req.user,
-      method: "GET",
-      aclMode: "soft",
+      method: "POST",
+      aclMode: "hard",
       objectType,
-      singleFieldStrategy: "strip",
+      singleFieldStrategy: "error",
       roles: [],
+      aclCache,
+      object: body,
     });
 
-    const object = await persistence.getObject<GraphObject>(ctx, id);
+    const object = await persistence.createObject<GraphObject>(ctx, req.body);
 
     const strippedObject = await verifyObjectACL(ctx, {
       author: req.user,
@@ -43,8 +36,9 @@ export const getObjectEndpoint: APIEndpoint = apiWrapper(
       aclMode: "hard",
       objectType,
       singleFieldStrategy: "strip",
-      object,
       roles: [],
+      aclCache,
+      object,
     });
 
     res.json(strippedObject);

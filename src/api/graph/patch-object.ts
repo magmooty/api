@@ -73,8 +73,6 @@ export const patchObjectEndpoint: APIEndpoint = apiWrapper(
       aclCache,
     });
 
-    if (object) {
-      res.json(strippedObject);
-    }
+    res.json(strippedObject);
   }
 );

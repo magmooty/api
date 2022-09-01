@@ -201,6 +201,12 @@ export interface UpdateObjectHooks {
   pre?: PreUpdateObjectHook;
 }
 
+export type PreCreateObjectHook = (object: GraphObject) => Promise<void>;
+
+export interface CreateObjectHooks {
+  pre?: PreCreateObjectHook;
+}
+
 export class Persistence {
   public primaryDB: PersistenceDriver;
   public cache: CacheDriver;
@@ -358,7 +364,8 @@ export class Persistence {
     { name: "createObject", file: __filename },
     async <T = GraphObject>(
       ctx: Context,
-      payload: CreateObjectPayload
+      payload: CreateObjectPayload,
+      hooks: CreateObjectHooks = {}
     ): Promise<T> => {
       ctx.startTrackTime(
         "persistence_create_object_duration",
@@ -384,6 +391,21 @@ export class Persistence {
 
       await dryValidation(ctx, objectType, object as any, false);
 
+      const id = await generateID(ctx, objectType);
+
+      object = { ...object, id };
+
+      if (preLogicRules[path]) {
+        await preLogicRules[path](ctx, object);
+      }
+
+      if (hooks.pre) {
+        await hooks.pre(object);
+      }
+
+      // Recompute after hooks
+      object = { ...object, id, object_type: objectType };
+
       await uniqueValidation(
         ctx,
         objectType,
@@ -392,10 +414,6 @@ export class Persistence {
         this.primaryDB,
         "create"
       );
-
-      const id = await generateID(ctx, objectType);
-
-      object = { ...object, id };
 
       switch (objectConfig.cacheLevel) {
         case "external":
@@ -474,12 +492,12 @@ export class Persistence {
         updated_at: serializeDate(new Date()),
       };
 
-      if (hooks.pre) {
-        await hooks.pre(previous, updatePayload);
-      }
-
       if (preLogicRules[path]) {
         await preLogicRules[path](ctx, previous, updatePayload);
+      }
+
+      if (hooks.pre) {
+        await hooks.pre(previous, updatePayload);
       }
 
       // Recompute after pre-logic rules and pre-hooks
