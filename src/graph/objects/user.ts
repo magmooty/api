@@ -79,9 +79,11 @@ export default {
   edges: {
     roles: {
       objectTypes: ["tutor_role"],
+      view: "system_controlled",
     },
     statuses: {
       objectTypes: ["user_status"],
+      view: "system_controlled",
     },
   },
 } as ObjectConfig;

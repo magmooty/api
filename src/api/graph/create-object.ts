@@ -1,7 +1,7 @@
 import { APIEndpoint, APIRequest, APIResponse } from "@/api/types";
 import { apiWrapper, persistence } from "@/components";
-import { getObjectTypeFromId } from "@/graph";
-import { GraphObject } from "@/graph/objects/types";
+import { checkIfObjectTypeExists, getObjectTypeFromId } from "@/graph";
+import { GraphObject, ObjectType } from "@/graph/objects/types";
 import { Context } from "@/tracing";
 import { verifyObjectACL } from "../common";
 
@@ -13,7 +13,9 @@ export const createObjectEndpoint: APIEndpoint = apiWrapper(
   async (ctx: Context, req: APIRequest, res: APIResponse) => {
     const { body } = req;
 
-    const objectType = await getObjectTypeFromId(ctx, id);
+    const objectType = body.object_type as ObjectType;
+
+    await checkIfObjectTypeExists(ctx, objectType);
 
     const aclCache = {};
 

@@ -6,9 +6,5 @@ export const onPatch = wrapper(
   { name: "onPatch", file: __filename },
   async (ctx: Context, previous: GraphObject, updatePayload) => {
     ctx.register({ previous, updatePayload });
-
-    if (updatePayload.email && previous.email !== updatePayload.email) {
-      updatePayload.email_verified = false;
-    }
   }
 );

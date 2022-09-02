@@ -1,4 +1,4 @@
-import * as user from "./user";
+import * as user from "./triggers/user";
 import { GraphObject, ObjectFieldValue } from "@/graph/objects/types";
 import { Context } from "@/tracing";
 

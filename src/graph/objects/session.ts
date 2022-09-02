@@ -22,16 +22,19 @@ export default {
   fields: {
     token: {
       type: "string",
+      required: true,
     },
     user: {
       type: "object-id",
       objectTypes: ["user"],
+      required: true,
     },
     roles: {
       type: "array:string",
     },
     expiresAt: {
       type: "date",
+      required: true,
     },
   },
   edges: {},

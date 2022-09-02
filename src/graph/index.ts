@@ -74,6 +74,10 @@ export interface ObjectConfig {
   edges: { [key: string]: ObjectEdge };
 }
 
+export interface StructConfig {
+  [key: string]: ObjectField;
+}
+
 const objectCodeObjectTypeMap: { [key: string]: string } = Object.keys(
   objects
 ).reduce(
@@ -84,11 +88,30 @@ const objectCodeObjectTypeMap: { [key: string]: string } = Object.keys(
   {}
 );
 
+export const checkIfObjectTypeExists = async (
+  ctx: Context,
+  objectType: ObjectType
+): Promise<boolean> => {
+  const objectConfig = objects[objectType];
+
+  if (!objectConfig) {
+    return errors.createError(ctx, "ObjectTypeDoesNotExist", { objectType });
+  }
+
+  return true;
+};
+
 export const getObjectConfigFromObjectType = async (
   ctx: Context,
   objectType: ObjectType
 ): Promise<ObjectConfig> => {
-  return objects[objectType];
+  const objectConfig = objects[objectType];
+
+  if (!objectConfig) {
+    return errors.createError(ctx, "ObjectTypeDoesNotExist", { objectType });
+  }
+
+  return objectConfig;
 };
 
 export const getObjectTypeFromId = async (

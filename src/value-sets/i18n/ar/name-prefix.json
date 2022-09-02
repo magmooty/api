@@ -1,0 +1,26 @@
+[
+  {
+    "code": "mister",
+    "display": "مستر"
+  },
+  {
+    "code": "monsieur",
+    "display": "مسيو"
+  },
+  {
+    "code": "herr",
+    "display": "هير"
+  },
+  {
+    "code": "dr",
+    "display": "د"
+  },
+  {
+    "code": "tt",
+    "display": "استاذ"
+  },
+  {
+    "code": "prof",
+    "display": "د"
+  }
+]
