@@ -14,13 +14,25 @@ const universalUserGenerator = (
 ): SyncOperation[] => {
   const { name, email, phone } = object;
 
+  const searchableName = name
+    .map((humanName) =>
+      [
+        humanName.first_name || "",
+        humanName.middle_name || "",
+        humanName.last_name || "",
+      ]
+        .map((str) => str.trim())
+        .join(" ")
+    )
+    .join(" ");
+
   return [
     {
       method,
       index: INDEX_NAME,
       id: object.id,
       data: {
-        name,
+        name: searchableName,
         email,
         email_text: email,
         phone,

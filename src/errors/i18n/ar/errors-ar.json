@@ -4,7 +4,14 @@
     "template": "هذا الكيان غير موجود في النظام"
   },
   {
-    "code": "ObjectTypeDoesNotExist",
+    "code": "ObjectTypeDoesNotExist"
+  },
+  {
+    "code": "StructDoesNotExist",
+    "template": "هذا الكيان المحفوظ غير موجود في النظام"
+  },
+  {
+    "code": "StructOrObjectTypeDoesNotExist",
     "template": "نوع هذا الكيان غير موجود في النظام"
   },
   {

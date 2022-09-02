@@ -2,9 +2,11 @@ import { errors, valueSets } from "@/components";
 import {
   getObjectConfigFromObjectType,
   getObjectTypeFromId,
+  getStructConfigFromObjectTypeOrStructName,
   ObjectConfig,
   ObjectField,
   objects,
+  StructConfig,
 } from "@/graph";
 import { FIXED_OBJECT_FIELDS } from "@/graph/common";
 import { GraphObject, ObjectType } from "@/graph/objects/types";
@@ -75,7 +77,13 @@ async function validateFieldType(
         }
 
         if (fieldConfig.struct) {
-          // TODO: support struct array validation
+          // No need to set `error`, this will throw an error on its own
+          // it's just a proxy for recursion
+          await Promise.all(
+            fieldValue.map((value) =>
+              dryValidation(ctx, fieldConfig.struct as string, value)
+            )
+          );
         }
         break;
       case "array:object-id":
@@ -128,7 +136,9 @@ async function validateFieldType(
         break;
       case "struct":
         if (fieldConfig.struct) {
-          //TODO: support struct validation
+          // No need to set `error`, this will throw an error on its own
+          // it's just a proxy for recursion
+          await dryValidation(ctx, fieldConfig.struct, fieldValue);
         }
         break;
 
@@ -193,7 +203,7 @@ async function validateField(
 
 async function dryValidateField(
   ctx: Context,
-  objectConfig: ObjectConfig,
+  structConfig: StructConfig,
   data: GraphObject,
   fieldName: string
 ): Promise<void> {
@@ -203,7 +213,7 @@ async function dryValidateField(
     return;
   }
 
-  const fieldConfig = objectConfig.fields[fieldName];
+  const fieldConfig = structConfig.fields[fieldName];
 
   if (!fieldConfig) {
     return errors.createError(ctx, "ValidationErrorFieldNotFound", {
@@ -221,20 +231,32 @@ async function dryValidateField(
   if (fieldValidationResult) {
     const { fieldName, reason } = fieldValidationResult;
 
-    const { type, schema } = objectConfig.fields[fieldName];
+    const { type, schema, struct, valueSet } = structConfig.fields[fieldName];
 
-    const fieldType = schema ? `${type}<${schema}>` : type;
+    let friendlyFieldType: string = type;
+
+    if (schema) {
+      friendlyFieldType = `${type}<${schema}>`;
+    }
+
+    if (struct) {
+      friendlyFieldType = `${type}<${struct}>`;
+    }
+
+    if (valueSet) {
+      friendlyFieldType = `${type}<${valueSet}>`;
+    }
 
     switch (reason) {
       case ValidationErrorReason.Required:
         return errors.createError(ctx, "ValidationErrorRequiredField", {
           fieldName,
-          fieldType,
+          fieldType: friendlyFieldType,
         });
       case ValidationErrorReason.BadDataType:
         return errors.createError(ctx, "ValidationErrorBadDataType", {
           fieldName,
-          fieldType,
+          fieldType: friendlyFieldType,
         });
     }
   }
@@ -242,22 +264,25 @@ async function dryValidateField(
 
 export async function dryValidation(
   ctx: Context,
-  objectType: ObjectType,
+  objectTypeOrStructName: ObjectType | string,
   data: GraphObject,
   partial = false
 ): Promise<void> {
-  const objectConfig = await getObjectConfigFromObjectType(ctx, objectType);
+  const structConfig = await getStructConfigFromObjectTypeOrStructName(
+    ctx,
+    objectTypeOrStructName
+  );
 
   if (partial) {
     for (const fieldName of Object.keys(data)) {
-      await dryValidateField(ctx, objectConfig, data, fieldName);
+      await dryValidateField(ctx, structConfig, data, fieldName);
     }
   } else {
     for (const fieldName of new Set([
       ...Object.keys(data),
-      ...Object.keys(objectConfig.fields),
+      ...Object.keys(structConfig.fields),
     ]).values()) {
-      await dryValidateField(ctx, objectConfig, data, fieldName);
+      await dryValidateField(ctx, structConfig, data, fieldName);
     }
   }
 }

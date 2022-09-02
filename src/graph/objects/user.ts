@@ -32,7 +32,8 @@ export default {
   },
   fields: {
     name: {
-      type: "string",
+      type: "array:struct",
+      struct: "human-name",
     },
     email: {
       type: "string",

@@ -8,6 +8,14 @@
     "template": "Object type doesn't exist"
   },
   {
+    "code": "StructDoesNotExist",
+    "template": "Struct doesn't exist"
+  },
+  {
+    "code": "StructOrObjectTypeDoesNotExist",
+    "template": "Struct or object type doesn't exist"
+  },
+  {
     "code": "ErrorDataMissing",
     "template": "System error"
   },

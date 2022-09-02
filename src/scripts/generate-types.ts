@@ -3,6 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { ObjectConfig, ObjectField, objects } from "../graph";
 import * as tsj from "ts-json-schema-generator";
+import structs from "@/graph/structs";
 
 const log = console;
 
@@ -36,6 +37,29 @@ generateSchema();
 
 //#region Generate types from object graph
 
+const capitalize = (text: string, splitter?: string) => {
+  const words = splitter ? text.split(splitter) : [text];
+
+  return words
+    .map((word) => `${word[0].toUpperCase()}${word.substring(1)}`)
+    .join("");
+};
+
+const objectFieldValues = [
+  "string",
+  "string[]",
+  "number",
+  "number[]",
+  "boolean",
+  "Date",
+  "ObjectId",
+  "GraphObject",
+  ...Object.keys(structs).map((structName) => capitalize(structName, "-")),
+  ...Object.keys(structs).map(
+    (structName) => `${capitalize(structName, "-")}[]`
+  ),
+];
+
 let typesFileContents = `
 export type ObjectId = string;
 
@@ -43,7 +67,7 @@ export type ObjectType = ${Object.keys(objects)
   .map((objectType) => `"${objectType}"`)
   .join(" | ")}
 
-export type ObjectFieldValue = string | string[] | number | number[] | boolean | Date | ObjectId | GraphObject;
+export type ObjectFieldValue = ${objectFieldValues.join("|")};
 
 export type AppLocale = 'ar' | 'en';
 
@@ -60,14 +84,6 @@ export interface GraphObject {
 }
 
 `;
-
-const capitalize = (text: string, splitter?: string) => {
-  const words = splitter ? text.split(splitter) : [text];
-
-  return words
-    .map((word) => `${word[0].toUpperCase()}${word.substring(1)}`)
-    .join("");
-};
 
 const append = (text: string) => {
   typesFileContents += text;
@@ -103,6 +119,11 @@ const object = {
       `object_type: "${objectType}"`,
     ].join("\n");
   },
+  structStart: (structName: string) => {
+    const typeName = capitalize(structName, "-");
+
+    return `export interface ${typeName} {`;
+  },
   fields: {
     string: (fieldName: string) => {
       return `${fieldName}: string;`;
@@ -120,7 +141,7 @@ const object = {
       return `${fieldName}: string | GraphObject;`;
     },
     struct: (fieldName: string, fieldConfig: ObjectField) => {
-      return `${fieldName}: I${capitalize(fieldConfig.struct as string)}`;
+      return `${fieldName}: ${capitalize(fieldConfig.struct as string, "-")}`;
     },
     "value-set": (fieldName: string, fieldConfig: ObjectField) => {
       return `${fieldName}: ${capitalize(
@@ -140,9 +161,13 @@ const object = {
     "array:date": (fieldName: string) => {
       return `${fieldName}: string[];`;
     },
+    "array:struct": (fieldName: string, fieldConfig: ObjectField) => {
+      return `${fieldName}: ${capitalize(fieldConfig.struct as string, "-")}[]`;
+    },
   } as {
     [key: string]: (fieldName: string, fieldConfig: ObjectField) => string;
   },
+  structEnd: () => "}\n",
   end: () => "}\n",
 };
 
@@ -165,6 +190,25 @@ for (const valueSetFileName of valueSetFiles) {
 
   append(valueSet.generator(valueSetFileName, json));
   append(valueSet.end());
+}
+
+for (const structName in structs) {
+  const structConfig = structs[structName];
+
+  append(object.structStart(structName));
+
+  for (const objectField in structConfig.fields) {
+    const fieldConfig = structConfig.fields[objectField];
+
+    if (object.fields[fieldConfig.type]) {
+      append(object.fields[fieldConfig.type](objectField, fieldConfig));
+    } else {
+      log.error("Couldn't find field generator for type", fieldConfig.type);
+      typesNotFound = true;
+    }
+  }
+
+  append(object.structEnd());
 }
 
 for (const objectType in objects) {

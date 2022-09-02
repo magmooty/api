@@ -10,7 +10,9 @@ export type ObjectFieldValue =
   | boolean
   | Date
   | ObjectId
-  | GraphObject;
+  | GraphObject
+  | HumanName
+  | HumanName[];
 
 export type AppLocale = "ar" | "en";
 
@@ -26,15 +28,31 @@ export interface GraphObject {
   [key: string]: ObjectFieldValue;
 }
 
-export type ValueSet = "UserGender" | "UserStatus";
+export type ValueSet = "NamePrefix" | "UserGender" | "UserStatus";
+
+export type NamePrefixVS =
+  | "mister"
+  | "monsieur"
+  | "herr"
+  | "dr"
+  | "tt"
+  | "prof";
 
 export type UserGenderVS = "male" | "female" | "unknown";
 
 export type UserStatusVS = "created";
 
+export interface HumanName {
+  prefix: NamePrefixVS;
+  first_name: string;
+  middle_name: string;
+  last_name: string;
+  locale: string;
+}
+
 export interface User extends GraphObject {
   object_type: "user";
-  name: string;
+  name: HumanName[];
   email: string;
   email_verified: boolean;
   phone: string;

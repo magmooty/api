@@ -1,5 +1,6 @@
 import { errors } from "@/components";
 import objects from "@/graph/objects";
+import structs from "@/graph/structs";
 import {
   GraphObject,
   ObjectFieldValue,
@@ -62,7 +63,13 @@ export enum ObjectTTL {
   Active = ms.days(3),
 }
 
-export interface ObjectConfig {
+export interface StructConfig {
+  fields: {
+    [key: string]: ObjectField;
+  };
+}
+
+export interface ObjectConfig extends StructConfig {
   code: string;
   systemObject?: boolean;
   cacheLevel: "external" | "none" | "onlyCache";
@@ -70,12 +77,7 @@ export interface ObjectConfig {
   deletedBy?: string[];
   views: { _default: ObjectView; [key: string]: ObjectView };
   virtuals: { views: { [key: string]: ObjectViewVirtual } };
-  fields: { [key: string]: ObjectField };
   edges: { [key: string]: ObjectEdge };
-}
-
-export interface StructConfig {
-  [key: string]: ObjectField;
 }
 
 const objectCodeObjectTypeMap: { [key: string]: string } = Object.keys(
@@ -99,6 +101,38 @@ export const checkIfObjectTypeExists = async (
   }
 
   return true;
+};
+
+export const getStructConfigFromObjectTypeOrStructName = async (
+  ctx: Context,
+  name: string
+): Promise<StructConfig> => {
+  const objectConfig = objects[name as ObjectType];
+
+  if (objectConfig) {
+    return objectConfig;
+  }
+  const structConfig = structs[name];
+
+  if (structConfig) {
+    return structConfig;
+  }
+
+  if (!objectConfig && !structConfig) {
+    errors.createError(ctx, "StructDoesNotExist", { name });
+  }
+
+  return null as any;
+};
+
+export const getStructConfig = async (ctx: Context, structName: string) => {
+  const structConfig = structs[structName];
+
+  if (!structConfig) {
+    return errors.createError(ctx, "StructDoesNotExist", { structName });
+  }
+
+  return structConfig;
 };
 
 export const getObjectConfigFromObjectType = async (

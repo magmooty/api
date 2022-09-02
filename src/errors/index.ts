@@ -24,6 +24,16 @@ const errors = [
     templateProps: [],
   },
   {
+    code: "StructDoesNotExist",
+    statusCode: 404,
+    templateProps: [],
+  },
+  {
+    code: "StructOrObjectTypeDoesNotExist",
+    statusCode: 404,
+    templateProps: [],
+  },
+  {
     code: "InvalidObjectId",
     statusCode: 400,
     templateProps: [],
