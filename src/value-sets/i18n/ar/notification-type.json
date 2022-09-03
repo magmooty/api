@@ -1,0 +1,14 @@
+[
+  {
+    "code": "verify_email",
+    "display": "التحقق من البريد الإلكتروني"
+  },
+  {
+    "code": "complete_tutor_profile",
+    "display": "أكمل ملفك الشخصي"
+  },
+  {
+    "code": "tutor_get_started",
+    "display": "تجول حول البرنامج!"
+  }
+]

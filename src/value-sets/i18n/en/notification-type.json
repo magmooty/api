@@ -1,0 +1,14 @@
+[
+  {
+    "code": "verify_email",
+    "display": "Verify email"
+  },
+  {
+    "code": "complete_tutor_profile",
+    "display": "Complete your tutor profile"
+  },
+  {
+    "code": "tutor_get_started",
+    "display": "Get started with tutorial!"
+  }
+]

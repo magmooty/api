@@ -11,6 +11,7 @@ import { Context } from "@/tracing";
 import ms from "milliseconds";
 
 export type ObjectFieldType =
+  | "json"
   | "string"
   | "number"
   | "boolean"

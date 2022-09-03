@@ -1,0 +1,11 @@
+[
+  {
+    "code": "critical"
+  },
+  {
+    "code": "warning"
+  },
+  {
+    "code": "info"
+  }
+]

@@ -1,0 +1,14 @@
+[
+  {
+    "code": "critical",
+    "display": "هام"
+  },
+  {
+    "code": "warning",
+    "display": "ملحوظة هامة"
+  },
+  {
+    "code": "info",
+    "display": "ملحوظة"
+  }
+]

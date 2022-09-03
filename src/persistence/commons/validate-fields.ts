@@ -37,6 +37,9 @@ async function validateFieldType(
 
   try {
     switch (fieldConfig.type) {
+      case "json":
+        // If it passed request parsing, then this is a valid value
+        break;
       case "array:string":
         error = joi.array().items(joi.string()).validate(fieldValue).error;
         break;

@@ -1,0 +1,11 @@
+[
+  {
+    "code": "verify_email"
+  },
+  {
+    "code": "complete_tutor_profile"
+  },
+  {
+    "code": "tutor_get_started"
+  }
+]
