@@ -2,7 +2,7 @@ import { ObjectConfig } from "@/graph";
 import { OwnerViewVirtualExecutor } from "@/graph/common";
 
 export default {
-  code: "R1",
+  code: "Z5",
   cacheLevel: "external",
   views: {
     _default: {
@@ -26,6 +26,7 @@ export default {
     owner: {
       type: "object-id",
       objectTypes: ["user"],
+      default: (object, author) => (author ? author.id : undefined),
     },
   },
   edges: {},

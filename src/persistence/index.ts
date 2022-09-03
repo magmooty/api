@@ -7,6 +7,7 @@ import {
   ObjectFieldValue,
   ObjectId,
   ObjectType,
+  User,
 } from "@/graph/objects/types";
 import { Context } from "@/tracing";
 import { randomBytes } from "crypto";
@@ -365,7 +366,7 @@ export class Persistence {
     async <T = GraphObject>(
       ctx: Context,
       payload: CreateObjectPayload,
-      hooks: CreateObjectHooks = {}
+      { hooks, author }: { hooks?: CreateObjectHooks; author?: User } = {}
     ): Promise<T> => {
       ctx.startTrackTime(
         "persistence_create_object_duration",
@@ -383,11 +384,9 @@ export class Persistence {
 
       ctx.setErrorDurationMetricLabels({ objectType });
 
-      let object = (await fillDefaults(
-        ctx,
-        objectType,
-        payload
-      )) as GraphObject;
+      let object = (await fillDefaults(ctx, objectType, payload, {
+        author,
+      })) as GraphObject;
 
       await dryValidation(ctx, objectType, object as any, false);
 
@@ -399,7 +398,7 @@ export class Persistence {
         await preLogicRules[path](ctx, object);
       }
 
-      if (hooks.pre) {
+      if (hooks && hooks.pre) {
         await hooks.pre(object);
       }
 
@@ -457,7 +456,7 @@ export class Persistence {
       ctx: Context,
       id: string,
       payload: Partial<T>,
-      hooks: UpdateObjectHooks = {}
+      { hooks }: { hooks?: UpdateObjectHooks; author?: User } = {}
     ): Promise<T> => {
       ctx.startTrackTime(
         "persistence_update_object_duration",
@@ -496,7 +495,7 @@ export class Persistence {
         await preLogicRules[path](ctx, previous, updatePayload);
       }
 
-      if (hooks.pre) {
+      if (hooks && hooks.pre) {
         await hooks.pre(previous, updatePayload);
       }
 

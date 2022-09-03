@@ -22,4 +22,26 @@ export default {
       },
     },
   },
+  "payment-method": {
+    fields: {
+      type: {
+        type: "value-set",
+        valueSet: "payment-method-type",
+      },
+      value: {
+        type: "string",
+      },
+    },
+  },
+  "contact-point": {
+    fields: {
+      type: {
+        type: "value-set",
+        valueSet: "contact-point",
+      },
+      value: {
+        type: "string",
+      },
+    },
+  },
 } as { [key: string]: StructConfig };

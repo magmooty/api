@@ -1,6 +1,6 @@
 import { APIEndpoint, APIRequest, APIResponse } from "@/api/types";
 import { apiWrapper, persistence } from "@/components";
-import { checkIfObjectTypeExists, getObjectTypeFromId } from "@/graph";
+import { checkIfObjectTypeExists } from "@/graph";
 import { GraphObject, ObjectType } from "@/graph/objects/types";
 import { Context } from "@/tracing";
 import { verifyObjectACL } from "../common";
@@ -30,7 +30,9 @@ export const createObjectEndpoint: APIEndpoint = apiWrapper(
       object: body,
     });
 
-    const object = await persistence.createObject<GraphObject>(ctx, req.body);
+    const object = await persistence.createObject<GraphObject>(ctx, req.body, {
+      author: req.user,
+    });
 
     const strippedObject = await verifyObjectACL(ctx, {
       author: req.user,

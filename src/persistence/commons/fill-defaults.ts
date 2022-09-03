@@ -1,12 +1,13 @@
 import { getObjectConfigFromObjectType } from "@/graph";
-import { ObjectType, GraphObject } from "@/graph/objects/types";
+import { ObjectType, GraphObject, User } from "@/graph/objects/types";
 import { Context } from "@/tracing";
 import { serializeDate } from "./serialize-date";
 
 export async function fillDefaults<T = GraphObject>(
   ctx: Context,
   objectType: ObjectType,
-  data: T
+  data: T,
+  { author }: { author?: User } = {}
 ): Promise<T> {
   const objectConfig = await getObjectConfigFromObjectType(ctx, objectType);
 
@@ -16,7 +17,11 @@ export async function fillDefaults<T = GraphObject>(
     const fieldConfig = objectConfig.fields[fieldName];
 
     if (fieldConfig.default && !output[fieldName]) {
-      output[fieldName] = fieldConfig.default(output as any);
+      const defaultValue = fieldConfig.default(output as any, author);
+
+      if (defaultValue !== undefined) {
+        output[fieldName] = defaultValue;
+      }
     }
   }
 

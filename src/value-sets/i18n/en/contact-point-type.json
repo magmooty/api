@@ -1,0 +1,14 @@
+[
+  {
+    "code": "phone",
+    "display": "Phone"
+  },
+  {
+    "code": "email",
+    "display": "Email"
+  },
+  {
+    "code": "telegram",
+    "display": "Telegram"
+  }
+]

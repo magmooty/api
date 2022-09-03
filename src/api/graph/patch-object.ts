@@ -59,7 +59,7 @@ export const patchObjectEndpoint: APIEndpoint = apiWrapper(
       ctx,
       id,
       req.body,
-      { pre: updatePreHook }
+      { hooks: { pre: updatePreHook }, author: req.user }
     );
 
     const strippedObject = await verifyObjectACL(ctx, {

@@ -1,0 +1,14 @@
+[
+  {
+    "code": "phone",
+    "display": "الموبايل"
+  },
+  {
+    "code": "email",
+    "display": "بريد إلكتروني"
+  },
+  {
+    "code": "telegram",
+    "display": "تلجرام"
+  }
+]

@@ -84,7 +84,10 @@ export const verifyObjectACL = wrapper(
 
       if (
         viewRoles.length > 0 &&
-        (_.intersection(viewRoles, roles).length > 0 || viewRolesHaveVirtuals)
+        (_.intersection(viewRoles, roles).length > 0 ||
+          viewRolesHaveVirtuals ||
+          viewRoles.includes("public") ||
+          viewRoles.includes("all"))
       ) {
         noPermissionsForMethod = false;
       }
@@ -124,6 +127,7 @@ export const verifyObjectACL = wrapper(
 
     for (const fieldName of objectKeys) {
       if (
+        method === "PATCH" &&
         [
           "id",
           "object_type",

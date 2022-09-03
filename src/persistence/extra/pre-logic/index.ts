@@ -1,4 +1,3 @@
-import * as user from "./triggers/user";
 import { GraphObject, ObjectFieldValue } from "@/graph/objects/types";
 import { Context } from "@/tracing";
 
@@ -8,6 +7,4 @@ export type PreLogicHandler = (
   payload?: { [key: string]: ObjectFieldValue }
 ) => Promise<void>;
 
-export default {
-  "PATCH user": user.onPatch,
-} as { [key: string]: PreLogicHandler };
+export default {} as { [key: string]: PreLogicHandler };

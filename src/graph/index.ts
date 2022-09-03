@@ -28,7 +28,7 @@ export type ObjectFieldType =
 
 export interface ObjectField {
   type: ObjectFieldType;
-  default?: (object: GraphObject) => ObjectFieldValue;
+  default?: (object: GraphObject, author?: User) => ObjectFieldValue;
   objectTypes?: string[];
   valueSet?: string;
   view?: string;

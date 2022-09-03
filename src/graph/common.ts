@@ -13,5 +13,5 @@ export const OwnerViewVirtualExecutor: ObjectViewVirtualExecutor = async (
   object: GraphObject,
   author: User
 ): Promise<boolean> => {
-  return object.id === author.id || object.user === author.id;
+  return object.id === author.id || object.owner === author.id || object.user === author.id;
 };
