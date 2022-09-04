@@ -49,6 +49,11 @@ export const init = wrapper(
     // Block some user agents
     app.use(blocker(["Nmap Scripting Engine"]));
 
+    // Block some requests
+    app.get("/", (req, res) => {
+      res.send();
+    });
+
     // Public endpoints
     app.use("/auth", authRouters.publicRouter);
 
