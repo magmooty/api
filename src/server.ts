@@ -1,6 +1,7 @@
 import * as api from "@/api";
 import {
   errors,
+  parallelLogic,
   persistence,
   queue,
   search,
@@ -17,6 +18,7 @@ const bootstrap = wrapper(
     await errors.init(ctx);
     await valueSets.init(ctx);
     await queue.init(ctx);
+    await parallelLogic.init(ctx);
     await sync.init(ctx);
     await api.init(ctx);
     await search.init(ctx);

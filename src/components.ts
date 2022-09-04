@@ -68,6 +68,11 @@ import { twilio } from "@/services/twilio";
 
 const services = { twilio };
 
+// Parallel logic
+import { ParallelLogic } from "./parallel-logic";
+
+const parallelLogic = new ParallelLogic();
+
 export {
   apiWrapper,
   wrapper,
@@ -81,4 +86,5 @@ export {
   search,
   auth,
   services,
+  parallelLogic,
 };

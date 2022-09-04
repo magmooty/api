@@ -31,6 +31,10 @@ export default {
       type: "object-id",
       objectTypes: ["user"],
     },
+    user: {
+      type: "object-id",
+      objectTypes: ["user"],
+    },
   },
   edges: {},
 } as ObjectConfig;

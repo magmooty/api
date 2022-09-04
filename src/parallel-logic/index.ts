@@ -5,8 +5,8 @@ import { Context } from "@/tracing";
 import parallelLogicTriggers from "./triggers";
 
 export class ParallelLogic {
-  init = wrapper({ name: "init", file: __filename }, (ctx: Context) => {
-    queue.subscribe(ctx, "parallel-logic", this.processEvent);
+  init = wrapper({ name: "init", file: __filename }, async (ctx: Context) => {
+    await queue.subscribe(ctx, "parallel-logic", this.processEvent);
   });
 
   processEvent = wrapper(
@@ -18,7 +18,7 @@ export class ParallelLogic {
         `${event.method} ${event.path}` as any;
 
       if (parallelLogicTriggers[handler]) {
-        await parallelLogicTriggers[handler](ctx, event);
+        await parallelLogicTriggers[handler](ctx, event as any);
       }
     }
   );
