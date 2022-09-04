@@ -111,7 +111,7 @@ export class NativeAuthDriver implements AuthDriver {
         return;
       }
 
-      const searchResult = await this.search.search(ctx, "user", {
+      const searchResult = await this.search.search<User>(ctx, "user", {
         filters: { or: [{ email: username }, { phone: username }] },
       });
 
@@ -120,7 +120,7 @@ export class NativeAuthDriver implements AuthDriver {
         return;
       }
 
-      const user = await persistence.getObject<User>(ctx, searchResult[0]);
+      const user = searchResult[0];
 
       if (user.email !== username && user.phone !== username) {
         errors.createError(ctx, "UserNotFound", { username });

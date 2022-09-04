@@ -1,3 +1,4 @@
+import { GraphObject } from "@/graph/objects/types";
 import { IndexName } from "@/sync/mapping";
 import { Context } from "@/tracing";
 import {
@@ -22,7 +23,12 @@ export interface SearchCriteria {
 
 export interface SearchDriver {
   init(ctx: Context | null): Promise<void>;
-  search(
+  search<T = GraphObject>(
+    ctx: Context | null,
+    index: IndexName,
+    criteria: SearchCriteria
+  ): Promise<T[]>;
+  leanSearch(
     ctx: Context | null,
     index: IndexName,
     criteria: SearchCriteria

@@ -1,4 +1,6 @@
-import { errors, wrapper } from "@/components";
+import { errors, persistence, wrapper } from "@/components";
+import { GraphObject } from "@/graph/objects/types";
+import { IndexName } from "@/sync/mapping";
 import { Context } from "@/tracing";
 import { Client } from "@elastic/elasticsearch";
 import { SearchCriteria, SearchDriver } from ".";
@@ -116,13 +118,14 @@ export class ElasticSearchSearchDriver implements SearchDriver {
     });
   });
 
-  search = wrapper(
+  private _search = wrapper(
     { name: "search", file: __filename },
     async (
       ctx: Context,
-      index: "user",
-      criteria: SearchCriteria
-    ): Promise<string[]> => {
+      index: IndexName,
+      criteria: SearchCriteria,
+      internalOptions: { lean: boolean }
+    ): Promise<string[] | GraphObject[]> => {
       const query = constructElasticSearchQuery(criteria);
       const sort = constructElasticSearchSorter(criteria);
 
@@ -138,7 +141,31 @@ export class ElasticSearchSearchDriver implements SearchDriver {
 
       ctx.log.info("search query result", { result });
 
-      return result.hits.hits.map((hit) => hit._id);
+      const ids = result.hits.hits.map((hit) => hit._id);
+
+      if (internalOptions.lean) {
+        return ids;
+      }
+
+      return Promise.all(
+        ids.map((id) => persistence.getObject<GraphObject>(ctx, id))
+      );
     }
   );
+
+  leanSearch(
+    ctx: Context,
+    index: IndexName,
+    criteria: SearchCriteria
+  ): Promise<string[]> {
+    return this._search(ctx, index, criteria, { lean: true });
+  }
+
+  search<T = GraphObject>(
+    ctx: Context,
+    index: IndexName,
+    criteria: SearchCriteria
+  ): Promise<T[]> {
+    return this._search(ctx, index, criteria, { lean: false });
+  }
 }

@@ -161,7 +161,7 @@ const object = {
       return `${fieldName}: string[];`;
     },
     json: (fieldName, fieldConfig: ObjectField) => {
-      return `${fieldName}: Object;`;
+      return `${fieldName}: { [key: string]: ObjectFieldValue };`;
     },
     "array:number": (fieldName, fieldConfig: ObjectField) => {
       return `${fieldName}: number[];`;

@@ -50,7 +50,7 @@ export interface UserIndexMapping {
 
 export interface NotificationIndexMapping {
   user: string;
-  created_at: string;
+  type: string;
 }
 
 export type ValueSet =
@@ -139,7 +139,7 @@ export interface Space extends GraphObject {
 export interface Notification extends GraphObject {
   object_type: "notification";
   type: NotificationTypeVS;
-  data: Object;
+  data: { [key: string]: ObjectFieldValue };
   icon: string;
   user: string;
   alert: boolean;
