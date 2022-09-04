@@ -12,7 +12,7 @@ export default {
     },
     create_only: {
       GET: ["virtual:owner"],
-      POST: [],
+      POST: ["all"],
       // FEATURE FLAG OFF
       // POST: ["virtual:has_invite", "virtual:space_owner"],
       PATCH: [],
