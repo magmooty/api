@@ -9,6 +9,7 @@ import express from "express";
 import "express-async-errors";
 import { authMiddleware } from "./auth/middleware";
 import { APINextFunction, APIRequest, APIResponse } from "./types";
+import blocker from "express-user-agent-blocker";
 
 const errorHandler = (
   error: Error | AppError,
@@ -44,6 +45,9 @@ export const init = wrapper(
     // Config middlewares
     metrics.installApp(app);
     app.use(bodyParser.json());
+
+    // Block some user agents
+    app.use(blocker(["Nmap Scripting Engine"]));
 
     // Public endpoints
     app.use("/auth", authRouters.publicRouter);
