@@ -60,11 +60,6 @@ export default {
       default: () => false,
       view: "system_controlled",
     },
-    gender: {
-      type: "value-set",
-      valueSet: "user-gender",
-      default: () => "unknown",
-    },
     status: {
       type: "value-set",
       valueSet: "user-status",
