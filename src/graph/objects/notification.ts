@@ -2,7 +2,7 @@ import { ObjectConfig, ObjectTTL } from "@/graph";
 import { OwnerViewVirtualExecutor } from "@/graph/common";
 
 export default {
-  code: "Z5",
+  code: "N1",
   ttl: ObjectTTL.Active,
   cacheLevel: "external",
   views: {

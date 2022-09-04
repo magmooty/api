@@ -140,7 +140,7 @@ export class ElasticSearchSyncDriver implements SyncDriver {
           await this.client.index({
             index: prefixedIndex,
             id,
-            document: { ...data, id },
+            document: { ...data },
           });
           break;
         case "update":
