@@ -37,7 +37,7 @@ export default {
     fields: {
       type: {
         type: "value-set",
-        valueSet: "contact-point",
+        valueSet: "contact-point-type",
       },
       value: {
         type: "string",

@@ -1,6 +1,23 @@
 [
   {
-    "code": "verify_email"
+    "code": "verify_email",
+    "extra": {
+      "actions": [
+        {
+          "action": "verify-email"
+        }
+      ]
+    }
+  },
+  {
+    "code": "verify_phone",
+    "extra": {
+      "actions": [
+        {
+          "action": "verify-phone"
+        }
+      ]
+    }
   },
   {
     "code": "complete_tutor_profile"

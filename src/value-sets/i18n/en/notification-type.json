@@ -1,7 +1,29 @@
 [
   {
     "code": "verify_email",
-    "display": "Verify email"
+    "display": "Verify email",
+    "extra": {
+      "message": "Please click on verify email and enter the code you will get on your email",
+      "actions": [
+        {
+          "display": "Verify email",
+          "action": "verify-email"
+        }
+      ]
+    }
+  },
+  {
+    "code": "verify_phone",
+    "display": "Verify phone",
+    "extra": {
+      "message": "Please click on verify phone and enter the code you will get in an SMS",
+      "actions": [
+        {
+          "display": "Verify phone",
+          "action": "verify-phone"
+        }
+      ]
+    }
   },
   {
     "code": "complete_tutor_profile",

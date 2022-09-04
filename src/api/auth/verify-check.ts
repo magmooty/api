@@ -47,7 +47,7 @@ export const verifyCheckEndpoint: APIEndpoint = apiWrapper(
       return;
     }
 
-    const to = { sms: phone, email }[channel];
+    const to = { sms: phone, email }[channel] as string;
 
     const verificationCheckInstance = await services.twilio.checkVerification(
       ctx,

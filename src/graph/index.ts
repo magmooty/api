@@ -1,5 +1,4 @@
 import { errors } from "@/components";
-import objects from "@/graph/objects";
 import structs from "@/graph/structs";
 import {
   GraphObject,
@@ -80,6 +79,8 @@ export interface ObjectConfig extends StructConfig {
   virtuals: { views: { [key: string]: ObjectViewVirtual } };
   edges: { [key: string]: ObjectEdge };
 }
+
+import objects from "@/graph/objects";
 
 const objectCodeObjectTypeMap: { [key: string]: string } = Object.keys(
   objects

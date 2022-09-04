@@ -1,6 +1,11 @@
 export type ObjectId = string;
 
-export type ObjectType = "user" | "session" | "system-user" | "space";
+export type ObjectType =
+  | "user"
+  | "session"
+  | "system-user"
+  | "space"
+  | "notification";
 
 export type ObjectFieldValue =
   | string
@@ -11,6 +16,7 @@ export type ObjectFieldValue =
   | Date
   | ObjectId
   | GraphObject
+  | Object
   | HumanName
   | PaymentMethod
   | ContactPoint
@@ -35,6 +41,7 @@ export interface GraphObject {
 export type ValueSet =
   | "ContactPointType"
   | "NamePrefix"
+  | "NotificationCriticalityLevel"
   | "NotificationType"
   | "PaymentMethodType"
   | "UserGender"
@@ -50,8 +57,11 @@ export type NamePrefixVS =
   | "tt"
   | "prof";
 
+export type NotificationCriticalityLevelVS = "critical" | "warning" | "info";
+
 export type NotificationTypeVS =
   | "verify_email"
+  | "verify_phone"
   | "complete_tutor_profile"
   | "tutor_get_started";
 
@@ -62,41 +72,41 @@ export type UserGenderVS = "male" | "female" | "unknown";
 export type UserStatusVS = "created";
 
 export interface HumanName {
-  prefix?: NamePrefixVS;
-  first_name?: string;
-  middle_name?: string;
-  last_name?: string;
+  prefix: NamePrefixVS;
+  first_name: string;
+  middle_name: string;
+  last_name: string;
   locale: string;
 }
 
 export interface PaymentMethod {
-  type?: PaymentMethodTypeVS;
-  value?: string;
+  type: PaymentMethodTypeVS;
+  value: string;
 }
 
 export interface ContactPoint {
-  type?: ContactPointVS;
-  value?: string;
+  type: ContactPointTypeVS;
+  value: string;
 }
 
 export interface User extends GraphObject {
   object_type: "user";
-  name?: HumanName[];
-  email?: string;
-  email_verified?: boolean;
-  phone?: string;
-  phone_verified?: boolean;
-  gender?: UserGenderVS;
-  status?: UserStatusVS;
-  last_read_notification?: string;
-  system_user?: string | GraphObject;
+  name: HumanName[];
+  email: string;
+  email_verified: boolean;
+  phone: string;
+  phone_verified: boolean;
+  gender: UserGenderVS;
+  status: UserStatusVS;
+  last_read_notification: string;
+  system_user: string | GraphObject;
 }
 
 export interface Session extends GraphObject {
   object_type: "session";
   token: string;
   user: string | GraphObject;
-  roles?: string[];
+  roles: string[];
   expiresAt: string;
 }
 
@@ -107,6 +117,15 @@ export interface SystemUser extends GraphObject {
 
 export interface Space extends GraphObject {
   object_type: "space";
-  name?: string;
-  owner?: string | GraphObject;
+  name: string;
+  owner: string | GraphObject;
+}
+
+export interface Notification extends GraphObject {
+  object_type: "notification";
+  type: NotificationTypeVS;
+  data: Object;
+  user: string | GraphObject;
+  alert: boolean;
+  level: NotificationCriticalityLevelVS;
 }

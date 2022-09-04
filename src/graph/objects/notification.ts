@@ -33,6 +33,7 @@ export default {
     },
     data: {
       type: "json",
+      view: "system_controlled",
     },
     user: {
       type: "object-id",

@@ -54,6 +54,7 @@ const objectFieldValues = [
   "Date",
   "ObjectId",
   "GraphObject",
+  "Object",
   ...Object.keys(structs).map((structName) => capitalize(structName, "-")),
   ...Object.keys(structs).map(
     (structName) => `${capitalize(structName, "-")}[]`
@@ -130,52 +131,46 @@ const object = {
   },
   fields: {
     string: (fieldName: string, fieldConfig: ObjectField) => {
-      return `${fieldName}${required(fieldConfig)}: string;`;
+      return `${fieldName}: string;`;
     },
     number: (fieldName: string, fieldConfig: ObjectField) => {
-      return `${fieldName}${required(fieldConfig)}: number;`;
+      return `${fieldName}: number;`;
     },
     boolean: (fieldName: string, fieldConfig: ObjectField) => {
-      return `${fieldName}${required(fieldConfig)}: boolean;`;
+      return `${fieldName}: boolean;`;
     },
     date: (fieldName: string, fieldConfig: ObjectField) => {
-      return `${fieldName}${required(fieldConfig)}: string;`;
+      return `${fieldName}: string;`;
     },
     "object-id": (fieldName: string, fieldConfig: ObjectField) => {
-      return `${fieldName}${required(fieldConfig)}: string | GraphObject;`;
+      return `${fieldName}: string | GraphObject;`;
     },
     struct: (fieldName: string, fieldConfig: ObjectField) => {
-      return `${fieldName}${required(fieldConfig)}: ${capitalize(
-        fieldConfig.struct as string,
-        "-"
-      )}`;
+      return `${fieldName}: ${capitalize(fieldConfig.struct as string, "-")}`;
     },
     "value-set": (fieldName: string, fieldConfig: ObjectField) => {
-      return `${fieldName}${required(fieldConfig)}: ${capitalize(
+      return `${fieldName}: ${capitalize(
         fieldConfig.valueSet as string,
         "-"
       )}VS;`;
     },
     "array:string": (fieldName, fieldConfig: ObjectField) => {
-      return `${fieldName}${required(fieldConfig)}: string[];`;
+      return `${fieldName}: string[];`;
     },
     json: (fieldName, fieldConfig: ObjectField) => {
-      return `${fieldName}${required(fieldConfig)}: Object;`;
+      return `${fieldName}: Object;`;
     },
     "array:number": (fieldName, fieldConfig: ObjectField) => {
-      return `${fieldName}${required(fieldConfig)}: number[];`;
+      return `${fieldName}: number[];`;
     },
     "array:boolean": (fieldName: string, fieldConfig: ObjectField) => {
-      return `${fieldName}${required(fieldConfig)}: boolean[];`;
+      return `${fieldName}: boolean[];`;
     },
     "array:date": (fieldName: string, fieldConfig: ObjectField) => {
-      return `${fieldName}${required(fieldConfig)}: string[];`;
+      return `${fieldName}: string[];`;
     },
     "array:struct": (fieldName: string, fieldConfig: ObjectField) => {
-      return `${fieldName}${required(fieldConfig)}: ${capitalize(
-        fieldConfig.struct as string,
-        "-"
-      )}[]`;
+      return `${fieldName}: ${capitalize(fieldConfig.struct as string, "-")}[]`;
     },
   } as {
     [key: string]: (fieldName: string, fieldConfig: ObjectField) => string;

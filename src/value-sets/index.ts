@@ -7,6 +7,7 @@ import path from "path";
 export interface ValueSet {
   code: string;
   display: string;
+  extra: Object;
 }
 
 export class ValueSets {
