@@ -69,7 +69,7 @@ async function validateFieldType(
           const valueSet = valueSets.getValueSet(fieldConfig.valueSet);
 
           error = fieldValue.every((value: string) =>
-            valueSet.some((item) => item.code === value)
+            valueSet.every((item) => item.code !== value)
           );
         }
         break;
@@ -134,7 +134,7 @@ async function validateFieldType(
         if (fieldConfig.valueSet) {
           const valueSet = valueSets.getValueSet(fieldConfig.valueSet);
 
-          error = valueSet.some((item) => item.code === fieldValue);
+          error = valueSet.every((item) => item.code !== fieldValue);
         }
         break;
       case "struct":
