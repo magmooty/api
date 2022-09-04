@@ -26,7 +26,7 @@ export const rule6 = wrapper(
       if (
         verifyEmailNotification &&
         verifyEmailNotification.data &&
-        verifyPhoneNotification.data.completed === false &&
+        verifyEmailNotification.data.completed === false &&
         verifyEmailNotification.data.email === event.current.email
       ) {
         await persistence.updateObject<Notification>(
