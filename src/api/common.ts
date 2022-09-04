@@ -52,7 +52,7 @@ export const verifyObjectACL = wrapper(
       aclMode,
       keys,
       aclCache,
-    } = { keys: Object.keys(objectConfig.fields), ...payload };
+    } = payload;
 
     if (!author) {
       errors.createError(ctx, "ACLDenied", { reason: "no author", author });
@@ -115,9 +115,9 @@ export const verifyObjectACL = wrapper(
     const virtualsCache: any = aclCache || {};
     const strippedFields = [];
 
-    let objectKeys: string[] = keys;
+    let objectKeys: string[] = keys || Object.keys(objectConfig.fields);
 
-    if (object) {
+    if (object && (!keys || keys?.length <= 0)) {
       objectKeys = _.without(Object.keys(object), ...FIXED_OBJECT_FIELDS);
     }
 

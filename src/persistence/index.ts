@@ -19,6 +19,7 @@ import { wait } from "./commons/wait";
 import { DynamoDBConfig, DynamoPersistenceDriver } from "./dynamodb";
 import cacheHijackRules from "./extra/cache-hijack";
 import preLogicRules from "./extra/pre-logic";
+import _ from "lodash";
 
 /**
  * Prefix a cache key with the lock prefix
@@ -508,6 +509,13 @@ export class Persistence {
         object_type: objectType,
       };
 
+      // Need to remove the fields with `null`
+      const removedFields = Object.keys(updatePayload).filter(
+        (field: string) => (updatePayload as any)[field] === null
+      );
+
+      const rebuiltObject = _.omit(updatedObject, removedFields);
+
       await uniqueValidation(
         ctx,
         objectType,
@@ -520,7 +528,7 @@ export class Persistence {
       switch (objectConfig.cacheLevel) {
         case "external":
         case "onlyCache":
-          await this.cache.set(ctx, id, updatedObject);
+          await this.cache.set(ctx, id, rebuiltObject);
           break;
       }
 
@@ -535,13 +543,13 @@ export class Persistence {
         path: objectType,
         type: "object",
         previous,
-        current: updatedObject as any,
+        current: rebuiltObject as any,
         author: author?.id,
       });
 
       ctx.setDurationMetricLabels({ objectType });
 
-      return updatedObject as any;
+      return rebuiltObject as any;
     },
     async (ctx, error) => {
       {
