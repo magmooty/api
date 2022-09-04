@@ -398,9 +398,9 @@ export class Persistence {
         await preLogicRules[path](ctx, object);
       }
 
-      // if (hooks && hooks.pre) {
-      //   await hooks.pre(object);
-      // }
+      if (hooks && hooks.pre) {
+        await hooks.pre(object);
+      }
 
       // Recompute after hooks
       object = { ...object, id, object_type: objectType };
