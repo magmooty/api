@@ -20,9 +20,23 @@
     }
   },
   {
-    "code": "complete_tutor_profile"
+    "code": "complete_tutor_profile",
+    "extra": {
+      "actions": [
+        {
+          "action": "complete-profile"
+        }
+      ]
+    }
   },
   {
-    "code": "tutor_get_started"
+    "code": "tutor_get_started",
+    "extra": {
+      "actions": [
+        {
+          "action": "start-guide"
+        }
+      ]
+    }
   }
 ]

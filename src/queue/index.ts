@@ -1,4 +1,4 @@
-import { AppLocale, GraphObject, IEdge } from "@/graph/objects/types";
+import { AppLocale, GraphObject, IEdge, User } from "@/graph/objects/types";
 import { Context, RootContext } from "@/tracing";
 import { QueueKafkaConfig, QueueKafkaDriver } from "./kafka";
 
@@ -26,6 +26,7 @@ export interface BaseQueueEvent<T = GraphObject | IEdge> {
   path: string;
   previous?: T;
   current?: T;
+  author?: string;
 }
 
 export interface QueueEvent<T = GraphObject | IEdge> extends BaseQueueEvent<T> {

@@ -1,5 +1,5 @@
 import { queue, wrapper } from "@/components";
-import { GraphObject } from "@/graph/objects/types";
+import { GraphObject, IEdge } from "@/graph/objects/types";
 import { QueueEvent } from "@/queue";
 import { Context } from "@/tracing";
 
@@ -10,7 +10,7 @@ export class ParallelLogic {
 
   processEvent = wrapper(
     { name: "processEvent", file: __filename },
-    (ctx: Context, event: QueueEvent<GraphObject>) => {
+    (ctx: Context, event: QueueEvent<GraphObject | IEdge>) => {
       ctx.register({ event });
     }
   );

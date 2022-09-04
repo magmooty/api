@@ -11,6 +11,11 @@ export default {
       POST: [],
       PATCH: ["virtual:owner"],
     },
+    user_private: {
+      GET: ["virtual:owner"],
+      POST: [],
+      PATCH: ["virtual:owner"],
+    },
     system_controlled: {
       GET: ["virtual:owner"],
       POST: [],
@@ -69,7 +74,7 @@ export default {
     last_read_notification: {
       type: "date",
       default: () => serializeDate(new Date()),
-      view: "system_controlled",
+      view: "user_private",
     },
     system_user: {
       type: "object-id",

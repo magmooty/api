@@ -434,6 +434,7 @@ export class Persistence {
         path: objectType,
         type: "object",
         current: object,
+        author: author?.id,
       });
 
       return object as any;
@@ -456,7 +457,7 @@ export class Persistence {
       ctx: Context,
       id: string,
       payload: Partial<T>,
-      { hooks }: { hooks?: UpdateObjectHooks; author?: User } = {}
+      { hooks, author }: { hooks?: UpdateObjectHooks; author?: User } = {}
     ): Promise<T> => {
       ctx.startTrackTime(
         "persistence_update_object_duration",
@@ -535,6 +536,7 @@ export class Persistence {
         type: "object",
         previous,
         current: updatedObject as any,
+        author: author?.id,
       });
 
       ctx.setDurationMetricLabels({ objectType });

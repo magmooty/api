@@ -3,7 +3,7 @@
     "code": "verify_email",
     "display": "Verify email",
     "extra": {
-      "message": "Please click on verify email and enter the code you will get on your email",
+      "message": "Please click on {verify-email} and enter the code you will get on your email",
       "actions": [
         {
           "display": "Verify email",
@@ -16,7 +16,7 @@
     "code": "verify_phone",
     "display": "Verify phone",
     "extra": {
-      "message": "Please click on verify phone and enter the code you will get in an SMS",
+      "message": "Please click on {verify-phone} and enter the code you will get in an SMS",
       "actions": [
         {
           "display": "Verify phone",
@@ -27,10 +27,28 @@
   },
   {
     "code": "complete_tutor_profile",
-    "display": "Complete your tutor profile"
+    "display": "Complete your tutor profile",
+    "extra": {
+      "message": "You can {complete-profile} to start using the full version!",
+      "actions": [
+        {
+          "display": "add a payment method to your tutor profile",
+          "action": "complete-profile"
+        }
+      ]
+    }
   },
   {
     "code": "tutor_get_started",
-    "display": "Get started with tutorial!"
+    "display": "Get started with tutorial!",
+    "extra": {
+      "message": "Welcome to Magmooty. You can explore our features or you can {start-guide}.",
+      "actions": [
+        {
+          "display": "start the guide",
+          "action": "start-guide"
+        }
+      ]
+    }
   }
 ]
