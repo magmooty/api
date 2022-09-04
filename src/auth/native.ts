@@ -208,7 +208,7 @@ export class NativeAuthDriver implements AuthDriver {
 
       const systemUser = await persistence.createObject<SystemUser>(ctx, {
         hash,
-        object_type: "system-user",
+        object_type: "system_user",
       });
 
       const user = await persistence.createObject<User>(ctx, {

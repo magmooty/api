@@ -14,7 +14,7 @@ export const rule2 = wrapper(
         set_at: serializeDate(),
         status: "created",
         user: event.current.id,
-        object_type: "user-status",
+        object_type: "user_status",
       });
 
       await persistence.createEdge(

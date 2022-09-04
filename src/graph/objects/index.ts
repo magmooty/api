@@ -9,9 +9,9 @@ import tutorRole from "./tutor-role";
 export default {
   user,
   session,
-  "system-user": systemUser,
+  "system_user": systemUser,
   space,
   notification,
-  "user-status": userStatus,
-  "tutor-role": tutorRole,
+  "user_status": userStatus,
+  "tutor_role": tutorRole,
 };

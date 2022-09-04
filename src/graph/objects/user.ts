@@ -73,7 +73,7 @@ export default {
     },
     system_user: {
       type: "object-id",
-      objectTypes: ["system-user"],
+      objectTypes: ["system_user"],
       view: "system_private",
     },
   },

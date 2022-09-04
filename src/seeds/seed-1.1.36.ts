@@ -21,12 +21,12 @@ const main = wrapper(
           results.map(async (result) => {
             const { hash } = result;
 
-            const id = await generateID(ctx, "system-user");
+            const id = await generateID(ctx, "system_user");
 
             const systemUser =
               await persistence.primaryDB.createObject<SystemUser>(ctx, id, {
                 hash,
-                object_type: "system-user",
+                object_type: "system_user",
               });
 
             const updatedUser = await persistence.primaryDB.updateObject(

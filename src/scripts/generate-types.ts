@@ -120,7 +120,13 @@ const required = (fieldConfig: ObjectField) => {
 
 const object = {
   start: (objectType: string) => {
-    const typeName = capitalize(objectType, "-");
+    let typeName;
+
+    if (objectType.includes("-")) {
+      typeName = capitalize(objectType, "-");
+    } else {
+      typeName = capitalize(objectType, "_");
+    }
 
     return [
       `export interface ${typeName} extends GraphObject {`,

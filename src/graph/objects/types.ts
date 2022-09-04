@@ -3,11 +3,11 @@ export type ObjectId = string;
 export type ObjectType =
   | "user"
   | "session"
-  | "system-user"
+  | "system_user"
   | "space"
   | "notification"
-  | "user-status"
-  | "tutor-role";
+  | "user_status"
+  | "tutor_role";
 
 export type ObjectFieldValue =
   | string
@@ -125,7 +125,7 @@ export interface Session extends GraphObject {
 }
 
 export interface SystemUser extends GraphObject {
-  object_type: "system-user";
+  object_type: "system_user";
   hash: string;
 }
 
@@ -146,7 +146,7 @@ export interface Notification extends GraphObject {
 }
 
 export interface UserStatus extends GraphObject {
-  object_type: "user-status";
+  object_type: "user_status";
   status: UserStatusVS;
   set_at: string;
   set_by: string;
@@ -154,7 +154,7 @@ export interface UserStatus extends GraphObject {
 }
 
 export interface TutorRole extends GraphObject {
-  object_type: "tutor-role";
+  object_type: "tutor_role";
   payment_methods: PaymentMethod[];
   user: string;
   contacts: ContactPoint[];
