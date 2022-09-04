@@ -6,7 +6,8 @@ export type ObjectType =
   | "system-user"
   | "space"
   | "notification"
-  | "user-status";
+  | "user-status"
+  | "tutor-role";
 
 export type ObjectFieldValue =
   | string
@@ -37,6 +38,19 @@ export interface GraphObject {
   id: ObjectId;
   object_type: ObjectType;
   [key: string]: ObjectFieldValue;
+}
+
+export interface UserIndexMapping {
+  name: string;
+  email: string;
+  email_text: string;
+  phone: string;
+  phone_text: string;
+}
+
+export interface NotificationIndexMapping {
+  user: string;
+  created_at: string;
 }
 
 export type ValueSet =
@@ -100,13 +114,13 @@ export interface User extends GraphObject {
   gender: UserGenderVS;
   status: UserStatusVS;
   last_read_notification: string;
-  system_user: string | GraphObject;
+  system_user: string;
 }
 
 export interface Session extends GraphObject {
   object_type: "session";
   token: string;
-  user: string | GraphObject;
+  user: string;
   roles: string[];
   expiresAt: string;
 }
@@ -119,14 +133,15 @@ export interface SystemUser extends GraphObject {
 export interface Space extends GraphObject {
   object_type: "space";
   name: string;
-  owner: string | GraphObject;
+  owner: string;
 }
 
 export interface Notification extends GraphObject {
   object_type: "notification";
   type: NotificationTypeVS;
   data: Object;
-  user: string | GraphObject;
+  icon: string;
+  user: string;
   alert: boolean;
   level: NotificationCriticalityLevelVS;
 }
@@ -135,5 +150,13 @@ export interface UserStatus extends GraphObject {
   object_type: "user-status";
   status: UserStatusVS;
   set_at: string;
-  set_by: string | GraphObject;
+  set_by: string;
+}
+
+export interface TutorRole extends GraphObject {
+  object_type: "tutor-role";
+  payment_methods: PaymentMethod[];
+  user: string;
+  contacts: ContactPoint[];
+  space: string;
 }

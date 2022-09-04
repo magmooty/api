@@ -4,6 +4,8 @@ import * as path from "path";
 import { ObjectConfig, ObjectField, objects } from "../graph";
 import * as tsj from "ts-json-schema-generator";
 import structs from "@/graph/structs";
+import { IndexName, mappings } from "@/sync/mapping";
+import { MappingProperty } from "@elastic/elasticsearch/lib/api/types";
 
 const log = console;
 
@@ -15,6 +17,7 @@ const TSCONFIG_FILE_PATH = path.join(__dirname, "../../tsconfig.json");
 const CONFIG_TYPES_FILE_PATH = path.join(__dirname, "../config/types.ts");
 const TYPES_FILE_PATH = path.join(__dirname, "../graph/objects/types.ts");
 const VALUE_SET_DIR_PATH = path.join(__dirname, "../value-sets/sets");
+const MAPPING_DIR_PATH = path.join(__dirname, "../sync/mapping");
 
 //#region Generate JSON config schema
 
@@ -143,7 +146,7 @@ const object = {
       return `${fieldName}: string;`;
     },
     "object-id": (fieldName: string, fieldConfig: ObjectField) => {
-      return `${fieldName}: string | GraphObject;`;
+      return `${fieldName}: string;`;
     },
     struct: (fieldName: string, fieldConfig: ObjectField) => {
       return `${fieldName}: ${capitalize(fieldConfig.struct as string, "-")}`;
@@ -179,7 +182,40 @@ const object = {
   end: () => "}\n",
 };
 
+const mappingGenerator = {
+  start: (objectType: string) => {
+    const typeName = capitalize(objectType, "-");
+
+    return `export interface ${typeName}IndexMapping {`;
+  },
+  fields: {
+    keyword: (fieldName: string) => {
+      return `${fieldName}: string;`;
+    },
+    text: (fieldName: string) => {
+      return `${fieldName}: string;`;
+    },
+  } as {
+    [key: string]: (fieldName: string, fieldConfig: MappingProperty) => string;
+  },
+  end: () => "}\n",
+};
+
 let typesNotFound = false;
+
+for (const mappingName in mappings) {
+  append(mappingGenerator.start(mappingName));
+  for (const fieldName in mappings[mappingName as IndexName].mapping) {
+    const fieldConfig = mappings[mappingName as IndexName].mapping[fieldName];
+    append(
+      mappingGenerator.fields[fieldConfig.type as string](
+        fieldName,
+        fieldConfig
+      )
+    );
+  }
+  append(mappingGenerator.end());
+}
 
 const valueSetFiles = fs
   .readdirSync(VALUE_SET_DIR_PATH)

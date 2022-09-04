@@ -234,10 +234,10 @@ export class Persistence {
     }
   }
 
-  async init() {
+  init = wrapper({ name: "init", file: __filename }, async () => {
     await this.primaryDB.init();
     await this.cache.init();
-  }
+  });
 
   getLock = wrapper(
     { name: "getLock", file: __filename },
@@ -365,7 +365,7 @@ export class Persistence {
     { name: "createObject", file: __filename },
     async <T = GraphObject>(
       ctx: Context,
-      payload: T,
+      payload: CreateObjectPayload,
       { hooks, author }: { hooks?: CreateObjectHooks; author?: User } = {}
     ): Promise<T> => {
       ctx.startTrackTime(
@@ -375,7 +375,7 @@ export class Persistence {
 
       ctx.register({ payload });
 
-      const { object_type: objectType } = payload as GraphObject;
+      const { object_type: objectType } = payload;
 
       const path = `POST ${objectType}`;
       const objectConfig = await getObjectConfigFromObjectType(ctx, objectType);

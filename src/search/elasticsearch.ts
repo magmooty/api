@@ -58,12 +58,39 @@ const constructElasticSearchFilters = (criteria: SearchCriteria) => {
 };
 
 const constructElasticSearchQuery = (criteria: SearchCriteria) => {
+  if (!criteria.query && !criteria.filters) {
+    return { match_all: {} };
+  }
+
   return {
     bool: {
       ...constructElasticSearchQueryString(criteria),
       ...constructElasticSearchFilters(criteria),
     },
   };
+};
+
+const constructElasticSearchSorter = (criteria: SearchCriteria) => {
+  const mutableCriteria = { ...criteria };
+
+  let sorters: any[] = [{ _id: "desc" }];
+
+  if (mutableCriteria.sort_by) {
+    if (mutableCriteria.sort_by.created_at) {
+      mutableCriteria.sort_by._id = mutableCriteria.sort_by.created_at;
+      delete mutableCriteria.sort_by.created_at;
+    }
+
+    const keys = Object.keys(mutableCriteria.sort_by);
+
+    if (keys.length > 0) {
+      sorters = keys.map((key) => ({
+        [key]: (mutableCriteria.sort_by as any)[key],
+      }));
+    }
+  }
+
+  return sorters;
 };
 
 export class ElasticSearchSearchDriver implements SearchDriver {
@@ -81,6 +108,14 @@ export class ElasticSearchSearchDriver implements SearchDriver {
     return `${this.elasticSearchConfig.prefix}${indexName}`;
   };
 
+  init = wrapper({ name: "init", file: __filename }, async () => {
+    await this.client.cluster.putSettings({
+      persistent: {
+        "indices.id_field_data.enabled": true,
+      },
+    });
+  });
+
   search = wrapper(
     { name: "search", file: __filename },
     async (
@@ -88,15 +123,13 @@ export class ElasticSearchSearchDriver implements SearchDriver {
       index: "user",
       criteria: SearchCriteria
     ): Promise<string[]> => {
-      if (!criteria.query && !criteria.filters) {
-        errors.createError(ctx, "InvalidSearchCriteria");
-      }
-
       const query = constructElasticSearchQuery(criteria);
+      const sort = constructElasticSearchSorter(criteria);
 
       const options = {
         index: this.prefixIndex(index),
         query,
+        sort,
       };
 
       ctx.log.info("query options", { options });

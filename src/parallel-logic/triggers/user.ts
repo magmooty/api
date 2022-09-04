@@ -3,11 +3,13 @@ import { User } from "@/graph/objects/types";
 import { QueueEvent } from "@/queue";
 import { Context } from "@/tracing";
 import { rule1 } from "@/parallel-logic/rules/rule1";
+import { rule2 } from "@/parallel-logic/rules/rule2";
 
 export const onPost = wrapper(
   { name: "onPost", file: __filename },
   async (ctx: Context, event: QueueEvent<User>) => {
     await rule1(ctx, event);
+    await rule2(ctx, event);
   }
 );
 
@@ -22,6 +24,11 @@ export const onPatch = wrapper(
     // If phone changed, trigger rule 1
     if (event.current?.phone !== event.previous?.phone) {
       await rule1(ctx, event);
+    }
+
+    // If status changed, trigger rule 2
+    if (event.current?.status !== event.previous?.status) {
+      await rule2(ctx, event);
     }
   }
 );

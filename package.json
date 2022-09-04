@@ -62,6 +62,7 @@
     "joi-phone-number": "^5.1.1",
     "jsonwebtoken": "^8.5.1",
     "kafkajs": "^2.1.0",
+    "kuuid": "^1.0.1",
     "lodash": "^4.17.21",
     "milliseconds": "^1.0.3",
     "moment": "^2.29.4",
@@ -73,7 +74,6 @@
     "tiny-timestamp": "^1.0.0",
     "twilio": "^3.80.1",
     "typescript-transpile-only": "^0.0.4",
-    "uuid": "^8.3.2",
     "yargs": "^17.5.1"
   }
 }

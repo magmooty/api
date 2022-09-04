@@ -154,8 +154,8 @@ export const getObjectTypeFromId = async (
   ctx: Context,
   id: string
 ): Promise<ObjectType> => {
-  // 39 is the number of characters of a uuid + the object code suffix
-  if (!id || id.length !== 39) {
+  // 39 is the number of characters of a kuuid + the object code suffix
+  if (!id || id.length !== 35) {
     return errors.createError(ctx, "InvalidObjectId", { id });
   }
 

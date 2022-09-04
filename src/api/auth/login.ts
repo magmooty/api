@@ -19,10 +19,6 @@ export const loginEndpoint: APIEndpoint = apiWrapper(
   async (ctx: Context, req: APIRequest, res: APIResponse) => {
     const { body } = req;
 
-    ctx.log.debug("type", {
-      type: LoginEndpointBody.fields.username.toString(),
-    });
-
     await validateRequestBody(ctx, body, LoginEndpointBody);
 
     const { username, password }: LoginEndpointBody = body;

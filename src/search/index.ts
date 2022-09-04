@@ -15,9 +15,13 @@ export interface SearchCriteria {
       [key: string]: string | number;
     }[];
   };
+  sort_by?: {
+    [key: string]: "asc" | "desc";
+  };
 }
 
 export interface SearchDriver {
+  init(ctx: Context | null): Promise<void>;
   search(
     ctx: Context | null,
     index: IndexName,

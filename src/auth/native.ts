@@ -7,7 +7,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import _ from "lodash";
 import moment from "moment";
-import { v4 as uuid } from "uuid";
+import kuuid from "kuuid";
 import { AuthDriver, LoginResult } from ".";
 import joi from "joi";
 import joiPhoneNumber from "joi-phone-number";
@@ -60,7 +60,7 @@ export class NativeAuthDriver implements AuthDriver {
       user: User,
       refreshToken?: string
     ): Promise<LoginResult> => {
-      const sessionToken = uuid();
+      const sessionToken = kuuid.id();
       const sessionExpiresAt = moment()
         .add(this.nativeAuthDriverConfig.sessionTTL, "seconds")
         .toDate();

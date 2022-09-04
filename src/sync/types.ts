@@ -7,7 +7,7 @@ export interface IndexMapping {
 
 export type SyncOperationMethod = "create" | "update" | "delete";
 
-export interface SyncOperation<T = { [key: string]: string | number }> {
+export interface SyncOperation<T = { [key: string]: string | number | undefined | null }> {
   method: SyncOperationMethod;
   id: string;
   index: IndexName;

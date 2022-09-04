@@ -1,7 +1,7 @@
 import { wrapper } from "@/components";
 import { QueueEvent } from "@/queue";
 import { Context } from "@/tracing";
-import { User } from "@/graph/objects/types";
+import { User, UserIndexMapping } from "@/graph/objects/types";
 import { SyncOperation, SyncOperationMethod } from "@/sync/types";
 import { IndexName } from "@/sync/mapping";
 import { universalDeleteGenerator } from "../commons/universal-delete-generator";
@@ -11,7 +11,7 @@ const INDEX_NAME: IndexName = "user";
 const universalUserGenerator = (
   method: SyncOperationMethod,
   object: User
-): SyncOperation[] => {
+): SyncOperation<UserIndexMapping>[] => {
   const { name, email, phone } = object;
 
   let searchableName = "";
@@ -48,10 +48,7 @@ const universalUserGenerator = (
 
 export const onPost = wrapper(
   { name: "onPost", file: __filename },
-  async (
-    ctx: Context,
-    event: QueueEvent<User>
-  ): Promise<SyncOperation<User>[]> => {
+  async (ctx: Context, event: QueueEvent<User>): Promise<SyncOperation<UserIndexMapping>[]> => {
     ctx.register(event);
 
     if (!event.current) {
@@ -64,10 +61,7 @@ export const onPost = wrapper(
 
 export const onPatch = wrapper(
   { name: "onPatch", file: __filename },
-  async (
-    ctx: Context,
-    event: QueueEvent<User>
-  ): Promise<SyncOperation<User>[]> => {
+  async (ctx: Context, event: QueueEvent<User>): Promise<SyncOperation<UserIndexMapping>[]> => {
     ctx.register(event);
 
     if (!event.current) {
@@ -80,10 +74,7 @@ export const onPatch = wrapper(
 
 export const onDelete = wrapper(
   { name: "onDelete", file: __filename },
-  async (
-    ctx: Context,
-    event: QueueEvent<User>
-  ): Promise<SyncOperation<User>[]> => {
+  async (ctx: Context, event: QueueEvent<User>): Promise<SyncOperation<UserIndexMapping>[]> => {
     ctx.register(event);
 
     if (!event.previous) {

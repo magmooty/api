@@ -1,4 +1,5 @@
 import { persistence, wrapper } from "@/components";
+import { NotificationIcons } from "@/graph/extra/notification-icons";
 import { Notification, User } from "@/graph/objects/types";
 import { QueueEvent } from "@/queue";
 import { Context } from "@/tracing";
@@ -11,6 +12,7 @@ export const rule1 = wrapper(
         await persistence.createObject<Notification>(ctx, {
           alert: true,
           level: "info",
+          icon: NotificationIcons.VerifyPhone,
           data: { completed: false, phone: event.current.phone },
           type: "verify_phone",
           user: event.current.id,
@@ -24,6 +26,7 @@ export const rule1 = wrapper(
         await persistence.createObject<Notification>(ctx, {
           alert: true,
           level: "info",
+          icon: NotificationIcons.VerifyEmail,
           data: { completed: false, email: event.current.email },
           type: "verify_email",
           user: event.current.id,

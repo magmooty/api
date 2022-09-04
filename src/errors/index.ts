@@ -1,4 +1,4 @@
-import { config } from "@/components";
+import { config, wrapper } from "@/components";
 import { AppLocale } from "@/graph/objects/types";
 import { Context } from "@/tracing";
 import fs from "fs";
@@ -229,7 +229,7 @@ export class ErrorThrower {
     }
   }
 
-  init() {
+  init = wrapper({ name: "init", file: __filename }, async () => {
     const errorCodes: string[] = errors.map((error) => error.code);
 
     for (const locale of config.i18n.locales) {
@@ -259,7 +259,7 @@ export class ErrorThrower {
         }
       }
     }
-  }
+  });
 
   formatErrorMessage(
     code: ErrorType,

@@ -35,6 +35,9 @@ export default {
       type: "json",
       view: "system_controlled",
     },
+    icon: {
+      type: "string",
+    },
     user: {
       type: "object-id",
       objectTypes: ["user"],
