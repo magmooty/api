@@ -201,12 +201,13 @@ export class Tracer {
         req.ctx = ctx;
         res.header("X-Trace-Id", traceIds.traceId);
 
-        const { query, body, headers, path, params } = req;
+        const { query, body, headers, path, params, method } = req;
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password, ...strippedBody } = body;
 
         log.info(`${name} request`, {
+          method,
           query,
           body: strippedBody,
           headers,
