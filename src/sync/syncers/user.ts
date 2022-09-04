@@ -24,6 +24,7 @@ const universalUserGenerator = (
           humanName.middle_name || "",
           humanName.last_name || "",
         ]
+          .filter((term) => term)
           .map((str) => str.trim())
           .join(" ")
       )
