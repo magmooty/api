@@ -117,7 +117,7 @@ export const verifyObjectACL = wrapper(
 
     let objectKeys: string[] = keys;
 
-    if (object && keys.length <= 0) {
+    if (object) {
       objectKeys = _.without(Object.keys(object), ...FIXED_OBJECT_FIELDS);
     }
 
