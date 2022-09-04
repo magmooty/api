@@ -8,6 +8,7 @@ import { SyncConfig } from "@/sync";
 
 export interface AppConfig {
   $schema?: string;
+  env: string;
   server: {
     port: number;
   };

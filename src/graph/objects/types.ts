@@ -111,7 +111,6 @@ export interface User extends GraphObject {
   email_verified: boolean;
   phone: string;
   phone_verified: boolean;
-  gender: UserGenderVS;
   status: UserStatusVS;
   last_read_notification: string;
   system_user: string;
@@ -151,6 +150,7 @@ export interface UserStatus extends GraphObject {
   status: UserStatusVS;
   set_at: string;
   set_by: string;
+  user: string;
 }
 
 export interface TutorRole extends GraphObject {

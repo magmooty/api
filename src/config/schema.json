@@ -8,6 +8,9 @@
         "$schema": {
           "type": "string"
         },
+        "env": {
+          "type": "string"
+        },
         "server": {
           "type": "object",
           "properties": {
@@ -68,6 +71,7 @@
         }
       },
       "required": [
+        "env",
         "server",
         "auth",
         "persistence",
