@@ -365,7 +365,7 @@ export class Persistence {
     { name: "createObject", file: __filename },
     async <T = GraphObject>(
       ctx: Context,
-      payload: CreateObjectPayload,
+      payload: T,
       { hooks, author }: { hooks?: CreateObjectHooks; author?: User } = {}
     ): Promise<T> => {
       ctx.startTrackTime(
@@ -375,7 +375,7 @@ export class Persistence {
 
       ctx.register({ payload });
 
-      const { object_type: objectType } = payload;
+      const { object_type: objectType } = payload as GraphObject;
 
       const path = `POST ${objectType}`;
       const objectConfig = await getObjectConfigFromObjectType(ctx, objectType);

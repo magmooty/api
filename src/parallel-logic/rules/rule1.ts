@@ -1,5 +1,5 @@
 import { persistence, wrapper } from "@/components";
-import { User } from "@/graph/objects/types";
+import { Notification, User } from "@/graph/objects/types";
 import { QueueEvent } from "@/queue";
 import { Context } from "@/tracing";
 
@@ -8,7 +8,7 @@ export const rule1 = wrapper(
   async (ctx: Context, event: QueueEvent<User>) => {
     const createPhoneNotification = async () => {
       if (event.current) {
-        await persistence.createObject(ctx, {
+        await persistence.createObject<Notification>(ctx, {
           alert: true,
           level: "info",
           data: { completed: false, phone: event.current.phone },
@@ -21,7 +21,7 @@ export const rule1 = wrapper(
 
     const createEmailNotification = async () => {
       if (event.current) {
-        await persistence.createObject(ctx, {
+        await persistence.createObject<Notification>(ctx, {
           alert: true,
           level: "info",
           data: { completed: false, email: event.current.email },

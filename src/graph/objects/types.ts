@@ -5,7 +5,8 @@ export type ObjectType =
   | "session"
   | "system-user"
   | "space"
-  | "notification";
+  | "notification"
+  | "user-status";
 
 export type ObjectFieldValue =
   | string
@@ -128,4 +129,11 @@ export interface Notification extends GraphObject {
   user: string | GraphObject;
   alert: boolean;
   level: NotificationCriticalityLevelVS;
+}
+
+export interface UserStatus extends GraphObject {
+  object_type: "user-status";
+  status: UserStatusVS;
+  set_at: string;
+  set_by: string | GraphObject;
 }
