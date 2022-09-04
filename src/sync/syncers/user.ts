@@ -14,7 +14,7 @@ const universalUserGenerator = (
 ): SyncOperation<UserIndexMapping>[] => {
   const { name, email, phone } = object;
 
-  let searchableName = "";
+  let searchableName;
 
   if (name) {
     searchableName = name
@@ -36,7 +36,7 @@ const universalUserGenerator = (
       index: INDEX_NAME,
       id: object.id,
       data: {
-        name: searchableName,
+        ...(searchableName && { name: searchableName }),
         email,
         email_text: email,
         phone,
@@ -48,7 +48,10 @@ const universalUserGenerator = (
 
 export const onPost = wrapper(
   { name: "onPost", file: __filename },
-  async (ctx: Context, event: QueueEvent<User>): Promise<SyncOperation<UserIndexMapping>[]> => {
+  async (
+    ctx: Context,
+    event: QueueEvent<User>
+  ): Promise<SyncOperation<UserIndexMapping>[]> => {
     ctx.register(event);
 
     if (!event.current) {
@@ -61,7 +64,10 @@ export const onPost = wrapper(
 
 export const onPatch = wrapper(
   { name: "onPatch", file: __filename },
-  async (ctx: Context, event: QueueEvent<User>): Promise<SyncOperation<UserIndexMapping>[]> => {
+  async (
+    ctx: Context,
+    event: QueueEvent<User>
+  ): Promise<SyncOperation<UserIndexMapping>[]> => {
     ctx.register(event);
 
     if (!event.current) {
@@ -74,7 +80,10 @@ export const onPatch = wrapper(
 
 export const onDelete = wrapper(
   { name: "onDelete", file: __filename },
-  async (ctx: Context, event: QueueEvent<User>): Promise<SyncOperation<UserIndexMapping>[]> => {
+  async (
+    ctx: Context,
+    event: QueueEvent<User>
+  ): Promise<SyncOperation<UserIndexMapping>[]> => {
     ctx.register(event);
 
     if (!event.previous) {
