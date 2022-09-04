@@ -210,7 +210,7 @@ async function dryValidateField(
   data: GraphObject,
   fieldName: string
 ): Promise<void> {
-  ctx.log.info("Validating field", { fieldName });
+  ctx.log.info("Validating field", { fieldName, fieldValue: data[fieldName] });
 
   if (FIXED_OBJECT_FIELDS.includes(fieldName)) {
     return;

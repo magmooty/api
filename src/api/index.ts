@@ -9,7 +9,7 @@ import express from "express";
 import "express-async-errors";
 import { authMiddleware } from "./auth/middleware";
 import { APINextFunction, APIRequest, APIResponse } from "./types";
-import blocker from "express-user-agent-blocker";
+import userAgentBlocker from "express-user-agent-blocker";
 
 const errorHandler = (
   error: Error | AppError,
@@ -47,7 +47,7 @@ export const init = wrapper(
     app.use(bodyParser.json());
 
     // Block some user agents
-    app.use(blocker(["Nmap Scripting Engine"]));
+    app.use(userAgentBlocker(["Nmap Scripting Engine"]));
 
     // Block some requests
     app.get("/", (req, res) => {
