@@ -1,7 +1,7 @@
 {
   "name": "@magmooty/api",
   "version": "1.1.59",
-  "description": "Magmooty API",
+  "description": "Magmooty Monolith",
   "main": "dist/server.js",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/@magmooty"
