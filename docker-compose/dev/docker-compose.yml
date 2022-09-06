@@ -5,9 +5,9 @@ services:
     ports:
       - "3400:8000"
     image: amazon/dynamodb-local
-    command: -jar DynamoDBLocal.jar -sharedDb -dbPath /data
+    command: -jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data
     volumes:
-      - dynamodb_data:/data
+      - dynamodb_data:/home/dynamodblocal/data
   app:
     container_name: app
     build: ../..
