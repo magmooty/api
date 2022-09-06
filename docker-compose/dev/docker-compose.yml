@@ -3,7 +3,7 @@ services:
   dynamodb:
     container_name: local_dynamo
     ports:
-      - "3400:8000"
+      - "8000:8000"
     image: amazon/dynamodb-local
     command: -jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data
     volumes:
