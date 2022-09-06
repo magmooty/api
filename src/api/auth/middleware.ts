@@ -24,16 +24,19 @@ export const authMiddleware: APIEndpoint = apiWrapper(
 
     const token = authorization.slice("Bearer ".length);
 
-    const user = await auth.validateToken(ctx, token);
+    const validationResult = await auth.validateToken(ctx, token);
 
-    if (!user) {
+    if (!validationResult) {
       errors.createError(ctx, "SessionExpired");
       return;
     }
 
-    ctx.log.info("request for user", { user });
+    const { user, session } = validationResult;
+
+    ctx.log.info("request for user session", { user, session });
 
     req.user = user;
+    req.session = session;
     next();
   }
 );

@@ -246,7 +246,6 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
   );
 
   init = wrapper({ name: "init", file: __filename }, async (ctx: Context) => {
-    return;
     const tableNames = await this.listTableNames();
 
     ctx.log.info("Fetched table names", { tableNames });

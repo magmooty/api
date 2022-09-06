@@ -96,8 +96,15 @@ export class Tracer {
   ): <G = ExtractReturnType<T>>(
     ...funcArgs: ExtractParametersWithoutFirstParam<T>
   ) => G extends never ? ExtractReturnType<T> : G {
+    const middlewareBlacklist = ["authMiddleware"];
+    const blacklisted = middlewareBlacklist.includes(info.name);
+
     const handler = this.wrapper(
-      { ...info, name: `[ENDPOINT] ${info.name}`, isAPIEndpoint: true },
+      {
+        ...info,
+        name: blacklisted ? info.name : `[ENDPOINT] ${info.name}`,
+        isAPIEndpoint: true,
+      },
       func,
       errorCb,
       successCb

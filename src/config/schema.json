@@ -12,22 +12,16 @@
           "type": "string"
         },
         "server": {
-          "type": "object",
-          "properties": {
-            "port": {
-              "type": "number"
-            }
-          },
-          "required": [
-            "port"
-          ],
-          "additionalProperties": false
+          "$ref": "#/definitions/ServerConfig"
         },
         "auth": {
           "$ref": "#/definitions/AuthConfig"
         },
         "persistence": {
           "$ref": "#/definitions/PersistenceConfig"
+        },
+        "api": {
+          "$ref": "#/definitions/APIConfig"
         },
         "i18n": {
           "type": "object",
@@ -75,11 +69,24 @@
         "server",
         "auth",
         "persistence",
+        "api",
         "i18n",
         "queue",
         "sync",
         "search",
         "services"
+      ],
+      "additionalProperties": false
+    },
+    "ServerConfig": {
+      "type": "object",
+      "properties": {
+        "port": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "port"
       ],
       "additionalProperties": false
     },
@@ -273,6 +280,22 @@
         "cacheType",
         "databaseNumber",
         "slotsRefreshTimeout"
+      ],
+      "additionalProperties": false
+    },
+    "APIConfig": {
+      "type": "object",
+      "properties": {
+        "virtualsCacheRecheckInterval": {
+          "type": "number"
+        },
+        "virtualsCacheTimeout": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "virtualsCacheRecheckInterval",
+        "virtualsCacheTimeout"
       ],
       "additionalProperties": false
     },

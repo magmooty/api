@@ -1,3 +1,4 @@
+import { APIConfig, ServerConfig } from "@/api";
 import { AuthConfig } from "@/auth";
 import { AppLocale } from "@/graph/objects/types";
 import { PersistenceConfig } from "@/persistence";
@@ -9,11 +10,10 @@ import { SyncConfig } from "@/sync";
 export interface AppConfig {
   $schema?: string;
   env: string;
-  server: {
-    port: number;
-  };
+  server: ServerConfig;
   auth: AuthConfig;
   persistence: PersistenceConfig;
+  api: APIConfig;
   i18n: {
     defaultLocale: AppLocale;
     locales: AppLocale[];

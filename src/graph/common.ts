@@ -1,4 +1,7 @@
-import { ObjectViewVirtualExecutor } from "@/graph";
+import {
+  ObjectViewVirtualExecutor,
+  ObjectViewVirtualExecutorOptions,
+} from "@/graph";
 import { GraphObject, User } from "@/graph/objects/types";
 
 export const FIXED_OBJECT_FIELDS = [
@@ -11,7 +14,11 @@ export const FIXED_OBJECT_FIELDS = [
 
 export const OwnerViewVirtualExecutor: ObjectViewVirtualExecutor = async (
   object: GraphObject,
-  author: User
+  { author }: ObjectViewVirtualExecutorOptions
 ): Promise<boolean> => {
-  return object.id === author.id || object.owner === author.id || object.user === author.id;
+  return (
+    object.id === author.id ||
+    object.owner === author.id ||
+    object.user === author.id
+  );
 };

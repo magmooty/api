@@ -9,7 +9,7 @@ export const meEndpoint: APIEndpoint = apiWrapper(
     file: __filename,
   },
   async (ctx: Context, req: APIRequest, res: APIResponse) => {
-    if (!req.user) {
+    if (!req.user || !req.session) {
       return;
     }
 
@@ -20,7 +20,7 @@ export const meEndpoint: APIEndpoint = apiWrapper(
       objectType: "user",
       singleFieldStrategy: "strip",
       object: req.user,
-      roles: [],
+      roles: req.session?.roles,
     });
 
     res.json(strippedObject);

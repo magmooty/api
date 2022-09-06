@@ -1,3 +1,4 @@
+import { SessionSubstitute } from "@/auth";
 import { User } from "@/graph/objects/types";
 import { Context } from "@/tracing";
 import { NextFunction, Request, Response } from "express";
@@ -5,6 +6,7 @@ import { NextFunction, Request, Response } from "express";
 export interface APIRequest extends Request {
   ctx?: Context;
   user?: User;
+  session?: SessionSubstitute;
 }
 
 export type APIResponse = Response;

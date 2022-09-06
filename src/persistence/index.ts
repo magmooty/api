@@ -576,7 +576,8 @@ export class Persistence {
     async <T = GraphObject>(
       ctx: Context,
       id: string,
-      payload: Partial<GraphObject>
+      payload: Partial<GraphObject>,
+      { author }: { author?: User } = {}
     ): Promise<T> => {
       ctx.startTrackTime(
         "persistence_replace_object_duration",
@@ -634,6 +635,7 @@ export class Persistence {
         type: "object",
         previous,
         current: replacedObject,
+        author: author?.id,
       });
 
       ctx.setDurationMetricLabels({ objectType });
@@ -662,7 +664,11 @@ export class Persistence {
 
   deleteObject = wrapper(
     { name: "deleteObject", file: __filename },
-    async (ctx: Context, id: string): Promise<GraphObject> => {
+    async (
+      ctx: Context,
+      id: string,
+      { author }: { author?: User } = {}
+    ): Promise<GraphObject> => {
       ctx.startTrackTime(
         "persistence_delete_object_duration",
         "persistence_delete_object_error_duration"
@@ -727,6 +733,7 @@ export class Persistence {
         type: "object",
         previous,
         current: current as any,
+        author: author?.id,
       });
 
       ctx.setDurationMetricLabels({ objectType });
@@ -759,7 +766,8 @@ export class Persistence {
       ctx: Context,
       src: ObjectId,
       edgeName: string,
-      dst: ObjectId
+      dst: ObjectId,
+      { author }: { author?: User } = {}
     ): Promise<void> => {
       ctx.startTrackTime(
         "persistence_create_edge_duration",
@@ -821,6 +829,7 @@ export class Persistence {
           edgeName,
           dst,
         },
+        author: author?.id,
       });
 
       ctx.setDurationMetricLabels({ srcObjectType });
@@ -851,7 +860,8 @@ export class Persistence {
       ctx: Context,
       src: ObjectId,
       edgeName: string,
-      dst: ObjectId
+      dst: ObjectId,
+      { author }: { author?: User } = {}
     ): Promise<void> => {
       ctx.startTrackTime(
         "persistence_delete_edge_duration",
@@ -890,6 +900,7 @@ export class Persistence {
           edgeName,
           dst,
         },
+        author: author?.id,
       });
 
       ctx.setDurationMetricLabels({ srcObjectType });
@@ -919,8 +930,9 @@ export class Persistence {
     async (
       ctx: Context,
       src: ObjectId,
-      edgeName: string
-    ): Promise<string[]> => {
+      edgeName: string,
+      { lean }: { lean: boolean } = { lean: false }
+    ): Promise<(string | GraphObject)[]> => {
       ctx.startTrackTime(
         "persistence_get_edges_duration",
         "persistence_get_edges_error_duration"
@@ -942,14 +954,18 @@ export class Persistence {
       let result = [];
 
       if (isCacheKeyExistingInCache) {
-        result = (await this.cache.get(ctx, cacheKey)) as string[];
+        result = (await this.cache.lrange(ctx, cacheKey, 0, -1)) as string[];
       } else {
         result = await this.primaryDB.getEdges(ctx, src, edgeName);
       }
 
       ctx.setDurationMetricLabels({ srcObjectType });
 
-      return result;
+      if (lean) {
+        return result;
+      } else {
+        return Promise.all(result.map((id) => this.getObject(ctx, id)));
+      }
     },
     (ctx, error) => {
       ctx.metrics.getCounter("persistence_get_edges_error").inc({

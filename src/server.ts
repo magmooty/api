@@ -17,11 +17,11 @@ const bootstrap = wrapper(
     await persistence.init(ctx);
     await errors.init(ctx);
     await valueSets.init(ctx);
+    await search.init(ctx);
+    await api.init(ctx);
     await queue.init(ctx);
     await parallelLogic.init(ctx);
     await sync.init(ctx);
-    await api.init(ctx);
-    await search.init(ctx);
   }
 );
 

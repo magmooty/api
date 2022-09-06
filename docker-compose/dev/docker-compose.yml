@@ -1,5 +1,13 @@
 version: "3.3"
 services:
+  dynamodb:
+    container_name: local_dynamo
+    ports:
+      - "3400:8000"
+    image: amazon/dynamodb-local
+    command: -jar DynamoDBLocal.jar -sharedDb -dbPath /data
+    volumes:
+      - dynamodb_data:/data
   app:
     container_name: app
     build: ../..

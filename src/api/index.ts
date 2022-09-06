@@ -11,6 +11,15 @@ import { authMiddleware } from "./auth/middleware";
 import { APINextFunction, APIRequest, APIResponse } from "./types";
 import userAgentBlocker from "express-user-agent-blocker";
 
+export interface APIConfig {
+  virtualsCacheRecheckInterval: number;
+  virtualsCacheTimeout: number;
+}
+
+export interface ServerConfig {
+  port: number;
+}
+
 const errorHandler = (
   error: Error | AppError,
   req: APIRequest,

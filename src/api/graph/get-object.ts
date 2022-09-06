@@ -4,7 +4,7 @@ import { getObjectTypeFromId } from "@/graph";
 import { GraphObject } from "@/graph/objects/types";
 import { Context } from "@/tracing";
 import { Record, Static, String } from "runtypes";
-import { validateRequestBody, verifyObjectACL } from "../common";
+import { validatePayload, verifyObjectACL } from "../common";
 
 const GetObjectParams = Record({
   id: String,
@@ -18,9 +18,13 @@ export const getObjectEndpoint: APIEndpoint = apiWrapper(
     file: __filename,
   },
   async (ctx: Context, req: APIRequest, res: APIResponse) => {
+    if (!req.session) {
+      return;
+    }
+
     const { params } = req;
 
-    await validateRequestBody(ctx, params, GetObjectParams);
+    await validatePayload(ctx, params, GetObjectParams);
 
     const { id } = params as GetObjectParams;
 
@@ -32,7 +36,7 @@ export const getObjectEndpoint: APIEndpoint = apiWrapper(
       aclMode: "soft",
       objectType,
       singleFieldStrategy: "strip",
-      roles: [],
+      roles: req.session.roles,
     });
 
     const object = await persistence.getObject<GraphObject>(ctx, id);
@@ -44,7 +48,7 @@ export const getObjectEndpoint: APIEndpoint = apiWrapper(
       objectType,
       singleFieldStrategy: "strip",
       object,
-      roles: [],
+      roles: req.session.roles,
     });
 
     res.json(strippedObject);

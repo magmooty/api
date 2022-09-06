@@ -11,6 +11,10 @@ export const createObjectEndpoint: APIEndpoint = apiWrapper(
     file: __filename,
   },
   async (ctx: Context, req: APIRequest, res: APIResponse) => {
+    if (!req.session) {
+      return;
+    }
+
     const { body } = req;
 
     const objectType = body.object_type as ObjectType;
@@ -25,7 +29,7 @@ export const createObjectEndpoint: APIEndpoint = apiWrapper(
       aclMode: "hard",
       objectType,
       singleFieldStrategy: "error",
-      roles: [],
+      roles: req.session.roles,
       aclCache,
       object: body,
     });
@@ -40,7 +44,7 @@ export const createObjectEndpoint: APIEndpoint = apiWrapper(
       aclMode: "hard",
       objectType,
       singleFieldStrategy: "strip",
-      roles: [],
+      roles: req.session.roles,
       aclCache,
       object,
     });

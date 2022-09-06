@@ -1,4 +1,4 @@
-import { validateRequestBody } from "@/api/common";
+import { validatePayload } from "@/api/common";
 import { APIEndpoint, APIRequest, APIResponse } from "@/api/types";
 import { apiWrapper, errors, persistence, services } from "@/components";
 import { Context } from "@/tracing";
@@ -19,13 +19,13 @@ export const verifyCheckEndpoint: APIEndpoint = apiWrapper(
   async (ctx: Context, req: APIRequest, res: APIResponse) => {
     const { body } = req;
 
-    await validateRequestBody(ctx, body, VerifyCheckEndpointBody);
+    await validatePayload(ctx, body, VerifyCheckEndpointBody);
 
     const { channel, code }: VerifyCheckEndpointBody = req.body;
 
     ctx.register({ channel, code });
 
-    if (!req.user) {
+    if (!req.user || !req.session) {
       return;
     }
 

@@ -1,5 +1,11 @@
 import { errors, persistence, wrapper } from "@/components";
-import { Session, SystemUser, User } from "@/graph/objects/types";
+import {
+  Session,
+  SystemUser,
+  TutorRole,
+  User,
+  UserRole,
+} from "@/graph/objects/types";
 import { serializeDate } from "@/persistence/commons/serialize-date";
 import { SearchDriver } from "@/search";
 import { Context } from "@/tracing";
@@ -8,7 +14,7 @@ import jwt from "jsonwebtoken";
 import _ from "lodash";
 import moment from "moment";
 import kuuid from "kuuid";
-import { AuthDriver, LoginResult } from ".";
+import { AuthDriver, LoginResult, TokenValidationResult } from ".";
 import joi from "joi";
 import joiPhoneNumber from "joi-phone-number";
 
@@ -47,6 +53,10 @@ export interface RefreshTokenPayload {
   user: string;
 }
 
+const serializeRole = (role: UserRole) => {
+  return `${role.id}|${role.user}|${role.space}`;
+};
+
 export class NativeAuthDriver implements AuthDriver {
   constructor(
     private nativeAuthDriverConfig: NativeAuthDriverConfig,
@@ -65,11 +75,19 @@ export class NativeAuthDriver implements AuthDriver {
         .add(this.nativeAuthDriverConfig.sessionTTL, "seconds")
         .toDate();
 
+      const rolesObjects = await persistence.getEdges<UserRole[]>(
+        ctx,
+        user.id,
+        "roles"
+      );
+
+      const roles = rolesObjects.map(serializeRole);
+
       const session = await persistence.createObject<Session>(ctx, {
         token: sessionToken,
         user: user.id,
         object_type: "session",
-        roles: [],
+        roles,
         expiresAt: serializeDate(sessionExpiresAt),
       });
 
@@ -80,7 +98,7 @@ export class NativeAuthDriver implements AuthDriver {
         jwt.sign(
           {
             user: user.id,
-            roles: [],
+            roles,
           } as RefreshTokenPayload,
           this.nativeAuthDriverConfig.activeRefreshTokenSecret,
           { expiresIn: this.nativeAuthDriverConfig.refreshTokenTTL }
@@ -269,7 +287,10 @@ export class NativeAuthDriver implements AuthDriver {
 
   validateToken = wrapper(
     { name: "validateToken", file: __filename },
-    async (ctx: Context, token: string): Promise<User | void> => {
+    async (
+      ctx: Context,
+      token: string
+    ): Promise<TokenValidationResult | void> => {
       if (!token) {
         errors.createError(ctx, "InvalidToken");
         return;
@@ -296,7 +317,12 @@ export class NativeAuthDriver implements AuthDriver {
         return;
       }
 
-      return persistence.getObject<User>(ctx, session.user as string);
+      const user = await persistence.getObject<User>(
+        ctx,
+        session.user as string
+      );
+
+      return { user, session };
     }
   );
 }

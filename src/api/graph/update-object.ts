@@ -5,25 +5,29 @@ import { GraphObject } from "@/graph/objects/types";
 import { PreUpdateObjectHook } from "@/persistence";
 import { Context } from "@/tracing";
 import { Record, Static, String } from "runtypes";
-import { validateRequestBody, verifyObjectACL } from "../common";
+import { validatePayload, verifyObjectACL } from "../common";
 
-const PatchObjectParams = Record({
+const UpdateObjectParams = Record({
   id: String,
 });
 
-type PatchObjectParams = Static<typeof PatchObjectParams>;
+type UpdateObjectParams = Static<typeof UpdateObjectParams>;
 
-export const patchObjectEndpoint: APIEndpoint = apiWrapper(
+export const updateObjectEndpoint: APIEndpoint = apiWrapper(
   {
-    name: "patchObject",
+    name: "updateObject",
     file: __filename,
   },
   async (ctx: Context, req: APIRequest, res: APIResponse) => {
+    if (!req.session) {
+      return;
+    }
+
     const { params } = req;
 
-    await validateRequestBody(ctx, params, PatchObjectParams);
+    await validatePayload(ctx, params, UpdateObjectParams);
 
-    const { id } = params as PatchObjectParams;
+    const { id } = params as UpdateObjectParams;
     const { body } = req;
 
     const objectType = await getObjectTypeFromId(ctx, id);
@@ -36,12 +40,16 @@ export const patchObjectEndpoint: APIEndpoint = apiWrapper(
       aclMode: "soft",
       objectType,
       singleFieldStrategy: "error",
-      roles: [],
+      roles: req.session.roles,
       aclCache,
       keys: Object.keys(body),
     });
 
     const updatePreHook: PreUpdateObjectHook = async (previous) => {
+      if (!req.session) {
+        return;
+      }
+
       await verifyObjectACL(ctx, {
         author: req.user,
         method: "PATCH",
@@ -49,7 +57,7 @@ export const patchObjectEndpoint: APIEndpoint = apiWrapper(
         objectType,
         singleFieldStrategy: "error",
         object: previous,
-        roles: [],
+        roles: req.session.roles,
         aclCache,
         keys: Object.keys(body),
       });
@@ -69,7 +77,7 @@ export const patchObjectEndpoint: APIEndpoint = apiWrapper(
       objectType,
       singleFieldStrategy: "strip",
       object,
-      roles: [],
+      roles: req.session.roles,
       aclCache,
     });
 

@@ -40,17 +40,24 @@ export interface ObjectField {
 
 export interface ObjectEdge {
   objectTypes?: string[];
+  view?: string;
 }
 
 export interface ObjectView {
   GET: string[];
   POST: string[];
   PATCH: string[];
+  DELETE?: string[];
+}
+
+export interface ObjectViewVirtualExecutorOptions {
+  author: User;
+  roles: string[];
 }
 
 export type ObjectViewVirtualExecutor = (
   object: GraphObject,
-  author: User
+  options: ObjectViewVirtualExecutorOptions
 ) => Promise<boolean>;
 
 export interface ObjectViewVirtual {

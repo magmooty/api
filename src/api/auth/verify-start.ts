@@ -1,4 +1,4 @@
-import { validateRequestBody } from "@/api/common";
+import { validatePayload } from "@/api/common";
 import { APIEndpoint, APIRequest, APIResponse } from "@/api/types";
 import { apiWrapper, errors, services } from "@/components";
 import { Context } from "@/tracing";
@@ -18,13 +18,13 @@ export const verifyStartEndpoint: APIEndpoint = apiWrapper(
   async (ctx: Context, req: APIRequest, res: APIResponse) => {
     const { body } = req;
 
-    await validateRequestBody(ctx, body, VerifyStartEndpointBody);
+    await validatePayload(ctx, body, VerifyStartEndpointBody);
 
     const { channel }: VerifyStartEndpointBody = body;
 
     ctx.register({ channel });
 
-    if (!req.user) {
+    if (!req.user || !req.session) {
       return;
     }
 

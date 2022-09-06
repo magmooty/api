@@ -2,7 +2,7 @@ import { APIEndpoint, APIRequest, APIResponse } from "@/api/types";
 import { apiWrapper, auth } from "@/components";
 import { Context } from "@/tracing";
 import { Record, Static, String } from "runtypes";
-import { validateRequestBody } from "../common";
+import { validatePayload } from "../common";
 
 const LoginEndpointBody = Record({
   username: String,
@@ -19,7 +19,7 @@ export const loginEndpoint: APIEndpoint = apiWrapper(
   async (ctx: Context, req: APIRequest, res: APIResponse) => {
     const { body } = req;
 
-    await validateRequestBody(ctx, body, LoginEndpointBody);
+    await validatePayload(ctx, body, LoginEndpointBody);
 
     const { username, password }: LoginEndpointBody = body;
 

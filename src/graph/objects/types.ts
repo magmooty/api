@@ -28,6 +28,8 @@ export type ObjectFieldValue =
 
 export type AppLocale = "ar" | "en";
 
+export type UserRole = TutorRole;
+
 export interface IEdge {
   src: string;
   edgeName: string;

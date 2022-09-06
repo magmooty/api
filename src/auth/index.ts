@@ -8,6 +8,15 @@ export interface LoginResult {
   refresh_token: string;
 }
 
+export interface SessionSubstitute {
+  roles: string[];
+}
+
+export interface TokenValidationResult {
+  user: User;
+  session: SessionSubstitute;
+}
+
 export interface AuthDriver {
   login(
     ctx: Context | null,
@@ -26,7 +35,10 @@ export interface AuthDriver {
     refreshToken: string
   ): Promise<void | LoginResult | void>;
 
-  validateToken(ctx: Context | null, token: string): Promise<void | User>;
+  validateToken(
+    ctx: Context | null,
+    token: string
+  ): Promise<void | TokenValidationResult>;
 }
 
 export interface AuthConfig {
