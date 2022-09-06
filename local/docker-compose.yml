@@ -1,6 +1,7 @@
 version: "3.3"
 services:
   dynamodb-local:
+    user: root
     container_name: local_dynamo
     ports:
       - "8000:8000"
