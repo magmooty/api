@@ -22,7 +22,7 @@ const universalNotificationGenerator = (
       data: {
         type,
         user,
-        role,
+        role: role || "no-role",
       },
     },
   ];
