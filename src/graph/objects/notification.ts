@@ -9,7 +9,7 @@ export default {
     _default: {
       GET: ["virtual:owner"],
       POST: [],
-      PATCH: ["virtual:owner"],
+      PATCH: [],
     },
   },
   virtuals: {
