@@ -73,6 +73,7 @@
     "runtypes": "^6.6.0",
     "string-template": "^1.0.0",
     "tiny-timestamp": "^1.0.0",
+    "tokenizr": "^1.6.7",
     "twilio": "^3.80.1",
     "typescript-transpile-only": "^0.0.4",
     "yargs": "^17.5.1"

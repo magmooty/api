@@ -3,14 +3,20 @@ import { apiWrapper, persistence } from "@/components";
 import { getObjectTypeFromId } from "@/graph";
 import { GraphObject } from "@/graph/objects/types";
 import { Context } from "@/tracing";
-import { Record, Static, String } from "runtypes";
+import { Optional, Record, Static, String } from "runtypes";
 import { validatePayload, verifyObjectACL } from "../common";
+import { performExpand } from "../expand";
 
 const GetObjectParams = Record({
   id: String,
 });
 
+const GetObjectQuery = Record({
+  expand: Optional(String),
+});
+
 type GetObjectParams = Static<typeof GetObjectParams>;
+type GetObjectQuery = Static<typeof GetObjectQuery>;
 
 export const getObjectEndpoint: APIEndpoint = apiWrapper(
   {
@@ -22,11 +28,15 @@ export const getObjectEndpoint: APIEndpoint = apiWrapper(
       return;
     }
 
-    const { params } = req;
+    const { params, query } = req;
 
     await validatePayload(ctx, params, GetObjectParams);
+    await validatePayload(ctx, query, GetObjectQuery);
+
+    const aclCache: any = {};
 
     const { id } = params as GetObjectParams;
+    const { expand } = query as GetObjectQuery;
 
     const objectType = await getObjectTypeFromId(ctx, id);
 
@@ -37,9 +47,20 @@ export const getObjectEndpoint: APIEndpoint = apiWrapper(
       objectType,
       singleFieldStrategy: "strip",
       roles: req.session.roles,
+      aclCache,
     });
 
-    const object = await persistence.getObject<GraphObject>(ctx, id);
+    let object = await persistence.getObject<GraphObject>(ctx, id);
+
+    const objectKeysBeforeExpansion = Object.keys(object);
+
+    if (expand) {
+      object = await performExpand(ctx, object, expand, {
+        author: req.user,
+        aclCache,
+        roles: req.session.roles,
+      });
+    }
 
     const strippedObject = await verifyObjectACL(ctx, {
       author: req.user,
@@ -49,6 +70,8 @@ export const getObjectEndpoint: APIEndpoint = apiWrapper(
       singleFieldStrategy: "strip",
       object,
       roles: req.session.roles,
+      aclCache,
+      keys: objectKeysBeforeExpansion,
     });
 
     res.json(strippedObject);

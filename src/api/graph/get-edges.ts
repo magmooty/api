@@ -39,7 +39,7 @@ export const getEdgesEndpoint: APIEndpoint = apiWrapper(
     const objects = await persistence.getEdges(ctx, src, edgeName);
 
     const result = await Promise.all(
-      objects.map((object) => {
+      [objects[0], objects[0]].map((object) => {
         if (!req.session || typeof object === "string") {
           return;
         }

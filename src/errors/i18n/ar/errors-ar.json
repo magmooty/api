@@ -145,5 +145,9 @@
   {
     "code": "FieldUneditable",
     "template": "هذا الحقل غير قابل للتعديل"
+  },
+  {
+    "code": "InvalidExpandQuery",
+    "template": "فشل في تحميل البيانات المطلوبة"
   }
 ]

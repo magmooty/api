@@ -146,5 +146,9 @@
   {
     "code": "FieldUneditable",
     "template": "This field cannot be modified"
+  },
+  {
+    "code": "InvalidExpandQuery",
+    "template": "Invalid expand query"
   }
 ]

@@ -1,16 +1,11 @@
-import { errors, persistence, wrapper, config } from "@/components";
-import {
-  getObjectConfigFromObjectType,
-  getObjectTypeFromId,
-  ObjectView,
-  ObjectViewVirtual,
-} from "@/graph";
-import { GraphObject, ObjectType, User } from "@/graph/objects/types";
-import { Context } from "@/tracing";
-import { Record } from "runtypes";
-import _ from "lodash";
+import { config, errors, persistence, wrapper } from "@/components";
+import { getObjectConfigFromObjectType, getObjectTypeFromId } from "@/graph";
 import { FIXED_OBJECT_FIELDS } from "@/graph/common";
+import { GraphObject, ObjectType, User } from "@/graph/objects/types";
 import { wait } from "@/persistence/commons/wait";
+import { Context } from "@/tracing";
+import _ from "lodash";
+import { Record } from "runtypes";
 
 const extractType = (fieldName: string, record: Record<any, any>): string => {
   return record.fields[fieldName]
@@ -215,7 +210,9 @@ export const verifyObjectACL = wrapper(
 
     const strippedFields = [];
 
-    let objectKeys: string[] = keys || Object.keys(objectConfig.fields);
+    let objectKeys: string[] =
+      _.without(keys || [], ...FIXED_OBJECT_FIELDS) ||
+      Object.keys(objectConfig.fields);
 
     if (object && (!keys || keys?.length <= 0)) {
       objectKeys = _.without(Object.keys(object), ...FIXED_OBJECT_FIELDS);
@@ -243,6 +240,9 @@ export const verifyObjectACL = wrapper(
       // Find the field config and current method's view
 
       const fieldConfig = objectConfig.fields[fieldName];
+
+      ctx.log.debug("Field", { fieldName, fieldConfig, object });
+
       const view = fieldConfig.view
         ? objectConfig.views[fieldConfig.view]
         : objectConfig.views._default;

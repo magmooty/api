@@ -198,6 +198,11 @@ const errors = [
     statusCode: 400,
     templateProps: [],
   },
+  {
+    code: "InvalidExpandQuery",
+    statusCode: 400,
+    templateProps: [],
+  },
 ] as const;
 
 export type ErrorType = typeof errors[number]["code"];
