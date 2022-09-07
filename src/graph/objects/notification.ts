@@ -7,14 +7,9 @@ export default {
   cacheLevel: "external",
   views: {
     _default: {
-      GET: ["public"],
-      POST: [],
-      PATCH: ["virtual:owner"],
-    },
-    system_controlled: {
       GET: ["virtual:owner"],
       POST: [],
-      PATCH: [],
+      PATCH: ["virtual:owner"],
     },
   },
   virtuals: {
@@ -33,7 +28,6 @@ export default {
     },
     data: {
       type: "json",
-      view: "system_controlled",
     },
     icon: {
       type: "string",
@@ -41,17 +35,18 @@ export default {
     user: {
       type: "object-id",
       objectTypes: ["user"],
-      view: "system_controlled",
       required: true,
+    },
+    role: {
+      type: "object-id",
+      objectTypes: ["tutor_role"],
     },
     alert: {
       type: "boolean",
-      view: "system_controlled",
       default: () => false,
     },
     level: {
       type: "value-set",
-      view: "system_controlled",
       valueSet: "notification-criticality-level",
       default: () => "info",
     },

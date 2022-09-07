@@ -62,7 +62,7 @@ export interface ExpandACLParameters {
   aclCache: any;
 }
 
-async function expandObject(
+export async function expandObject(
   ctx: Context,
   object: GraphObject,
   expand: string,
@@ -197,23 +197,3 @@ async function expandObject(
 
   return result;
 }
-
-export const performExpand = wrapper(
-  { name: "performExpand", file: __filename },
-  (
-    ctx: Context,
-    payload: GraphObject[] | GraphObject,
-    expand: string,
-    aclParameters: ExpandACLParameters
-  ) => {
-    if (Array.isArray(payload)) {
-      return Promise.all(
-        payload.map((object) =>
-          expandObject(ctx, object, expand, aclParameters)
-        )
-      );
-    } else {
-      return expandObject(ctx, payload, expand, aclParameters);
-    }
-  }
-);

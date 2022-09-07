@@ -15,6 +15,7 @@ export const rule3 = wrapper(
         object_type: "notification",
         type: "complete_tutor_profile",
         user: event.current.user,
+        role: event.current.id,
         data: { progress: 0 },
       });
 
@@ -25,6 +26,7 @@ export const rule3 = wrapper(
         object_type: "notification",
         type: "tutor_get_started",
         user: event.current.user,
+        role: event.current.id,
       });
     }
   }

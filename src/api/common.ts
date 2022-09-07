@@ -238,10 +238,7 @@ export const verifyObjectACL = wrapper(
       }
 
       // Find the field config and current method's view
-
       const fieldConfig = objectConfig.fields[fieldName];
-
-      ctx.log.debug("Field", { fieldName, fieldConfig, object });
 
       const view = fieldConfig.view
         ? objectConfig.views[fieldConfig.view]

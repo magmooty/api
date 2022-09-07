@@ -12,7 +12,7 @@ const universalNotificationGenerator = (
   method: SyncOperationMethod,
   object: Notification
 ): SyncOperation[] => {
-  const { user, type } = object;
+  const { user, role, type } = object;
 
   return [
     {
@@ -22,6 +22,7 @@ const universalNotificationGenerator = (
       data: {
         type,
         user,
+        role,
       },
     },
   ];

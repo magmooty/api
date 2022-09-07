@@ -1,5 +1,6 @@
 import { ObjectConfig } from "@/graph";
 import { OwnerViewVirtualExecutor } from "@/graph/common";
+import { serializeDate } from "@/persistence/commons/serialize-date";
 
 export default {
   code: "R1",
@@ -22,6 +23,11 @@ export default {
       POST: [],
       PATCH: [],
     },
+    user_private: {
+      GET: ["virtual:owner"],
+      POST: [],
+      PATCH: ["virtual:owner"],
+    },
   },
   virtuals: {
     views: {
@@ -41,6 +47,11 @@ export default {
       objectTypes: ["user"],
       view: "system_controlled",
       default: (object, author) => (author ? author.id : undefined),
+    },
+    last_read_notification: {
+      type: "date",
+      default: () => serializeDate(new Date()),
+      view: "user_private",
     },
     contacts: {
       type: "array:struct",

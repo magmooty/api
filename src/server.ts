@@ -14,12 +14,12 @@ import { Context } from "@/tracing";
 const bootstrap = wrapper(
   { name: "bootstrap", file: __filename },
   async (ctx: Context) => {
-    await persistence.init(ctx);
     await errors.init(ctx);
     await valueSets.init(ctx);
+    await queue.init(ctx);
+    await persistence.init(ctx);
     await search.init(ctx);
     await api.init(ctx);
-    await queue.init(ctx);
     await parallelLogic.init(ctx);
     await sync.init(ctx);
   }

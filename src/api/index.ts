@@ -1,6 +1,7 @@
 import * as authRouters from "@/api/auth";
 import * as graphRouters from "@/api/graph";
 import * as profileRouters from "@/api/profile";
+import * as searchRouters from "@/api/search";
 import { config, metrics, wrapper } from "@/components";
 import { AppError } from "@/errors";
 import { Context } from "@/tracing";
@@ -73,6 +74,7 @@ export const init = wrapper(
     app.use("/auth", authRouters.privateRouter);
     app.use("/graph", graphRouters.privateRouter);
     app.use("/profile", profileRouters.privateRouter);
+    app.use("/search", searchRouters.privateRouter);
 
     app.get("/hello-world", (req, res) => {
       res.json({ hello: "world2" });

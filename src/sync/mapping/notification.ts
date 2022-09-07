@@ -8,5 +8,8 @@ export default {
     type: {
       type: "keyword",
     },
+    role: {
+      type: "keyword",
+    },
   },
 } as IndexMapping;

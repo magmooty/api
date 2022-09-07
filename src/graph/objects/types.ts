@@ -143,6 +143,7 @@ export interface Notification extends GraphObject {
   data: { [key: string]: ObjectFieldValue };
   icon: string;
   user: string;
+  role: string;
   alert: boolean;
   level: NotificationCriticalityLevelVS;
 }
@@ -159,6 +160,7 @@ export interface TutorRole extends GraphObject {
   object_type: "tutor_role";
   payment_methods: PaymentMethod[];
   user: string;
+  last_read_notification: string;
   contacts: ContactPoint[];
   space: string;
 }

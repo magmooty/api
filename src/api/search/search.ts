@@ -1,6 +1,51 @@
 import { APIEndpoint, APIRequest, APIResponse } from "@/api/types";
-import { apiWrapper } from "@/components";
+import { apiWrapper, persistence, search } from "@/components";
+import { SearchCriteria } from "@/search";
 import { Context } from "@/tracing";
+import {
+  Array,
+  Dictionary,
+  Literal,
+  Number,
+  Optional,
+  Record,
+  Static,
+  String,
+  Union,
+} from "runtypes";
+import { validatePayload, verifyObjectACL } from "../common";
+import { IndexName, indexNames } from "@/sync/mapping";
+import { getObjectTypeFromId } from "@/graph";
+import { GraphObject } from "@/graph/objects/types";
+import { expandObject } from "@/api/expand";
+
+const SearchParams = Record({
+  index: Union(
+    Literal(indexNames[0]),
+    ...indexNames.slice(1).map((indexName) => Literal(indexName))
+  ),
+});
+
+type SearchParams = Static<typeof SearchParams>;
+
+const SearchQuery = Record({
+  expand: Optional(String),
+});
+
+type SearchQuery = Static<typeof SearchQuery>;
+
+const SearchBody = Record({
+  query: Optional(String),
+  filters: Optional(
+    Record({
+      or: Optional(Array(Optional(Dictionary(Union(String, Number))))),
+      and: Optional(Array(Optional(Dictionary(Union(String, Number))))),
+    })
+  ),
+  sort_by: Optional(Dictionary(Union(Literal("asc"), Literal("desc")))),
+});
+
+type SearchBody = Static<typeof SearchBody>;
 
 export const searchEndpoint: APIEndpoint = apiWrapper(
   {
@@ -11,5 +56,65 @@ export const searchEndpoint: APIEndpoint = apiWrapper(
     if (!req.user || !req.session) {
       return;
     }
+
+    const { body, params, query } = req;
+
+    await validatePayload(ctx, params, SearchParams);
+    await validatePayload(ctx, body, SearchBody);
+    await validatePayload(ctx, query, SearchBody);
+
+    const { index } = params as SearchParams;
+    const criteria = body as SearchCriteria;
+    const { expand } = query as SearchQuery;
+
+    const ids = await search.leanSearch(ctx, index as IndexName, criteria);
+
+    const aclCache: any = {};
+
+    const objects = await Promise.all(
+      ids.map(async (id) => {
+        if (!req.session) {
+          return;
+        }
+
+        const objectType = await getObjectTypeFromId(ctx, id);
+
+        await verifyObjectACL(ctx, {
+          aclMode: "soft",
+          method: "GET",
+          objectType,
+          roles: req.session.roles,
+          singleFieldStrategy: "strip",
+          aclCache,
+          author: req.user,
+        });
+
+        let object = await persistence.getObject<GraphObject>(ctx, id);
+
+        const objectKeys = Object.keys(object);
+
+        if (expand) {
+          object = await expandObject(ctx, object, expand, {
+            aclCache,
+            roles: req.session.roles,
+            author: req.user,
+          });
+        }
+
+        return verifyObjectACL(ctx, {
+          aclMode: "hard",
+          method: "GET",
+          objectType,
+          roles: req.session.roles,
+          singleFieldStrategy: "strip",
+          aclCache,
+          author: req.user,
+          object,
+          keys: objectKeys,
+        });
+      })
+    );
+
+    res.json(objects);
   }
 );

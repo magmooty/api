@@ -5,7 +5,7 @@ import { GraphObject } from "@/graph/objects/types";
 import { Context } from "@/tracing";
 import { Optional, Record, Static, String } from "runtypes";
 import { validatePayload, verifyObjectACL } from "../common";
-import { performExpand } from "../expand";
+import { expandObject } from "../expand";
 
 const GetObjectParams = Record({
   id: String,
@@ -55,7 +55,7 @@ export const getObjectEndpoint: APIEndpoint = apiWrapper(
     const objectKeysBeforeExpansion = Object.keys(object);
 
     if (expand) {
-      object = await performExpand(ctx, object, expand, {
+      object = await expandObject(ctx, object, expand, {
         author: req.user,
         aclCache,
         roles: req.session.roles,
