@@ -2,7 +2,8 @@ import { validatePayload, verifyEdgeACL, verifyObjectACL } from "@/api/common";
 import { APIEndpoint, APIRequest, APIResponse } from "@/api/types";
 import { apiWrapper, persistence } from "@/components";
 import { Context } from "@/tracing";
-import { Record, Static, String } from "runtypes";
+import { Optional, Record, Static, String } from "runtypes";
+import { expandObject } from "../expand";
 
 const GetEdgesParams = Record({
   src: String,
@@ -10,6 +11,12 @@ const GetEdgesParams = Record({
 });
 
 type GetEdgesParams = Static<typeof GetEdgesParams>;
+
+const GetEdgesQuery = Record({
+  expand: Optional(String),
+});
+
+type GetEdgesQuery = Static<typeof GetEdgesQuery>;
 
 export const getEdgesEndpoint: APIEndpoint = apiWrapper(
   {
@@ -21,11 +28,13 @@ export const getEdgesEndpoint: APIEndpoint = apiWrapper(
       return;
     }
 
-    const { params } = req;
+    const { params, query } = req;
 
     await validatePayload(ctx, params, GetEdgesParams);
+    await validatePayload(ctx, query, GetEdgesQuery);
 
     const { src, edgeName } = params as GetEdgesParams;
+    const { expand } = query as GetEdgesQuery;
 
     await verifyEdgeACL(ctx, {
       aclMode: "hard",
@@ -38,11 +47,25 @@ export const getEdgesEndpoint: APIEndpoint = apiWrapper(
 
     const objects = await persistence.getEdges(ctx, src, edgeName);
 
+    const aclCache = {};
+
     const result = await Promise.all(
-      objects.map((object) => {
+      objects.map(async (object) => {
         if (!req.session || typeof object === "string") {
           return;
         }
+
+        const objectKeysBeforeExpansion = Object.keys(object);
+
+        if (expand) {
+          object = await expandObject(ctx, object, expand, {
+            author: req.user,
+            aclCache,
+            roles: req.session.roles,
+          });
+        }
+
+        ctx.log.debug("expanded", { object });
 
         return verifyObjectACL(ctx, {
           aclMode: "hard",
@@ -52,6 +75,8 @@ export const getEdgesEndpoint: APIEndpoint = apiWrapper(
           singleFieldStrategy: "strip",
           author: req.user,
           object: object,
+          aclCache,
+          keys: objectKeysBeforeExpansion,
         });
       })
     );
