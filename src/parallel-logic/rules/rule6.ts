@@ -7,21 +7,19 @@ export const rule6 = wrapper(
   { name: "rule6", file: __filename },
   async (ctx: Context, event: QueueEvent<User>) => {
     if (event.current?.email_verified && !event.previous?.email_verified) {
-      const [verifyEmailNotification] = await search.search<Notification>(
-        ctx,
-        "notification",
-        {
-          filters: {
-            and: [
-              {
-                user: event.current.id,
-              },
-              { type: "verify_email" as NotificationTypeVS },
-            ],
-          },
-          sort_by: { created_at: "desc" },
-        }
-      );
+      const {
+        results: [verifyEmailNotification],
+      } = await search.search<Notification>(ctx, "notification", {
+        filters: {
+          and: [
+            {
+              user: event.current.id,
+            },
+            { type: "verify_email" as NotificationTypeVS },
+          ],
+        },
+        sort_by: { created_at: "desc" },
+      });
 
       if (
         verifyEmailNotification &&
@@ -38,21 +36,19 @@ export const rule6 = wrapper(
     }
 
     if (event.current?.phone_verified && !event.previous?.phone_verified) {
-      const [verifyPhoneNotification] = await search.search<Notification>(
-        ctx,
-        "notification",
-        {
-          filters: {
-            and: [
-              {
-                user: event.current.id,
-              },
-              { type: "verify_phone" as NotificationTypeVS },
-            ],
-          },
-          sort_by: { created_at: "desc" },
-        }
-      );
+      const {
+        results: [verifyPhoneNotification],
+      } = await search.search<Notification>(ctx, "notification", {
+        filters: {
+          and: [
+            {
+              user: event.current.id,
+            },
+            { type: "verify_phone" as NotificationTypeVS },
+          ],
+        },
+        sort_by: { created_at: "desc" },
+      });
 
       if (
         verifyPhoneNotification &&

@@ -30,6 +30,8 @@ type SearchParams = Static<typeof SearchParams>;
 
 const SearchQuery = Record({
   expand: Optional(String),
+  limit: Optional(Number.withConstraint((x) => x <= 100 && x > 0)),
+  after: Optional(Number.withConstraint((x) => x <= 10000 && x > 0)),
 });
 
 type SearchQuery = Static<typeof SearchQuery>;
@@ -67,11 +69,15 @@ export const searchEndpoint: APIEndpoint = apiWrapper(
     const criteria = body as SearchCriteria;
     const { expand } = query as SearchQuery;
 
-    const ids = await search.leanSearch(ctx, index as IndexName, criteria);
+    const { results: ids, count } = await search.leanSearch(
+      ctx,
+      index as IndexName,
+      criteria
+    );
 
     const aclCache: any = {};
 
-    const objects = await Promise.all(
+    const results = await Promise.all(
       ids.map(async (id) => {
         if (!req.session) {
           return;
@@ -115,6 +121,6 @@ export const searchEndpoint: APIEndpoint = apiWrapper(
       })
     );
 
-    res.json(objects);
+    res.json({ results, count });
   }
 );

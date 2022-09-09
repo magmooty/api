@@ -127,9 +127,13 @@ export class NativeAuthDriver implements AuthDriver {
         return;
       }
 
-      const searchResult = await this.search.search<User>(ctx, "user", {
-        filters: { or: [{ email: username }, { phone: username }] },
-      });
+      const { results: searchResult } = await this.search.search<User>(
+        ctx,
+        "user",
+        {
+          filters: { or: [{ email: username }, { phone: username }] },
+        }
+      );
 
       if (!searchResult.length) {
         errors.createError(ctx, "UserNotFound", { username });

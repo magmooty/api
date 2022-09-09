@@ -36,6 +36,7 @@ export interface ObjectField {
   unique?: boolean;
   required?: boolean;
   schema?: string;
+  stripDisallowed?: boolean;
 }
 
 export interface ObjectEdge {
@@ -63,6 +64,7 @@ export type ObjectViewVirtualExecutor = (
 export interface ObjectViewVirtual {
   pre: string[];
   execute: ObjectViewVirtualExecutor;
+  disallowStrip?: boolean;
 }
 
 export enum ObjectTTL {

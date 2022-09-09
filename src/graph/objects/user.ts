@@ -32,6 +32,7 @@ export default {
     views: {
       owner: {
         pre: ["all"],
+        disallowStrip: true,
         execute: OwnerViewVirtualExecutor,
       },
     },

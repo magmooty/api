@@ -19,6 +19,13 @@ export interface SearchCriteria {
   sort_by?: {
     [key: string]: "asc" | "desc";
   };
+  limit?: number;
+  after?: number;
+}
+
+export interface SearchPageResult<T> {
+  count: number;
+  results: T[];
 }
 
 export interface SearchDriver {
@@ -27,12 +34,12 @@ export interface SearchDriver {
     ctx: Context | null,
     index: IndexName,
     criteria: SearchCriteria
-  ): Promise<T[]>;
+  ): Promise<SearchPageResult<T>>;
   leanSearch(
     ctx: Context | null,
     index: IndexName,
     criteria: SearchCriteria
-  ): Promise<string[]>;
+  ): Promise<SearchPageResult<string>>;
 }
 
 export interface SearchConfig {

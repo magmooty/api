@@ -1,13 +1,14 @@
-import { errors, persistence, wrapper } from "@/components";
+import { persistence, wrapper } from "@/components";
 import { GraphObject } from "@/graph/objects/types";
 import { IndexName } from "@/sync/mapping";
 import { Context } from "@/tracing";
 import { Client } from "@elastic/elasticsearch";
-import { SearchCriteria, SearchDriver } from ".";
+import { SearchCriteria, SearchDriver, SearchPageResult } from ".";
 
 export interface ElasticSearchSearchConfig {
   node: string;
   prefix: string;
+  defaultLimit: number;
 }
 
 const constructElasticSearchQueryString = (criteria: SearchCriteria) => {
@@ -125,7 +126,7 @@ export class ElasticSearchSearchDriver implements SearchDriver {
       index: IndexName,
       criteria: SearchCriteria,
       internalOptions: { lean: boolean }
-    ): Promise<string[] | GraphObject[]> => {
+    ): Promise<SearchPageResult<string | GraphObject>> => {
       const query = constructElasticSearchQuery(criteria);
       const sort = constructElasticSearchSorter(criteria);
 
@@ -133,6 +134,8 @@ export class ElasticSearchSearchDriver implements SearchDriver {
         index: this.prefixIndex(index),
         query,
         sort,
+        size: criteria.limit || this.elasticSearchConfig.defaultLimit,
+        from: criteria.after || 0,
       };
 
       ctx.log.info("query options", { options });
@@ -142,14 +145,17 @@ export class ElasticSearchSearchDriver implements SearchDriver {
       ctx.log.info("search query result", { result });
 
       const ids = result.hits.hits.map((hit) => hit._id);
+      const count = (result.hits.total as any).value || 0;
 
       if (internalOptions.lean) {
-        return ids;
+        return { count, results: ids };
       }
 
-      return Promise.all(
+      const results = await Promise.all(
         ids.map((id) => persistence.getObject<GraphObject>(ctx, id))
       );
+
+      return { results, count };
     }
   );
 
@@ -157,15 +163,19 @@ export class ElasticSearchSearchDriver implements SearchDriver {
     ctx: Context,
     index: IndexName,
     criteria: SearchCriteria
-  ): Promise<string[]> {
-    return this._search(ctx, index, criteria, { lean: true });
+  ): Promise<SearchPageResult<string>> {
+    return this._search(ctx, index, criteria, {
+      lean: true,
+    });
   }
 
   search<T = GraphObject>(
     ctx: Context,
     index: IndexName,
     criteria: SearchCriteria
-  ): Promise<T[]> {
-    return this._search(ctx, index, criteria, { lean: false });
+  ): Promise<SearchPageResult<T>> {
+    return this._search(ctx, index, criteria, {
+      lean: false,
+    });
   }
 }

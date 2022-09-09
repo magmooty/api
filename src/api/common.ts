@@ -322,6 +322,19 @@ export const verifyObjectACL = wrapper(
                 pre: virtual.pre,
                 roles,
               });
+
+              if (virtual.disallowStrip) {
+                errors.createError(ctx, "ACLDenied", {
+                  fieldName: `virtual:${virtualName}`,
+                  view,
+                  fieldConfig,
+                  roles,
+                  method,
+                  reason: `virtual:${virtualName}`,
+                });
+                return;
+              }
+
               await setInACLCache(
                 ctx,
                 aclCache,
@@ -385,6 +398,16 @@ export const verifyObjectACL = wrapper(
               ctx.log.info("Access passes: virtual executed successfully");
               noAccess = false;
               break;
+            } else if (virtual.disallowStrip) {
+              errors.createError(ctx, "ACLDenied", {
+                fieldName: `virtual:${virtualName}`,
+                view,
+                fieldConfig,
+                roles,
+                method,
+                reason: `virtual:${virtualName}`,
+              });
+              return;
             }
           } catch (error) {
             // Any errors happened, set to undefiend
@@ -394,7 +417,10 @@ export const verifyObjectACL = wrapper(
         }
       }
 
-      if (noAccess && singleFieldStrategy === "error") {
+      if (
+        (noAccess && singleFieldStrategy === "error") ||
+        (noAccess && fieldConfig.stripDisallowed)
+      ) {
         errors.createError(ctx, "ACLDenied", {
           fieldName,
           view,

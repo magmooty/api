@@ -36,6 +36,7 @@ export default {
       type: "object-id",
       objectTypes: ["user"],
       required: true,
+      stripDisallowed: true,
     },
     role: {
       type: "object-id",

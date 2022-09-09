@@ -452,11 +452,15 @@
         },
         "prefix": {
           "type": "string"
+        },
+        "defaultLimit": {
+          "type": "number"
         }
       },
       "required": [
         "node",
-        "prefix"
+        "prefix",
+        "defaultLimit"
       ],
       "additionalProperties": false
     },
