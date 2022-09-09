@@ -1,22 +1,15 @@
 import { errors, persistence, wrapper } from "@/components";
-import {
-  Session,
-  SystemUser,
-  TutorRole,
-  User,
-  UserRole,
-} from "@/graph/objects/types";
+import { Session, SystemUser, User, UserRole } from "@/graph/objects/types";
 import { serializeDate } from "@/persistence/commons/serialize-date";
 import { SearchDriver } from "@/search";
 import { Context } from "@/tracing";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import _ from "lodash";
-import moment from "moment";
-import kuuid from "kuuid";
-import { AuthDriver, LoginResult, TokenValidationResult } from ".";
 import joi from "joi";
 import joiPhoneNumber from "joi-phone-number";
+import jwt from "jsonwebtoken";
+import kuuid from "kuuid";
+import moment from "moment";
+import { AuthDriver, LoginResult, TokenValidationResult } from ".";
 
 const phoneNumberJoi = joi.extend(joiPhoneNumber);
 
