@@ -53,6 +53,7 @@ export interface UserIndexMapping {
 export interface NotificationIndexMapping {
   user: string;
   type: string;
+  role: string;
 }
 
 export type ValueSet =

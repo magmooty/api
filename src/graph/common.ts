@@ -1,8 +1,8 @@
 import {
   ObjectViewVirtualExecutor,
-  ObjectViewVirtualExecutorOptions,
+  ObjectViewVirtualExecutorOptions
 } from "@/graph";
-import { GraphObject, User } from "@/graph/objects/types";
+import { GraphObject } from "@/graph/objects/types";
 
 export const FIXED_OBJECT_FIELDS = [
   "id",

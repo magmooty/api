@@ -130,6 +130,12 @@
         },
         "passwordRegex": {
           "type": "string"
+        },
+        "devRoleUsernames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       },
       "required": [
@@ -138,7 +144,8 @@
         "activeRefreshTokenSecret",
         "deprecatedRefreshTokenSecrets",
         "refreshTokenTTL",
-        "passwordRegex"
+        "passwordRegex",
+        "devRoleUsernames"
       ],
       "additionalProperties": false
     },

@@ -46,6 +46,7 @@ export interface NativeAuthDriverConfig {
   deprecatedRefreshTokenSecrets: string[];
   refreshTokenTTL: number;
   passwordRegex: string;
+  devRoleUsernames: string[];
 }
 
 export interface RefreshTokenPayload {
@@ -82,6 +83,10 @@ export class NativeAuthDriver implements AuthDriver {
       );
 
       const roles = rolesObjects.map(serializeRole);
+
+      if (this.nativeAuthDriverConfig.devRoleUsernames.includes(user.email)) {
+        roles.push("dev-role");
+      }
 
       const session = await persistence.createObject<Session>(ctx, {
         token: sessionToken,
@@ -272,14 +277,6 @@ export class NativeAuthDriver implements AuthDriver {
       }
 
       const user = await persistence.getObject<User>(ctx, decodedPayload.user);
-
-      // if (!_.isEqual(extraAttributes.roles, decodedPayload.roles)) {
-      //   errors.createError(ctx, "NeedToLoginAgain", {
-      //     decodedPayload,
-      //     extraAttributes,
-      //   });
-      //   return;
-      // }
 
       return this.createSession(ctx, user, refreshToken);
     }
