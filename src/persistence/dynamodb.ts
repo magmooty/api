@@ -838,14 +838,30 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
           src_edgeName: `${src}+${edgeName}`,
         });
 
+        const baseCommand = new UpdateItemCommand({
+          TableName,
+          Key,
+          UpdateExpression: "SET #dsts = if_not_exists(#dsts, :dsts)",
+          ExpressionAttributeValues: {
+            ":dsts": { M: {} },
+          },
+          ExpressionAttributeNames: {
+            "#dsts": "dsts",
+          },
+          ReturnValues: "ALL_NEW",
+        });
+
+        await this.sendCommand(ctx, baseCommand);
+
         const command = new UpdateItemCommand({
           TableName,
           Key,
-          UpdateExpression: "SET #dst = :sortValue",
+          UpdateExpression: "SET #dsts.#dst = :sortValue",
           ExpressionAttributeValues: {
             ":sortValue": { N: sortValue },
           },
           ExpressionAttributeNames: {
+            "#dsts": "dsts",
             "#dst": dst,
           },
           ReturnValues: "ALL_NEW",
@@ -878,14 +894,30 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
           edgeName_dst: `${edgeName}+${dst}`,
         });
 
+        const baseCommand = new UpdateItemCommand({
+          TableName,
+          Key,
+          UpdateExpression: "SET #srcs = :srcs",
+          ExpressionAttributeValues: {
+            ":srcs": { M: {} },
+          },
+          ExpressionAttributeNames: {
+            "#srcs": "srcs",
+          },
+          ReturnValues: "ALL_NEW",
+        });
+
+        await this.sendCommand(ctx, baseCommand);
+
         const command = new UpdateItemCommand({
           TableName,
           Key,
-          UpdateExpression: "SET #src = :sortValue",
+          UpdateExpression: "SET #srcs.#src = :sortValue",
           ExpressionAttributeValues: {
             ":sortValue": { N: sortValue },
           },
           ExpressionAttributeNames: {
+            "#srcs": "srcs",
             "#src": src,
           },
           ReturnValues: "ALL_NEW",
@@ -965,8 +997,9 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
         const command = new UpdateItemCommand({
           TableName,
           Key,
-          UpdateExpression: "REMOVE #dst",
+          UpdateExpression: "REMOVE #dsts.#dst",
           ExpressionAttributeNames: {
+            "#dsts": "dsts",
             "#dst": dst,
           },
           ReturnValues: "ALL_NEW",
@@ -1002,8 +1035,9 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
         const command = new UpdateItemCommand({
           TableName,
           Key,
-          UpdateExpression: "REMOVE #src",
+          UpdateExpression: "REMOVE #srcs.#src",
           ExpressionAttributeNames: {
+            "#srcs": "srcs",
             "#src": src,
           },
           ReturnValues: "ALL_NEW",
@@ -1104,9 +1138,9 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
       ctx.setDurationMetricLabels({ srcObjectType, retries });
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { src_edgeName, ...dsts } = unmarshall(result.Item);
+      const { src_edgeName: _, dsts } = unmarshall(result.Item);
 
-      return Object.keys(dsts).sort((a, b) => dsts[a] - dsts[b]);
+      return Object.keys(dsts || {}).sort((a, b) => dsts[a] - dsts[b]);
     },
     (ctx, error) => {
       ctx.metrics.getCounter("dynamo_get_edges_error").inc({
@@ -1178,9 +1212,9 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
       ctx.setDurationMetricLabels({ dstObjectType, retries });
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { edgeName_dst, ...srcs } = unmarshall(result.Item);
+      const { edgeName_dst, srcs } = unmarshall(result.Item);
 
-      return Object.keys(srcs).sort((a, b) => srcs[a] - srcs[b]);
+      return Object.keys(srcs || {}).sort((a, b) => srcs[a] - srcs[b]);
     },
     (ctx, error) => {
       ctx.metrics.getCounter("dynamo_get_reverse_edges_error").inc({
