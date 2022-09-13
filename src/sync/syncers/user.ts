@@ -12,7 +12,7 @@ const universalUserGenerator = (
   method: SyncOperationMethod,
   object: User
 ): SyncOperation<UserIndexMapping>[] => {
-  const { name, email, phone } = object;
+  const { name, email, phone, updated_at } = object;
 
   let searchableName;
 
@@ -42,6 +42,7 @@ const universalUserGenerator = (
         email_text: email,
         phone,
         phone_text: phone,
+        updated_at,
       },
     },
   ];

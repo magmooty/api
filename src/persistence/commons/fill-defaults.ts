@@ -11,7 +11,9 @@ export async function fillDefaults<T = GraphObject>(
 ): Promise<T> {
   const objectConfig = await getObjectConfigFromObjectType(ctx, objectType);
 
-  const output: any = { ...data, created_at: serializeDate(new Date()) };
+  const created_at = serializeDate(new Date());
+
+  const output: any = { ...data, created_at, updated_at: created_at };
 
   for (const fieldName of Object.keys(objectConfig.fields)) {
     const fieldConfig = objectConfig.fields[fieldName];

@@ -17,5 +17,8 @@ export default {
     phone_text: {
       type: "text",
     },
+    updated_at: {
+      type: "date",
+    },
   },
 } as IndexMapping;

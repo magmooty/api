@@ -11,5 +11,8 @@ export default {
     role: {
       type: "keyword",
     },
+    updated_at: {
+      type: "date",
+    },
   },
 } as IndexMapping;

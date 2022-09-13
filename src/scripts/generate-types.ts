@@ -133,6 +133,9 @@ const object = {
     return [
       `export interface ${typeName} extends GraphObject {`,
       `object_type: "${objectType}"`,
+      `created_at: string`,
+      `updated_at: string`,
+      `deleted_at: string`,
     ].join("\n");
   },
   structStart: (structName: string) => {
@@ -201,6 +204,9 @@ const mappingGenerator = {
       return `${fieldName}: string;`;
     },
     text: (fieldName: string) => {
+      return `${fieldName}: string;`;
+    },
+    date: (fieldName: string) => {
       return `${fieldName}: string;`;
     },
   } as {
