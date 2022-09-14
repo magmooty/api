@@ -28,9 +28,6 @@ export default {
       objectTypes: ["user"],
       default: (object, author) => (author ? author.id : undefined),
     },
-    test_counter: {
-      type: "counter",
-    },
   },
   edges: {},
 } as ObjectConfig;
