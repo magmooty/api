@@ -24,7 +24,8 @@ export type ObjectFieldType =
   | "array:date"
   | "array:object-id"
   | "array:struct"
-  | "array:value-set";
+  | "array:value-set"
+  | "counter";
 
 export interface ObjectField {
   type: ObjectFieldType;
