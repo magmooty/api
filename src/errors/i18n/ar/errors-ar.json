@@ -149,5 +149,13 @@
   {
     "code": "InvalidExpandQuery",
     "template": "فشل في تحميل البيانات المطلوبة"
+  },
+  {
+    "code": "CounterGetFailed",
+    "template": "فشل في الحصول على العداد: {fieldName}"
+  },
+  {
+    "code": "CounterSetFailed",
+    "template": "فشل في تعديل العداد: {fieldName} إلى {value}"
   }
 ]

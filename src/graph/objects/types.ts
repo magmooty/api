@@ -19,6 +19,7 @@ export type ObjectFieldValue =
   | ObjectId
   | GraphObject
   | Object
+  | CounterModifier
   | HumanName
   | PaymentMethod
   | ContactPoint
@@ -41,6 +42,11 @@ export interface GraphObject {
   object_type: ObjectType;
   [key: string]: ObjectFieldValue;
 }
+
+export type CounterModifier =
+  | `+${string | number}`
+  | `-${string | number}`
+  | `=${string | number}`;
 
 export interface UserIndexMapping {
   name: string;
@@ -150,6 +156,7 @@ export interface Space extends GraphObject {
   deleted_at: string;
   name: string;
   owner: string;
+  test_counter: number;
 }
 
 export interface Notification extends GraphObject {

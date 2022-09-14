@@ -1,17 +1,18 @@
-import user from "./user";
-import session from "./session";
-import systemUser from "./system-user";
-import space from "./space";
+import { ObjectConfig } from "..";
 import notification from "./notification";
-import userStatus from "./user-status";
+import session from "./session";
+import space from "./space";
+import systemUser from "./system-user";
 import tutorRole from "./tutor-role";
+import user from "./user";
+import userStatus from "./user-status";
 
 export default {
   user,
   session,
-  "system_user": systemUser,
+  system_user: systemUser,
   space,
   notification,
-  "user_status": userStatus,
-  "tutor_role": tutorRole,
-};
+  user_status: userStatus,
+  tutor_role: tutorRole,
+} as { [key: string]: ObjectConfig };

@@ -88,6 +88,7 @@ export interface ObjectConfig extends StructConfig {
   views: { _default: ObjectView; [key: string]: ObjectView };
   virtuals: { views: { [key: string]: ObjectViewVirtual } };
   edges: { [key: string]: ObjectEdge };
+  counterFields?: string[];
 }
 
 import objects from "@/graph/objects";
@@ -101,6 +102,14 @@ const objectCodeObjectTypeMap: { [key: string]: string } = Object.keys(
   }),
   {}
 );
+
+Object.keys(objects).forEach((objectType) => {
+  const counterFields = Object.keys(objects[objectType].fields).filter(
+    (fieldName) => objects[objectType].fields[fieldName].type === "counter"
+  );
+
+  objects[objectType].counterFields = counterFields;
+});
 
 export const checkIfObjectTypeExists = async (
   ctx: Context,

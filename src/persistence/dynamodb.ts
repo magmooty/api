@@ -1,6 +1,11 @@
 import { errors, wrapper } from "@/components";
 import { getObjectTypeFromId, objects } from "@/graph";
-import { GraphObject, ObjectId, ObjectType } from "@/graph/objects/types";
+import {
+  CounterModifier,
+  GraphObject,
+  ObjectId,
+  ObjectType,
+} from "@/graph/objects/types";
 import {
   CreateObjectPayload,
   PersistenceDriver,
@@ -32,7 +37,6 @@ import { Command } from "@aws-sdk/smithy-client";
 import AWS from "aws-sdk";
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import http from "http";
-import { generateID } from "./commons/generate-id";
 import { wait } from "./commons/wait";
 import AttributeMap = DocumentClient.AttributeMap;
 
@@ -51,6 +55,11 @@ export interface DynamoDBConfig {
 export interface CommandOutput<T = unknown> {
   retries: number;
   result: T;
+}
+
+interface CounterDocument {
+  id: string;
+  value: number;
 }
 
 const DYNAMO_TABLES = [
@@ -1426,6 +1435,164 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
     },
     (ctx) => {
       ctx.metrics.getCounter("dynamo_remove_unique").inc({
+        objectType: ctx.getParam("objectType"),
+        fieldName: ctx.getParam("fieldName"),
+      });
+    }
+  );
+
+  setCounter = wrapper(
+    { name: "setCounter", file: __filename },
+    async (
+      ctx: Context,
+      id: string,
+      fieldName: string,
+      value: CounterModifier
+    ): Promise<number> => {
+      ctx.startTrackTime(
+        "dynamo_set_counter_duration",
+        "dynamo_set_counter_error_duration"
+      );
+
+      ctx.register({ id, fieldName, value });
+
+      const objectType = await getObjectTypeFromId(ctx, id);
+
+      ctx.setParam("fieldName", fieldName);
+      ctx.setParam("objectType", objectType);
+
+      ctx.setErrorDurationMetricLabels({ fieldName, objectType });
+
+      const TableName = this.prefixTableName("counters");
+
+      const Key: AttributeMap = marshall({ id: `${id}-${fieldName}` });
+
+      const previousValue = await this.getCounter(ctx, id, fieldName);
+
+      if (!previousValue) {
+        value = `${value[0] === "=" ? "" : "="}${value}`;
+      }
+
+      let UpdateExpression;
+
+      switch (value[0]) {
+        case "+":
+          UpdateExpression = `set #value = #value + :value`;
+          break;
+        case "-":
+          UpdateExpression = `set #value = #value - :value`;
+          break;
+        case "=":
+          UpdateExpression = `set #value = :value`;
+          break;
+      }
+
+      const command = new UpdateItemCommand({
+        TableName,
+        Key,
+        UpdateExpression,
+        ExpressionAttributeNames: { "#value": "value" },
+        ExpressionAttributeValues: { ":value": { N: value.slice(1) } },
+        ReturnValues: "ALL_NEW",
+      });
+
+      const { result, retries } = (await this.sendCommand(
+        ctx,
+        command
+      )) as CommandOutput<UpdateItemCommandOutput>;
+
+      ctx.metrics
+        .getCounter("dynamo_retries")
+        .inc({ method: "setCounter", objectType }, retries);
+
+      if (result?.$metadata?.httpStatusCode !== 200) {
+        return errors.createError(ctx, "CounterSetFailed", {
+          fieldName,
+          value,
+        });
+      }
+
+      ctx.setDurationMetricLabels({ objectType, fieldName, retries });
+
+      if (!result.Attributes || !result.Attributes.value) {
+        return 0;
+      }
+
+      return unmarshall(result.Attributes).value;
+    },
+    (ctx, error) => {
+      ctx.metrics.getCounter("dynamo_set_counter_error").inc({
+        objectType: ctx.getParam("objectType"),
+        fieldName: ctx.getParam("fieldName"),
+        error: error.message,
+      });
+    },
+    (ctx) => {
+      ctx.metrics.getCounter("dynamo_set_counter").inc({
+        objectType: ctx.getParam("objectType"),
+        fieldName: ctx.getParam("fieldName"),
+      });
+    }
+  );
+
+  getCounter = wrapper(
+    { name: "getCounter", file: __filename },
+    async (ctx: Context, id: string, fieldName: string): Promise<number> => {
+      ctx.startTrackTime(
+        "dynamo_get_counter_duration",
+        "dynamo_get_counter_error_duration"
+      );
+
+      ctx.register({ id, fieldName });
+
+      const objectType = await getObjectTypeFromId(ctx, id);
+
+      ctx.setParam("fieldName", fieldName);
+      ctx.setParam("objectType", objectType);
+
+      ctx.setErrorDurationMetricLabels({ fieldName, objectType });
+
+      const TableName = this.prefixTableName("counters");
+
+      const Key: AttributeMap = marshall({ id: `${id}-${fieldName}` });
+
+      const command = new GetItemCommand({
+        TableName,
+        Key,
+      });
+
+      const { result, retries } = (await this.sendCommand(
+        ctx,
+        command
+      )) as CommandOutput<GetItemCommandOutput>;
+
+      ctx.metrics
+        .getCounter("dynamo_retries")
+        .inc({ method: "getCounter", objectType }, retries);
+
+      if (result?.$metadata?.httpStatusCode !== 200) {
+        return errors.createError(ctx, "CounterGetFailed", {
+          fieldName,
+        });
+      }
+
+      ctx.setDurationMetricLabels({ objectType, fieldName, retries });
+
+      if (!result.Item) {
+        return 0;
+      }
+
+      return unmarshall(result.Item).value;
+    },
+    (ctx, error) => {
+      ctx.metrics.getCounter("dynamo_get_counter_error").inc({
+        objectType: ctx.getParam("objectType"),
+        fieldName: ctx.getParam("fieldName"),
+        error: error.message,
+      });
+    },
+    (ctx) => {
+      ctx.metrics.getCounter("dynamo_get_counter").inc({
         objectType: ctx.getParam("objectType"),
         fieldName: ctx.getParam("fieldName"),
       });

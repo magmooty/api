@@ -44,6 +44,16 @@ const errors = [
     templateProps: [],
   },
   {
+    code: "CounterSetFailed",
+    statusCode: 400,
+    templateProps: ["fieldName", "value"],
+  },
+  {
+    code: "CounterGetFailed",
+    statusCode: 400,
+    templateProps: ["fieldName"],
+  },
+  {
     code: "ObjectCreationFailed",
     statusCode: 400,
     templateProps: [],

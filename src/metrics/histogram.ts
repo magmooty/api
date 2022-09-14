@@ -50,6 +50,26 @@ export const metricsHistogram = [
     labelNames: ["objectType", "fieldName", "error"],
   },
   {
+    name: "dynamo_set_counter_duration",
+    help: "Duration of set counter requests to dynamo",
+    labelNames: ["objectType", "fieldName", "retries"],
+  },
+  {
+    name: "dynamo_set_counter_error_duration",
+    help: "Duration of set counter requests to dynamo",
+    labelNames: ["objectType", "fieldName", "error"],
+  },
+  {
+    name: "dynamo_get_counter_duration",
+    help: "Duration of get counter requests to dynamo",
+    labelNames: ["objectType", "fieldName", "retries"],
+  },
+  {
+    name: "dynamo_get_counter_error_duration",
+    help: "Duration of get counter requests to dynamo",
+    labelNames: ["objectType", "fieldName", "error"],
+  },
+  {
     name: "dynamo_update_object_duration",
     help: "Duration of update object requests to dynamo",
     labelNames: ["objectType", "retries"],

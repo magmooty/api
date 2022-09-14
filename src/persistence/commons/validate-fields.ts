@@ -47,13 +47,17 @@ async function validateFieldType(
         error = joi.array().items(joi.number()).validate(fieldValue).error;
         break;
       case "counter":
-        const modifier = fieldValue[0];
-        const value = fieldValue.slice(1);
+        if (typeof fieldValue === "number") {
+          break;
+        } else {
+          const modifier = fieldValue[0];
+          const value = fieldValue.slice(1);
 
-        error = !(
-          ["+", "-", "="].includes(modifier) &&
-          Number.parseInt(value, 0) !== NaN
-        );
+          error = !(
+            ["+", "-", "="].includes(modifier) &&
+            Number.parseInt(value, 0) !== NaN
+          );
+        }
         break;
       case "array:boolean":
         error = joi.array().items(joi.boolean()).validate(fieldValue).error;

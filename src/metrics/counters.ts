@@ -110,6 +110,26 @@ export const metricsCounters = [
     labelNames: ["objectType", "fieldName", "error"],
   },
   {
+    name: "dynamo_set_counter",
+    help: "Total number of set counter requests to dynamo",
+    labelNames: ["objectType", "fieldName"],
+  },
+  {
+    name: "dynamo_set_counter_error",
+    help: "Total number of errored set counter requests to dynamo",
+    labelNames: ["objectType", "fieldName", "error"],
+  },
+  {
+    name: "dynamo_get_counter",
+    help: "Total number of get counter requests to dynamo",
+    labelNames: ["objectType", "fieldName"],
+  },
+  {
+    name: "dynamo_get_counter_error",
+    help: "Total number of errored get counter requests to dynamo",
+    labelNames: ["objectType", "fieldName", "error"],
+  },
+  {
     name: "dynamo_check_unique",
     help: "Total number of check unique requests to dynamo",
     labelNames: ["objectType", "fieldName"],

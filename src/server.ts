@@ -10,6 +10,7 @@ import {
   wrapper,
 } from "@/components";
 import { Context } from "@/tracing";
+import { Space } from "./graph/objects/types";
 
 const bootstrap = wrapper(
   { name: "bootstrap", file: __filename },

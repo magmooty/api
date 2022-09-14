@@ -150,5 +150,13 @@
   {
     "code": "InvalidExpandQuery",
     "template": "Invalid expand query"
+  },
+  {
+    "code": "CounterGetFailed",
+    "template": "Failed to get counter: {fieldName}"
+  },
+  {
+    "code": "CounterSetFailed",
+    "template": "Failed to set counter: {fieldName} to {value}"
   }
 ]

@@ -58,6 +58,7 @@ const objectFieldValues = [
   "ObjectId",
   "GraphObject",
   "Object",
+  "CounterModifier",
   ...Object.keys(structs).map((structName) => capitalize(structName, "-")),
   ...Object.keys(structs).map(
     (structName) => `${capitalize(structName, "-")}[]`
@@ -88,6 +89,11 @@ export interface GraphObject {
   object_type: ObjectType;
   [key: string]: ObjectFieldValue;
 }
+
+export type CounterModifier =
+  | \`+\${string | number}\`
+  | \`-\${string | number}\`
+  | \`=\${string | number}\`;
 
 `;
 
@@ -167,6 +173,9 @@ const object = {
         fieldConfig.valueSet as string,
         "-"
       )}VS;`;
+    },
+    counter: (fieldName: string, fieldConfig: ObjectField) => {
+      return `${fieldName}: number;`;
     },
     "array:string": (fieldName, fieldConfig: ObjectField) => {
       return `${fieldName}: string[];`;

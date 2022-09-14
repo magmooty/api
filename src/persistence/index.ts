@@ -3,6 +3,7 @@ import { RedisCacheDriver } from "@/cache/redis";
 import { queue, wrapper } from "@/components";
 import { getObjectConfigFromObjectType, getObjectTypeFromId } from "@/graph";
 import {
+  CounterModifier,
   GraphObject,
   ObjectFieldValue,
   ObjectId,
@@ -19,7 +20,7 @@ import { wait } from "./commons/wait";
 import { DynamoDBConfig, DynamoPersistenceDriver } from "./dynamodb";
 import cacheHijackRules from "./extra/cache-hijack";
 import preLogicRules from "./extra/pre-logic";
-import _ from "lodash";
+import _, { replace } from "lodash";
 
 /**
  * Prefix a cache key with the lock prefix
@@ -58,8 +59,6 @@ export interface SeedObjectsResult<T> {
   results: T[];
   nextKey?: SeedObjectsAfterKey | null;
 }
-
-export type CounterModifier = `+${number}` | `-${number}` | number;
 
 export interface PersistenceDriver {
   /* */
@@ -108,14 +107,14 @@ export interface PersistenceDriver {
 
   // /* Counters */
 
-  // getCounter(ctx: Context, id: string, fieldName: string): Promise<number>;
+  getCounter(ctx: Context, id: string, fieldName: string): Promise<number>;
 
-  // setCounter(
-  //   ctx: Context,
-  //   id: string,
-  //   fieldName: string,
-  //   value: CounterModifier
-  // ): Promise<void>;
+  setCounter(
+    ctx: Context,
+    id: string,
+    fieldName: string,
+    value: CounterModifier
+  ): Promise<number>;
 
   // /* Uniques */
 
@@ -346,9 +345,11 @@ export class Persistence {
         object = await this.primaryDB.getObject<T>(ctx, id);
       }
 
+      const counters = await this.getCounters(ctx, id);
+
       ctx.setDurationMetricLabels({ objectType });
 
-      return object as T;
+      return { ...(object as T), ...counters };
     },
     (ctx, error) => {
       ctx.metrics
@@ -359,6 +360,101 @@ export class Persistence {
       ctx.metrics
         .getCounter("persistence_get_object")
         .inc({ objectType: ctx.getParam("objectType") });
+    }
+  );
+
+  private getCounters = wrapper(
+    { name: "getCounters", file: __filename },
+    async (ctx: Context, id: string) => {
+      const objectType = await getObjectTypeFromId(ctx, id);
+      const { counterFields } = await getObjectConfigFromObjectType(
+        ctx,
+        objectType
+      );
+
+      const payload: { [key: string]: number } = {};
+
+      if (!counterFields || counterFields.length <= 0) {
+        return payload;
+      }
+
+      await Promise.all(
+        counterFields.map(async (fieldName) => {
+          const counterKey = `${id}-${fieldName}`;
+
+          const cachedValue = await this.cache.get(ctx, counterKey);
+
+          if (cachedValue !== null) {
+            payload[fieldName] = Number(cachedValue);
+            return;
+          }
+
+          payload[fieldName] = await this.primaryDB.getCounter(
+            ctx,
+            id,
+            fieldName
+          );
+        })
+      );
+
+      return payload;
+    }
+  );
+
+  private applyCounters = wrapper(
+    { name: "applyCounters", file: __filename },
+    async (
+      ctx: Context,
+      id: string,
+      payload: { [key: string]: ObjectFieldValue }
+    ) => {
+      const objectType = await getObjectTypeFromId(ctx, id);
+      const { counterFields } = await getObjectConfigFromObjectType(
+        ctx,
+        objectType
+      );
+
+      if (
+        !counterFields ||
+        counterFields.length <= 0 ||
+        !payload ||
+        Object.keys(payload).length <= 0
+      ) {
+        ctx.log.debug("skipped", { counterFields, payload });
+        return payload;
+      }
+
+      ctx.log.debug("passed", { payload });
+
+      const resultPayload: { [key: string]: number } = {};
+
+      await Promise.all(
+        counterFields
+          .filter((fieldName) => payload[fieldName])
+          .map(async (fieldName) => {
+            ctx.log.debug("field", { fieldName });
+            const fieldPayload =
+              typeof payload[fieldName] === "number"
+                ? `=${payload[fieldName]}`
+                : payload[fieldName];
+            ctx.log.debug("payload", { fieldPayload });
+
+            const value = await this.primaryDB.setCounter(
+              ctx,
+              id,
+              fieldName,
+              fieldPayload as CounterModifier
+            );
+
+            const counterKey = `${id}-${fieldName}`;
+
+            await this.cache.set(ctx, counterKey, value);
+
+            resultPayload[fieldName] = value;
+          })
+      );
+
+      return resultPayload;
     }
   );
 
@@ -415,20 +511,24 @@ export class Persistence {
         "create"
       );
 
+      const omitted = _.omit(object, objectConfig.counterFields || []);
+
       switch (objectConfig.cacheLevel) {
         case "external":
         case "onlyCache":
           if (cacheHijackRules[path]) {
-            await cacheHijackRules[path](ctx, object);
+            await cacheHijackRules[path](ctx, omitted as GraphObject);
           } else {
-            await this.cache.set(ctx, id, object);
+            await this.cache.set(ctx, id, omitted);
           }
           break;
       }
 
       if (objectConfig.cacheLevel !== "onlyCache") {
-        await this.primaryDB.createObject(ctx, id, object);
+        await this.primaryDB.createObject(ctx, id, omitted as GraphObject);
       }
+
+      object = { ...omitted, ...(await this.applyCounters(ctx, id, object)) };
 
       await queue.send(ctx, {
         method: "POST",
@@ -514,7 +614,7 @@ export class Persistence {
         (field: string) => (updatePayload as any)[field] === null
       );
 
-      const rebuiltObject = _.omit(updatedObject, removedFields);
+      let rebuiltObject = _.omit(updatedObject, removedFields);
 
       await uniqueValidation(
         ctx,
@@ -525,16 +625,23 @@ export class Persistence {
         "update"
       );
 
+      const omitted = _.omit(rebuiltObject, objectConfig.counterFields || []);
+
       switch (objectConfig.cacheLevel) {
         case "external":
         case "onlyCache":
-          await this.cache.set(ctx, id, rebuiltObject);
+          await this.cache.set(ctx, id, omitted);
           break;
       }
 
       if (objectConfig.cacheLevel !== "onlyCache") {
-        await this.primaryDB.updateObject(ctx, id, updatePayload);
+        await this.primaryDB.updateObject(ctx, id, omitted);
       }
+
+      rebuiltObject = {
+        ...omitted,
+        ...(await this.applyCounters(ctx, id, rebuiltObject)),
+      } as any;
 
       await this.freeLock(ctx, id, lockHolder);
 
@@ -611,21 +718,28 @@ export class Persistence {
         "update"
       );
 
-      const replacedObject = {
+      let replacedObject = {
         ...payload,
         id,
         object_type: objectType,
         updated_at: serializeDate(new Date()),
       };
 
+      const omitted = _.omit(replacedObject, objectConfig.counterFields || []);
+
       switch (objectConfig.cacheLevel) {
         case "external":
         case "onlyCache":
-          await this.cache.set(ctx, id, replacedObject);
+          await this.cache.set(ctx, id, omitted);
           break;
       }
 
-      await this.primaryDB.replaceObject(ctx, id, replacedObject);
+      await this.primaryDB.replaceObject(ctx, id, omitted);
+
+      replacedObject = {
+        ...omitted,
+        ...(await this.applyCounters(ctx, id, payload as GraphObject)),
+      };
 
       await this.freeLock(ctx, id, lockHolder);
 
