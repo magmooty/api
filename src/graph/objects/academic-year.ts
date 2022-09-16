@@ -1,6 +1,5 @@
 import { ObjectConfig } from "@/graph";
-import { OwnerViewVirtualExecutor } from "@/graph/common";
-import { serializeDate } from "@/persistence/commons/serialize-date";
+import { SpaceAdminVirtualExecutor } from "@/graph/common";
 
 export default {
   code: "T1",
@@ -19,9 +18,9 @@ export default {
   },
   virtuals: {
     views: {
-      owner: {
+      space_admin: {
         pre: ["all"],
-        execute: OwnerViewVirtualExecutor,
+        execute: SpaceAdminVirtualExecutor,
       },
     },
   },

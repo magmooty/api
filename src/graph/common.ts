@@ -1,6 +1,6 @@
 import {
   ObjectViewVirtualExecutor,
-  ObjectViewVirtualExecutorOptions
+  ObjectViewVirtualExecutorOptions,
 } from "@/graph";
 import { GraphObject } from "@/graph/objects/types";
 
@@ -21,4 +21,18 @@ export const OwnerViewVirtualExecutor: ObjectViewVirtualExecutor = async (
     object.owner === author.id ||
     object.user === author.id
   );
+};
+
+export const SpaceAdminVirtualExecutor: ObjectViewVirtualExecutor = async (
+  object: GraphObject,
+  { roles }: ObjectViewVirtualExecutorOptions
+): Promise<boolean> => {
+  const { space } = object;
+
+  const foundRole = roles.find((role) => {
+    // The 2 index is where the space lives
+    return space === role.split("|")[2];
+  });
+
+  return foundRole ? true : false;
 };
