@@ -12,6 +12,8 @@ export const FIXED_OBJECT_FIELDS = [
   "deleted_at",
 ];
 
+export const ROLE_GROUP = ["tutor_role"];
+
 export const OwnerViewVirtualExecutor: ObjectViewVirtualExecutor = async (
   object: GraphObject,
   { author }: ObjectViewVirtualExecutorOptions

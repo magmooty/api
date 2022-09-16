@@ -1,6 +1,7 @@
 import { ObjectConfig } from "..";
 import academicYear from "./academic-year";
 import academicYearStats from "./academic-year-stats";
+import academicYearTrail from "./academic-year-trail";
 import notification from "./notification";
 import session from "./session";
 import space from "./space";
@@ -19,4 +20,5 @@ export default {
   tutor_role: tutorRole,
   academic_year: academicYear,
   academic_year_stats: academicYearStats,
+  academic_year_trail: academicYearTrail,
 } as { [key: string]: ObjectConfig };
