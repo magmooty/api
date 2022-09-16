@@ -27,6 +27,7 @@ export default {
   fields: {
     name: {
       type: "string",
+      required: true,
     },
     year: {
       type: "number",
@@ -34,6 +35,7 @@ export default {
     space: {
       type: "object-id",
       objectTypes: ["space"],
+      required: true,
     },
     stats: {
       type: "object-id",
