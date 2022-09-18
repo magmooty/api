@@ -1,0 +1,30 @@
+[
+  {
+    "code": "subscription",
+    "display": "Subscription"
+  },
+  {
+    "code": "book",
+    "display": "Book"
+  },
+  {
+    "code": "papers",
+    "display": "Papers"
+  },
+  {
+    "code": "revision",
+    "display": "Revision"
+  },
+  {
+    "code": "course",
+    "display": "Extra course"
+  },
+  {
+    "code": "added-class",
+    "display": "Extra class"
+  },
+  {
+    "code": "other",
+    "display": "Other"
+  }
+]

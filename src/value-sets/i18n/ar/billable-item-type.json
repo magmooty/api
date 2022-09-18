@@ -1,0 +1,30 @@
+[
+  {
+    "code": "subscription",
+    "display": "اشتراك"
+  },
+  {
+    "code": "book",
+    "display": "كتاب او ملزمة"
+  },
+  {
+    "code": "papers",
+    "display": "ورق"
+  },
+  {
+    "code": "revision",
+    "display": "مراجعة"
+  },
+  {
+    "code": "course",
+    "display": "كورس إضافي"
+  },
+  {
+    "code": "added-class",
+    "display": "حصة إضافية"
+  },
+  {
+    "code": "other",
+    "display": "أخرى"
+  }
+]
