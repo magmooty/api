@@ -1,7 +1,12 @@
 import { CacheConfig, CacheDriver } from "@/cache";
 import { RedisCacheDriver } from "@/cache/redis";
 import { queue, wrapper } from "@/components";
-import { getObjectConfigFromObjectType, getObjectTypeFromId } from "@/graph";
+import {
+  getObjectConfigFromObjectType,
+  getObjectTypeFromId,
+  initGraph,
+  StructConfig,
+} from "@/graph";
 import {
   CounterModifier,
   GraphObject,
@@ -20,6 +25,7 @@ import { wait } from "./commons/wait";
 import { DynamoDBConfig, DynamoPersistenceDriver } from "./dynamodb";
 import cacheHijackRules from "./extra/cache-hijack";
 import preLogicRules from "./extra/pre-logic";
+import postLogicRules, { PostLogicPayload } from "./extra/post-logic";
 import _, { replace } from "lodash";
 
 /**
@@ -234,7 +240,8 @@ export class Persistence {
     }
   }
 
-  init = wrapper({ name: "init", file: __filename }, async () => {
+  init = wrapper({ name: "init", file: __filename }, async (ctx: Context) => {
+    await initGraph(ctx);
     await this.primaryDB.init();
     await this.cache.init();
   });
@@ -328,6 +335,8 @@ export class Persistence {
 
       const objectConfig = await getObjectConfigFromObjectType(ctx, objectType);
 
+      const path = `GET ${objectType}`;
+
       ctx.setParam("objectType", objectType);
 
       ctx.setErrorDurationMetricLabels({ objectType });
@@ -347,9 +356,18 @@ export class Persistence {
 
       const counters = await this.getCounters(ctx, id);
 
+      const assembledObject = {
+        ...(object as T),
+        ...counters,
+      };
+
+      if (postLogicRules[path]) {
+        await postLogicRules[path](ctx, assembledObject);
+      }
+
       ctx.setDurationMetricLabels({ objectType });
 
-      return { ...(object as T), ...counters };
+      return assembledObject;
     },
     (ctx, error) => {
       ctx.metrics
@@ -379,22 +397,15 @@ export class Persistence {
       }
 
       await Promise.all(
-        counterFields.map(async (fieldName) => {
-          const counterKey = `${id}-${fieldName}`;
-
-          const cachedValue = await this.cache.get(ctx, counterKey);
-
-          if (cachedValue !== null) {
-            payload[fieldName] = Number(cachedValue);
-            return;
-          }
-
-          payload[fieldName] = await this.primaryDB.getCounter(
-            ctx,
-            id,
-            fieldName
-          );
-        })
+        counterFields
+          .filter((fieldName) => !fieldName.includes("_any"))
+          .map(async (fieldName) => {
+            payload[fieldName] = await this._internalGetCounter(
+              ctx,
+              id,
+              fieldName
+            );
+          })
       );
 
       return payload;
@@ -420,11 +431,8 @@ export class Persistence {
         !payload ||
         Object.keys(payload).length <= 0
       ) {
-        ctx.log.debug("skipped", { counterFields, payload });
         return payload;
       }
-
-      ctx.log.debug("passed", { payload });
 
       const resultPayload: { [key: string]: number } = {};
 
@@ -432,29 +440,64 @@ export class Persistence {
         counterFields
           .filter((fieldName) => payload[fieldName])
           .map(async (fieldName) => {
-            ctx.log.debug("field", { fieldName });
-            const fieldPayload =
-              typeof payload[fieldName] === "number"
-                ? `=${payload[fieldName]}`
-                : payload[fieldName];
-            ctx.log.debug("payload", { fieldPayload });
+            const fieldValue = _.get(payload, fieldName);
 
-            const value = await this.primaryDB.setCounter(
+            const fieldPayload =
+              typeof fieldValue === "number" ? `=${fieldValue}` : fieldValue;
+
+            const value = await this._internalSetCounter(
               ctx,
               id,
               fieldName,
               fieldPayload as CounterModifier
             );
 
-            const counterKey = `${id}-${fieldName}`;
-
-            await this.cache.set(ctx, counterKey, value);
-
             resultPayload[fieldName] = value;
           })
       );
 
       return resultPayload;
+    }
+  );
+
+  _internalSetCounter = wrapper(
+    { name: "_internalSetCounter", file: __filename },
+    async (
+      ctx: Context,
+      id: string,
+      fieldName: string,
+      modifier: CounterModifier
+    ) => {
+      ctx.register({ id, fieldName, modifier });
+
+      const value = await this.primaryDB.setCounter(
+        ctx,
+        id,
+        fieldName,
+        modifier
+      );
+
+      const counterKey = `${id}-${fieldName}`;
+
+      await this.cache.set(ctx, counterKey, value);
+
+      return value;
+    }
+  );
+
+  _internalGetCounter = wrapper(
+    { name: "_internalGetCounter", file: __filename },
+    async (ctx: Context, id: string, fieldName: string) => {
+      ctx.register({ id, fieldName });
+      const counterKey = `${id}-${fieldName}`;
+
+      const cachedValue = await this.cache.get(ctx, counterKey);
+
+      if (cachedValue !== null) {
+        return Number(cachedValue);
+      }
+
+      return await this.primaryDB.getCounter(ctx, id, fieldName);
     }
   );
 
@@ -511,7 +554,11 @@ export class Persistence {
         "create"
       );
 
-      const omitted = _.omit(object, objectConfig.counterFields || []);
+      const omitted = _.omit(
+        object,
+        ...(objectConfig.counterFields || []),
+        ...(objectConfig.counterStructs || [])
+      );
 
       switch (objectConfig.cacheLevel) {
         case "external":
@@ -529,6 +576,10 @@ export class Persistence {
       }
 
       object = { ...omitted, ...(await this.applyCounters(ctx, id, object)) };
+
+      if (postLogicRules[path]) {
+        await postLogicRules[path](ctx, object, payload as PostLogicPayload);
+      }
 
       await queue.send(ctx, {
         method: "POST",
@@ -625,7 +676,10 @@ export class Persistence {
         "update"
       );
 
-      const omitted = _.omit(rebuiltObject, objectConfig.counterFields || []);
+      const omitted = _.omit(rebuiltObject, [
+        ...(objectConfig.counterFields || []),
+        ...(objectConfig.counterStructs || []),
+      ]);
 
       switch (objectConfig.cacheLevel) {
         case "external":
@@ -642,6 +696,14 @@ export class Persistence {
         ...omitted,
         ...(await this.applyCounters(ctx, id, rebuiltObject)),
       } as any;
+
+      if (postLogicRules[path]) {
+        await postLogicRules[path](
+          ctx,
+          rebuiltObject,
+          payload as PostLogicPayload
+        );
+      }
 
       await this.freeLock(ctx, id, lockHolder);
 
@@ -674,104 +736,6 @@ export class Persistence {
     (ctx) => {
       ctx.metrics
         .getCounter("persistence_update_object")
-        .inc({ objectType: ctx.getParam("objectType") });
-    }
-  );
-
-  replaceObject = wrapper(
-    { name: "replaceObject", file: __filename },
-    async <T = GraphObject>(
-      ctx: Context,
-      id: string,
-      payload: Partial<GraphObject>,
-      { author }: { author?: User } = {}
-    ): Promise<T> => {
-      ctx.startTrackTime(
-        "persistence_replace_object_duration",
-        "persistence_replace_object_error_duration"
-      );
-
-      ctx.register({ id, payload });
-
-      const objectType = await getObjectTypeFromId(ctx, id);
-      const objectConfig = await getObjectConfigFromObjectType(ctx, objectType);
-
-      ctx.setParam("objectType", objectType);
-
-      ctx.setErrorDurationMetricLabels({ objectType });
-
-      await dryValidation(ctx, objectType, payload as any, true);
-
-      const lockHolder = await this.getLock(ctx, id);
-
-      ctx.setParam("lockKey", id);
-      ctx.setParam("lockHolder", lockHolder);
-
-      const previous = await this.getObject<GraphObject>(ctx, id);
-
-      await uniqueValidation(
-        ctx,
-        objectType,
-        previous,
-        payload as GraphObject,
-        this.primaryDB,
-        "update"
-      );
-
-      let replacedObject = {
-        ...payload,
-        id,
-        object_type: objectType,
-        updated_at: serializeDate(new Date()),
-      };
-
-      const omitted = _.omit(replacedObject, objectConfig.counterFields || []);
-
-      switch (objectConfig.cacheLevel) {
-        case "external":
-        case "onlyCache":
-          await this.cache.set(ctx, id, omitted);
-          break;
-      }
-
-      await this.primaryDB.replaceObject(ctx, id, omitted);
-
-      replacedObject = {
-        ...omitted,
-        ...(await this.applyCounters(ctx, id, payload as GraphObject)),
-      };
-
-      await this.freeLock(ctx, id, lockHolder);
-
-      await queue.send(ctx, {
-        method: "PATCH",
-        path: objectType,
-        type: "object",
-        previous,
-        current: replacedObject,
-        author: author?.id,
-      });
-
-      ctx.setDurationMetricLabels({ objectType });
-
-      return replacedObject as any;
-    },
-    async (ctx, error) => {
-      {
-        ctx.metrics.getCounter("persistence_replace_object_error").inc({
-          objectType: ctx.getParam("objectType"),
-          error: error.message,
-        });
-
-        const lockKey = ctx.getParam("lockKey");
-        const lockHolder = ctx.getParam("lockHolder");
-
-        await this.freeLock(ctx, lockKey, lockHolder);
-      }
-    },
-    (ctx) => {
-      ctx.metrics
-        .getCounter("persistence_replace_object")
         .inc({ objectType: ctx.getParam("objectType") });
     }
   );

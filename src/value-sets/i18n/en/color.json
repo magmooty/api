@@ -1,0 +1,42 @@
+[
+  {
+    "code": "red",
+    "display": "Red"
+  },
+  {
+    "code": "green",
+    "display": "Green"
+  },
+  {
+    "code": "blue",
+    "display": "Blue"
+  },
+  {
+    "code": "teal",
+    "display": "Teal"
+  },
+  {
+    "code": "gray",
+    "display": "Gray"
+  },
+  {
+    "code": "orange",
+    "display": "Orange"
+  },
+  {
+    "code": "yellow",
+    "display": "Yellow"
+  },
+  {
+    "code": "cyan",
+    "display": "Cyan"
+  },
+  {
+    "code": "purple",
+    "display": "Purple"
+  },
+  {
+    "code": "pink",
+    "display": "Pink"
+  }
+]

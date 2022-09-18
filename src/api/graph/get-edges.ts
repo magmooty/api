@@ -65,8 +65,6 @@ export const getEdgesEndpoint: APIEndpoint = apiWrapper(
           });
         }
 
-        ctx.log.debug("expanded", { object });
-
         return verifyObjectACL(ctx, {
           aclMode: "hard",
           method: "GET",

@@ -1,4 +1,4 @@
-import { errors } from "@/components";
+import { errors, wrapper } from "@/components";
 import structs from "@/graph/structs";
 import {
   GraphObject,
@@ -73,10 +73,12 @@ export enum ObjectTTL {
   Active = ms.days(3),
 }
 
+export interface StructConfigFields {
+  [key: string]: ObjectField;
+}
+
 export interface StructConfig {
-  fields: {
-    [key: string]: ObjectField;
-  };
+  fields: StructConfigFields;
 }
 
 export interface ObjectConfig extends StructConfig {
@@ -89,6 +91,7 @@ export interface ObjectConfig extends StructConfig {
   virtuals: { views: { [key: string]: ObjectViewVirtual } };
   edges: { [key: string]: ObjectEdge };
   counterFields?: string[];
+  counterStructs?: string[];
 }
 
 import objects from "@/graph/objects";
@@ -103,13 +106,69 @@ const objectCodeObjectTypeMap: { [key: string]: string } = Object.keys(
   {}
 );
 
-Object.keys(objects).forEach((objectType) => {
-  const counterFields = Object.keys(objects[objectType].fields).filter(
-    (fieldName) => objects[objectType].fields[fieldName].type === "counter"
+const extractCounterFields = async (
+  ctx: Context,
+  structConfig: StructConfig
+): Promise<{ counterFields: string[]; counterStructs: string[] }> => {
+  const counterFields = Object.keys(structConfig.fields).filter(
+    (fieldName) => structConfig.fields[fieldName].type === "counter"
   );
 
-  objects[objectType].counterFields = counterFields;
-});
+  const structFields = Object.keys(structConfig.fields).filter(
+    (fieldName) => structConfig.fields[fieldName].type === "struct"
+  );
+
+  let structCounterFields: string[] = [];
+  let structCounterStructs: string[] = [];
+
+  for (const structField of structFields) {
+    const nestedStructConfig = await getStructConfig(
+      ctx,
+      structConfig.fields[structField].struct as string
+    );
+
+    const { counterFields: nestedStructCounterFields, counterStructs } =
+      await extractCounterFields(ctx, nestedStructConfig);
+
+    if (nestedStructConfig.fields._any) {
+      structCounterStructs = [...structCounterStructs, structField];
+    }
+
+    structCounterFields = [
+      ...structCounterFields,
+      ...nestedStructCounterFields.map(
+        (fieldName) => `${structField}.${fieldName}`
+      ),
+    ];
+  }
+
+  return {
+    counterFields: [...counterFields, ...structCounterFields],
+    counterStructs: [...structCounterStructs],
+  };
+};
+
+export const initGraph = wrapper(
+  { name: "initGraph", file: __filename },
+  async (ctx: Context) => {
+    await Promise.all(
+      Object.keys(objects).map(async (objectType) => {
+        const structConfig = await getStructConfigFromObjectTypeOrStructName(
+          ctx,
+          objectType
+        );
+
+        const { counterFields, counterStructs } = await extractCounterFields(
+          ctx,
+          structConfig
+        );
+
+        objects[objectType].counterFields = counterFields;
+        objects[objectType].counterStructs = counterStructs;
+      })
+    );
+  }
+);
 
 export const checkIfObjectTypeExists = async (
   ctx: Context,

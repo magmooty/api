@@ -2,7 +2,7 @@ import { ObjectConfig } from "@/graph";
 import { SpaceAdminVirtualExecutor } from "@/graph/common";
 
 export default {
-  code: "10",
+  code: "12",
   cacheLevel: "external",
   views: {
     _default: {
@@ -36,17 +36,24 @@ export default {
     },
     time_table: {
       type: "array:struct",
-      struct: "study-group-time-table",
+      struct: "exam-time-table",
+    },
+    grade_groups: {
+      type: "array:struct",
+      struct: "exam-grade-group",
+    },
+    grade_group_counter: {
+      type: "counter",
     },
     stats: {
       type: "object-id",
-      objectTypes: ["study_group_stats"],
+      objectTypes: ["exam_stats"],
       view: "system_controlled",
     },
   },
   edges: {
     trails: {
-      objectTypes: ["study_group_trail"],
+      objectTypes: ["exam_trail"],
       view: "system_controlled",
     },
   },

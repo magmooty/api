@@ -61,4 +61,44 @@ export default {
       },
     },
   },
+  "exam-time-table": {
+    fields: {
+      date: {
+        type: "date",
+      },
+      time_from: {
+        type: "number",
+      },
+      time_to: {
+        type: "number",
+      },
+    },
+  },
+  "exam-grade-group": {
+    fields: {
+      grade_group_id: {
+        type: "string",
+      },
+      name: {
+        type: "string",
+      },
+      color: {
+        type: "value-set",
+        valueSet: "color",
+      },
+      range_from: {
+        type: "number",
+      },
+      range_to: {
+        type: "number",
+      },
+    },
+  },
+  "exam-grade-group-stats": {
+    fields: {
+      _any: {
+        type: "counter",
+      },
+    },
+  },
 } as { [key: string]: StructConfig };

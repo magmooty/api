@@ -1,0 +1,62 @@
+[
+  {
+    "code": "red",
+    "extra": {
+      "value": "#E53E3E"
+    }
+  },
+  {
+    "code": "green",
+    "extra": {
+      "value": "#38A169"
+    }
+  },
+  {
+    "code": "blue",
+    "extra": {
+      "value": "#3182CE"
+    }
+  },
+  {
+    "code": "teal",
+    "extra": {
+      "value": "#319795"
+    }
+  },
+  {
+    "code": "gray",
+    "extra": {
+      "value": "#718096"
+    }
+  },
+  {
+    "code": "orange",
+    "extra": {
+      "value": "#DD6B20"
+    }
+  },
+  {
+    "code": "yellow",
+    "extra": {
+      "value": "#D69E2E"
+    }
+  },
+  {
+    "code": "cyan",
+    "extra": {
+      "value": "#00B5D8"
+    }
+  },
+  {
+    "code": "purple",
+    "extra": {
+      "value": "#805AD5"
+    }
+  },
+  {
+    "code": "pink",
+    "extra": {
+      "value": "#D53F8C"
+    }
+  }
+]

@@ -2,6 +2,9 @@ import { ObjectConfig } from "..";
 import academicYear from "./academic-year";
 import academicYearStats from "./academic-year-stats";
 import academicYearTrail from "./academic-year-trail";
+import exam from "./exam";
+import examStats from "./exam-stats";
+import examTrail from "./exam-trail";
 import notification from "./notification";
 import session from "./session";
 import space from "./space";
@@ -27,4 +30,7 @@ export default {
   study_group: studyGroup,
   study_group_stats: studyGroupStats,
   study_group_trail: studyGroupTrail,
+  exam: exam,
+  exam_stats: examStats,
+  exam_trail: examTrail
 } as { [key: string]: ObjectConfig };

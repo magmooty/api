@@ -264,14 +264,19 @@ for (const structName in structs) {
 
   append(object.structStart(structName));
 
-  for (const objectField in structConfig.fields) {
-    const fieldConfig = structConfig.fields[objectField];
+  if (structConfig.fields._any) {
+    const fieldConfig = structConfig.fields._any;
+    append(object.fields[fieldConfig.type]("[key: string]", fieldConfig));
+  } else {
+    for (const objectField in structConfig.fields) {
+      const fieldConfig = structConfig.fields[objectField];
 
-    if (object.fields[fieldConfig.type]) {
-      append(object.fields[fieldConfig.type](objectField, fieldConfig));
-    } else {
-      log.error("Couldn't find field generator for type", fieldConfig.type);
-      typesNotFound = true;
+      if (object.fields[fieldConfig.type]) {
+        append(object.fields[fieldConfig.type](objectField, fieldConfig));
+      } else {
+        log.error("Couldn't find field generator for type", fieldConfig.type);
+        typesNotFound = true;
+      }
     }
   }
 

@@ -1,0 +1,42 @@
+[
+  {
+    "code": "red",
+    "display": "أحمر"
+  },
+  {
+    "code": "green",
+    "display": "أخضر"
+  },
+  {
+    "code": "blue",
+    "display": "أزرق"
+  },
+  {
+    "code": "teal",
+    "display": "فيروزي"
+  },
+  {
+    "code": "gray",
+    "display": "رمادي"
+  },
+  {
+    "code": "orange",
+    "display": "برتقالي"
+  },
+  {
+    "code": "yellow",
+    "display": "أصفر"
+  },
+  {
+    "code": "cyan",
+    "display": "تركواز"
+  },
+  {
+    "code": "purple",
+    "display": "بنفسجي"
+  },
+  {
+    "code": "pink",
+    "display": "بمبى"
+  }
+]

@@ -10,7 +10,13 @@ export type ObjectType =
   | "tutor_role"
   | "academic_year"
   | "academic_year_stats"
-  | "academic_year_trail";
+  | "academic_year_trail"
+  | "study_group"
+  | "study_group_stats"
+  | "study_group_trail"
+  | "exam"
+  | "exam_stats"
+  | "exam_trail";
 
 export type ObjectFieldValue =
   | string
@@ -26,9 +32,17 @@ export type ObjectFieldValue =
   | HumanName
   | PaymentMethod
   | ContactPoint
+  | StudyGroupTimeTable
+  | ExamTimeTable
+  | ExamGradeGroup
+  | ExamGradeGroupStats
   | HumanName[]
   | PaymentMethod[]
-  | ContactPoint[];
+  | ContactPoint[]
+  | StudyGroupTimeTable[]
+  | ExamTimeTable[]
+  | ExamGradeGroup[]
+  | ExamGradeGroupStats[];
 
 export type AppLocale = "ar" | "en";
 
@@ -68,7 +82,9 @@ export interface NotificationIndexMapping {
 }
 
 export type ValueSet =
+  | "Color"
   | "ContactPointType"
+  | "Day"
   | "NamePrefix"
   | "NotificationCriticalityLevel"
   | "NotificationType"
@@ -76,7 +92,21 @@ export type ValueSet =
   | "UserGender"
   | "UserStatus";
 
+export type ColorVS =
+  | "red"
+  | "green"
+  | "blue"
+  | "teal"
+  | "gray"
+  | "orange"
+  | "yellow"
+  | "cyan"
+  | "purple"
+  | "pink";
+
 export type ContactPointTypeVS = "phone" | "email" | "telegram";
+
+export type DayVS = "sat" | "sun" | "mon" | "tue" | "wed" | "thu" | "fri";
 
 export type NamePrefixVS =
   | "mister"
@@ -116,6 +146,31 @@ export interface PaymentMethod {
 export interface ContactPoint {
   type: ContactPointTypeVS;
   value: string;
+}
+
+export interface StudyGroupTimeTable {
+  class_of_week: number;
+  day: DayVS;
+  time_from: number;
+  time_to: number;
+}
+
+export interface ExamTimeTable {
+  date: string;
+  time_from: number;
+  time_to: number;
+}
+
+export interface ExamGradeGroup {
+  grade_group_id: string;
+  name: string;
+  color: ColorVS;
+  range_from: number;
+  range_to: number;
+}
+
+export interface ExamGradeGroupStats {
+  [key: string]: number;
 }
 
 export interface User extends GraphObject {
@@ -225,5 +280,69 @@ export interface AcademicYearTrail extends GraphObject {
   deleted_at: string;
   delta: { [key: string]: ObjectFieldValue };
   academic_year: string;
+  role: string;
+}
+
+export interface StudyGroup extends GraphObject {
+  object_type: "study_group";
+  created_at: string;
+  updated_at: string;
+  deleted_at: string;
+  name: string;
+  academic_year: string;
+  time_table: StudyGroupTimeTable[];
+  stats: string;
+}
+
+export interface StudyGroupStats extends GraphObject {
+  object_type: "study_group_stats";
+  created_at: string;
+  updated_at: string;
+  deleted_at: string;
+  student_counter: number;
+  study_group: string;
+}
+
+export interface StudyGroupTrail extends GraphObject {
+  object_type: "study_group_trail";
+  created_at: string;
+  updated_at: string;
+  deleted_at: string;
+  delta: { [key: string]: ObjectFieldValue };
+  study_group: string;
+  role: string;
+}
+
+export interface Exam extends GraphObject {
+  object_type: "exam";
+  created_at: string;
+  updated_at: string;
+  deleted_at: string;
+  name: string;
+  academic_year: string;
+  time_table: ExamTimeTable[];
+  grade_groups: ExamGradeGroup[];
+  grade_group_counter: number;
+  stats: string;
+}
+
+export interface ExamStats extends GraphObject {
+  object_type: "exam_stats";
+  created_at: string;
+  updated_at: string;
+  deleted_at: string;
+  student_counter: number;
+  examined_students: number;
+  grade_group_counts: ExamGradeGroupStats;
+  exam: string;
+}
+
+export interface ExamTrail extends GraphObject {
+  object_type: "exam_trail";
+  created_at: string;
+  updated_at: string;
+  deleted_at: string;
+  delta: { [key: string]: ObjectFieldValue };
+  exam: string;
   role: string;
 }

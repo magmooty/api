@@ -229,7 +229,8 @@ async function dryValidateField(
     return;
   }
 
-  const fieldConfig = structConfig.fields[fieldName];
+  const fieldConfig =
+    structConfig.fields[fieldName] || structConfig.fields._any;
 
   if (!fieldConfig) {
     return errors.createError(ctx, "ValidationErrorFieldNotFound", {

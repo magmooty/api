@@ -1,7 +1,7 @@
 import { APINextFunction, APIRequest, APIResponse } from "@/api/types";
 import config from "@/config";
 import { AppLocale } from "@/graph/objects/types";
-import { Logger } from "@/logger";
+import { Logger, LoggerDebug } from "@/logger";
 import { MetricsHandler } from "@/metrics";
 import { HistogramName } from "@/metrics/histogram";
 import { parse as parseAcceptLanguage } from "@escapace/accept-language-parser";
@@ -69,6 +69,7 @@ export interface Context {
   getParam: (name: string) => any;
   setParam: (name: string, value: any) => any;
   traceInfo: TraceInfo;
+  debug: LoggerDebug;
   startTrackTime: (
     durationMetric: HistogramName,
     errorDurationMetric: HistogramName
@@ -191,6 +192,7 @@ export class Tracer {
           log.error(data, `FATAL ERROR: ${message}`);
           process.exit();
         },
+        debug: log.debug,
         traceInfo,
         ...traceIds,
       };

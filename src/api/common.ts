@@ -242,7 +242,8 @@ export const verifyObjectACL = wrapper(
       }
 
       // Find the field config and current method's view
-      const fieldConfig = objectConfig.fields[fieldName];
+      const fieldConfig =
+        objectConfig.fields[fieldName] || objectConfig.fields._any;
 
       const view = fieldConfig.view
         ? objectConfig.views[fieldConfig.view]
