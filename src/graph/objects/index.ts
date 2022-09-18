@@ -7,6 +7,7 @@ import session from "./session";
 import space from "./space";
 import studyGroup from "./study-group";
 import studyGroupStats from "./study-group-stats";
+import studyGroupTrail from "./study-group-trail";
 import systemUser from "./system-user";
 import tutorRole from "./tutor-role";
 import user from "./user";
@@ -25,4 +26,5 @@ export default {
   academic_year_trail: academicYearTrail,
   study_group: studyGroup,
   study_group_stats: studyGroupStats,
+  study_group_trail: studyGroupTrail,
 } as { [key: string]: ObjectConfig };
