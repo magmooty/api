@@ -2,13 +2,19 @@ import { ObjectConfig } from "@/graph";
 import { SpaceAdminVirtualExecutor } from "@/graph/common";
 
 export default {
-  code: "14",
+  code: "R2",
   cacheLevel: "external",
+  deletedBy: ["virtual:space_admin"],
   views: {
     _default: {
       GET: ["virtual:space_admin"],
       POST: ["virtual:space_admin"],
       PATCH: ["virtual:space_admin"],
+    },
+    system_controlled: {
+      GET: ["virtual:space_admin"],
+      POST: [],
+      PATCH: [],
     },
   },
   virtuals: {
@@ -22,16 +28,27 @@ export default {
   fields: {
     name: {
       type: "string",
-      required: true,
     },
-    grade_groups: {
-      type: "array:struct",
-      struct: "exam-grade-group",
-    },
-    space: {
+    academic_year: {
       type: "object-id",
-      objectTypes: ["space"],
+      objectTypes: ["academic_year"],
+    },
+    study_group: {
+      type: "object-id",
+      objectTypes: ["study_group"],
+    },
+    contacts: {
+      type: "array:struct",
+      struct: "contact-point",
+    },
+    notes: {
+      type: "string",
     },
   },
-  edges: {},
+  edges: {
+    trails: {
+      objectTypes: ["student_role_trail"],
+      view: "system_controlled",
+    },
+  },
 } as ObjectConfig;

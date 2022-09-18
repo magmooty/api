@@ -3,7 +3,7 @@ import {
   ObjectViewVirtualExecutor,
   ObjectViewVirtualExecutorOptions,
 } from "@/graph";
-import { AcademicYear, GraphObject } from "@/graph/objects/types";
+import { AcademicYear, GraphObject, StudyGroup } from "@/graph/objects/types";
 
 export const FIXED_OBJECT_FIELDS = [
   "id",
@@ -30,16 +30,16 @@ export const SpaceAdminVirtualExecutor: ObjectViewVirtualExecutor = async (
   object: GraphObject,
   { roles }: ObjectViewVirtualExecutorOptions
 ): Promise<boolean> => {
-  const { academic_year, space: rootSpace } = object;
+  const { academic_year, study_group, space: rootSpace } = object;
 
-  if (!rootSpace && !academic_year) {
+  if (!rootSpace && !academic_year && !study_group) {
     return false;
   }
 
   const roleSpaces = roles.map((role) => role.split("|")[2]);
 
-  if (rootSpace) {
-    return roleSpaces.includes(rootSpace as string);
+  if (rootSpace && !roleSpaces.includes(rootSpace as string)) {
+    return false;
   }
 
   if (academic_year) {
@@ -48,8 +48,21 @@ export const SpaceAdminVirtualExecutor: ObjectViewVirtualExecutor = async (
       academic_year as string
     );
 
-    return roleSpaces.includes(space as string);
+    if (!roleSpaces.includes(space as string)) {
+      return false;
+    }
   }
 
-  return false;
+  if (study_group) {
+    const { space } = await persistence.getObject<StudyGroup>(
+      null,
+      academic_year as string
+    );
+
+    if (!roleSpaces.includes(space as string)) {
+      return false;
+    }
+  }
+
+  return true;
 };

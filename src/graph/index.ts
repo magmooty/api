@@ -55,6 +55,7 @@ export interface ObjectView {
 export interface ObjectViewVirtualExecutorOptions {
   author: User;
   roles: string[];
+  method: "POST" | "PATCH" | "GET" | "DELETE";
 }
 
 export type ObjectViewVirtualExecutor = (

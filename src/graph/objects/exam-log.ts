@@ -32,6 +32,7 @@ export default {
     },
     attended: {
       type: "boolean",
+      default: () => false,
     },
     degree: {
       type: "number",
