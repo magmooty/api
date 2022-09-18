@@ -105,4 +105,14 @@ export default {
       },
     },
   },
+  "billable-item-time-table": {
+    fields: {
+      date_from: {
+        type: "date",
+      },
+      date_to: {
+        type: "date",
+      },
+    },
+  },
 } as { [key: string]: StructConfig };
