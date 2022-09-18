@@ -4,6 +4,8 @@ import academicYearStats from "./academic-year-stats";
 import academicYearTrail from "./academic-year-trail";
 import exam from "./exam";
 import examGradeGroupTemplate from "./exam-grade-group-template";
+import examLog from "./exam-log";
+import examLogTrail from "./exam-log-trail";
 import examStats from "./exam-stats";
 import examTrail from "./exam-trail";
 import notification from "./notification";
@@ -35,4 +37,6 @@ export default {
   exam_stats: examStats,
   exam_trail: examTrail,
   exam_grade_group_template: examGradeGroupTemplate,
+  exam_log: examLog,
+  exam_log_trail: examLogTrail,
 } as { [key: string]: ObjectConfig };
