@@ -23,6 +23,10 @@ export default {
     delta: {
       type: "json",
     },
+    academic_year: {
+      type: "object-id",
+      objectTypes: ["academic_year"],
+    },
     role: {
       type: "object-id",
       objectTypes: ROLE_GROUP,

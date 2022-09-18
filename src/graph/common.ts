@@ -1,8 +1,9 @@
+import { persistence } from "@/components";
 import {
   ObjectViewVirtualExecutor,
   ObjectViewVirtualExecutorOptions,
 } from "@/graph";
-import { GraphObject } from "@/graph/objects/types";
+import { AcademicYear, GraphObject } from "@/graph/objects/types";
 
 export const FIXED_OBJECT_FIELDS = [
   "id",
@@ -29,12 +30,26 @@ export const SpaceAdminVirtualExecutor: ObjectViewVirtualExecutor = async (
   object: GraphObject,
   { roles }: ObjectViewVirtualExecutorOptions
 ): Promise<boolean> => {
-  const { space } = object;
+  const { academic_year, space: rootSpace } = object;
 
-  const foundRole = roles.find((role) => {
-    // The 2 index is where the space lives
-    return space === role.split("|")[2];
-  });
+  if (!rootSpace && !academic_year) {
+    return false;
+  }
 
-  return foundRole ? true : false;
+  const roleSpaces = roles.map((role) => role.split("|")[2]);
+
+  if (rootSpace) {
+    return roleSpaces.includes(rootSpace as string);
+  }
+
+  if (academic_year) {
+    const { space } = await persistence.getObject<AcademicYear>(
+      null,
+      academic_year as string
+    );
+
+    return roleSpaces.includes(space as string);
+  }
+
+  return false;
 };

@@ -7,7 +7,10 @@ export type ObjectType =
   | "space"
   | "notification"
   | "user_status"
-  | "tutor_role";
+  | "tutor_role"
+  | "academic_year"
+  | "academic_year_stats"
+  | "academic_year_trail";
 
 export type ObjectFieldValue =
   | string
@@ -156,7 +159,6 @@ export interface Space extends GraphObject {
   deleted_at: string;
   name: string;
   owner: string;
-  test_counter: number;
 }
 
 export interface Notification extends GraphObject {
@@ -194,4 +196,34 @@ export interface TutorRole extends GraphObject {
   last_read_notification: string;
   contacts: ContactPoint[];
   space: string;
+}
+
+export interface AcademicYear extends GraphObject {
+  object_type: "academic_year";
+  created_at: string;
+  updated_at: string;
+  deleted_at: string;
+  name: string;
+  year: number;
+  space: string;
+  stats: string;
+}
+
+export interface AcademicYearStats extends GraphObject {
+  object_type: "academic_year_stats";
+  created_at: string;
+  updated_at: string;
+  deleted_at: string;
+  student_counter: number;
+  academic_year: string;
+}
+
+export interface AcademicYearTrail extends GraphObject {
+  object_type: "academic_year_trail";
+  created_at: string;
+  updated_at: string;
+  deleted_at: string;
+  delta: { [key: string]: ObjectFieldValue };
+  academic_year: string;
+  role: string;
 }
