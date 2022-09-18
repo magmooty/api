@@ -5,6 +5,8 @@ import academicYearTrail from "./academic-year-trail";
 import notification from "./notification";
 import session from "./session";
 import space from "./space";
+import studyGroup from "./study-group";
+import studyGroupStats from "./study-group-stats";
 import systemUser from "./system-user";
 import tutorRole from "./tutor-role";
 import user from "./user";
@@ -21,4 +23,6 @@ export default {
   academic_year: academicYear,
   academic_year_stats: academicYearStats,
   academic_year_trail: academicYearTrail,
+  study_group: studyGroup,
+  study_group_stats: studyGroupStats,
 } as { [key: string]: ObjectConfig };
