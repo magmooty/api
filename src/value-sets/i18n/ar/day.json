@@ -1,0 +1,30 @@
+[
+  {
+    "code": "sat",
+    "display": "السبت"
+  },
+  {
+    "code": "sun",
+    "display": "الأحد"
+  },
+  {
+    "code": "mon",
+    "display": "الإثنين"
+  },
+  {
+    "code": "tue",
+    "display": "الثلاثاء"
+  },
+  {
+    "code": "wed",
+    "display": "الأربعاء"
+  },
+  {
+    "code": "thu",
+    "display": "الخميس"
+  },
+  {
+    "code": "fri",
+    "display": "الجمعة"
+  }
+]
