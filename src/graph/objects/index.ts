@@ -12,6 +12,7 @@ import notification from "./notification";
 import session from "./session";
 import space from "./space";
 import studentRole from "./student-role";
+import studentRoleTrail from "./student-role-trail";
 import studyGroup from "./study-group";
 import studyGroupStats from "./study-group-stats";
 import studyGroupTrail from "./study-group-trail";
@@ -41,4 +42,5 @@ export default {
   exam_log: examLog,
   exam_log_trail: examLogTrail,
   student_role: studentRole,
+  student_role_trail: studentRoleTrail,
 } as { [key: string]: ObjectConfig };
