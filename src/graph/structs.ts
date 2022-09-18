@@ -35,6 +35,10 @@ export default {
   },
   "contact-point": {
     fields: {
+      use: {
+        type: "value-set",
+        valueSet: "contact-point-use",
+      },
       type: {
         type: "value-set",
         valueSet: "contact-point-type",
