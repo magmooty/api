@@ -44,4 +44,21 @@ export default {
       },
     },
   },
+  "study-group-time-table": {
+    fields: {
+      class_of_week: {
+        type: "number",
+      },
+      day: {
+        type: "value-set",
+        valueSet: "day",
+      },
+      time_from: {
+        type: "number",
+      },
+      time_to: {
+        type: "number",
+      },
+    },
+  },
 } as { [key: string]: StructConfig };
