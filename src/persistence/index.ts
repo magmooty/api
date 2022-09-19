@@ -689,7 +689,14 @@ export class Persistence {
       }
 
       if (objectConfig.cacheLevel !== "onlyCache") {
-        await this.primaryDB.updateObject(ctx, id, omitted);
+        await this.primaryDB.updateObject(
+          ctx,
+          id,
+          _.omit(updatePayload, [
+            ...(objectConfig.counterFields || []),
+            ...(objectConfig.counterStructs || []),
+          ])
+        );
       }
 
       rebuiltObject = {

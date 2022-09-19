@@ -59,7 +59,7 @@ export interface ObjectViewVirtualExecutorOptions {
 }
 
 export type ObjectViewVirtualExecutor = (
-  ctx?: Context,
+  ctx: Context | null,
   object: GraphObject,
   options: ObjectViewVirtualExecutorOptions
 ) => Promise<boolean>;
