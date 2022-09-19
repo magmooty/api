@@ -14,6 +14,7 @@ export class SyncLogic {
         `${event.method} ${event.path}` as any;
 
       if (syncLogicTriggers[handler]) {
+        // @ts-ignore
         await syncLogicTriggers[handler](ctx, event as any);
       }
     }

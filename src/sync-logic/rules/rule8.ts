@@ -1,11 +1,11 @@
 import { persistence, wrapper } from "@/components";
 import { AcademicYear, AcademicYearStats } from "@/graph/objects/types";
-import { QueueEvent } from "@/queue";
+import { BaseQueueEvent } from "@/queue";
 import { Context } from "@/tracing";
 
 export const rule8 = wrapper(
   { name: "rule8", file: __filename },
-  async (ctx: Context, event: QueueEvent<AcademicYear>) => {
+  async (ctx: Context, event: BaseQueueEvent<AcademicYear>) => {
     if (!event.current) {
       return;
     }

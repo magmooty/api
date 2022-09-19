@@ -12,5 +12,6 @@ module.exports = {
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-misused-new": "off",
     "@typescript-eslint/ban-types": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
   },
 };
