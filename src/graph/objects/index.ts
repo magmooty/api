@@ -2,6 +2,9 @@ import { ObjectConfig } from "..";
 import academicYear from "./academic-year";
 import academicYearStats from "./academic-year-stats";
 import academicYearTrail from "./academic-year-trail";
+import billableItem from "./billable-item";
+import billableItemStats from "./billable-item-stats";
+import billableItemTrail from "./billable-item-trail";
 import exam from "./exam";
 import examGradeGroupTemplate from "./exam-grade-group-template";
 import examLog from "./exam-log";
@@ -43,4 +46,7 @@ export default {
   exam_log_trail: examLogTrail,
   student_role: studentRole,
   student_role_trail: studentRoleTrail,
+  billable_item: billableItem,
+  billable_item_trail: billableItemTrail,
+  billable_item_stats: billableItemStats,
 } as { [key: string]: ObjectConfig };
