@@ -26,7 +26,7 @@ export default {
     owner: {
       type: "object-id",
       objectTypes: ["user"],
-      default: (object, author) => (author ? author.id : undefined),
+      default: (object, author) => (author ? author : undefined),
     },
   },
   edges: {},

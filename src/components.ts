@@ -73,6 +73,11 @@ import { ParallelLogic } from "./parallel-logic";
 
 const parallelLogic = new ParallelLogic();
 
+// Sync logic
+import { SyncLogic } from "./sync-logic";
+
+const syncLogic = new SyncLogic();
+
 export {
   apiWrapper,
   wrapper,
@@ -87,4 +92,5 @@ export {
   auth,
   services,
   parallelLogic,
+  syncLogic,
 };

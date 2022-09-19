@@ -7,7 +7,7 @@ export async function fillDefaults<T = GraphObject>(
   ctx: Context,
   objectType: ObjectType,
   data: T,
-  { author }: { author?: User } = {}
+  { author }: { author?: string } = {}
 ): Promise<T> {
   const objectConfig = await getObjectConfigFromObjectType(ctx, objectType);
 

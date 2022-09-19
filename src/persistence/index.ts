@@ -1,6 +1,6 @@
 import { CacheConfig, CacheDriver } from "@/cache";
 import { RedisCacheDriver } from "@/cache/redis";
-import { queue, wrapper } from "@/components";
+import { queue, syncLogic, wrapper } from "@/components";
 import {
   getObjectConfigFromObjectType,
   getObjectTypeFromId,
@@ -506,7 +506,7 @@ export class Persistence {
     async <T = GraphObject>(
       ctx: Context,
       payload: CreateObjectPayload,
-      { hooks, author }: { hooks?: CreateObjectHooks; author?: User } = {}
+      { hooks, author }: { hooks?: CreateObjectHooks; author?: string } = {}
     ): Promise<T> => {
       ctx.startTrackTime(
         "persistence_create_object_duration",
@@ -581,13 +581,16 @@ export class Persistence {
         await postLogicRules[path](ctx, object, payload as PostLogicPayload);
       }
 
-      await queue.send(ctx, {
+      const event = {
         method: "POST",
         path: objectType,
         type: "object",
         current: object,
-        author: author?.id,
-      });
+        author,
+      };
+
+      await syncLogic.processEvent(ctx, event);
+      await queue.send(ctx, event);
 
       return object as any;
     },
@@ -609,7 +612,7 @@ export class Persistence {
       ctx: Context,
       id: string,
       payload: Partial<T>,
-      { hooks, author }: { hooks?: UpdateObjectHooks; author?: User } = {}
+      { hooks, author }: { hooks?: UpdateObjectHooks; author?: string } = {}
     ): Promise<T> => {
       ctx.startTrackTime(
         "persistence_update_object_duration",
@@ -714,14 +717,17 @@ export class Persistence {
 
       await this.freeLock(ctx, id, lockHolder);
 
-      await queue.send(ctx, {
+      const event = {
         method: "PATCH",
         path: objectType,
         type: "object",
         previous,
         current: rebuiltObject as any,
-        author: author?.id,
-      });
+        author,
+      };
+
+      await syncLogic.processEvent(ctx, event);
+      await queue.send(ctx, event);
 
       ctx.setDurationMetricLabels({ objectType });
 
@@ -752,7 +758,7 @@ export class Persistence {
     async (
       ctx: Context,
       id: string,
-      { author }: { author?: User } = {}
+      { author }: { author?: string } = {}
     ): Promise<GraphObject> => {
       ctx.startTrackTime(
         "persistence_delete_object_duration",
@@ -812,14 +818,17 @@ export class Persistence {
 
       await this.freeLock(ctx, id, lockHolder);
 
-      await queue.send(ctx, {
+      const event = {
         method: "DELETE",
         path: objectType,
         type: "object",
         previous,
         current: current as any,
-        author: author?.id,
-      });
+        author,
+      };
+
+      await syncLogic.processEvent(ctx, event);
+      await queue.send(ctx, event);
 
       ctx.setDurationMetricLabels({ objectType });
 
@@ -852,7 +861,7 @@ export class Persistence {
       src: ObjectId,
       edgeName: string,
       dst: ObjectId,
-      { author }: { author?: User } = {}
+      { author }: { author?: string } = {}
     ): Promise<void> => {
       ctx.startTrackTime(
         "persistence_create_edge_duration",
@@ -905,7 +914,7 @@ export class Persistence {
 
       await this.freeLock(ctx, lockKey, lockHolder);
 
-      await queue.send(ctx, {
+      const event = {
         method: "POST",
         path: `${srcObjectType}/${edgeName}`,
         type: "object",
@@ -914,8 +923,11 @@ export class Persistence {
           edgeName,
           dst,
         },
-        author: author?.id,
-      });
+        author,
+      };
+
+      await syncLogic.processEvent(ctx, event);
+      await queue.send(ctx, event);
 
       ctx.setDurationMetricLabels({ srcObjectType });
     },
@@ -946,7 +958,7 @@ export class Persistence {
       src: ObjectId,
       edgeName: string,
       dst: ObjectId,
-      { author }: { author?: User } = {}
+      { author }: { author?: string } = {}
     ): Promise<void> => {
       ctx.startTrackTime(
         "persistence_delete_edge_duration",
@@ -976,7 +988,7 @@ export class Persistence {
 
       await this.freeLock(ctx, lockKey, lockHolder);
 
-      await queue.send(ctx, {
+      const event = {
         method: "DELETE",
         path: `${srcObjectType}/${edgeName}`,
         type: "object",
@@ -985,8 +997,11 @@ export class Persistence {
           edgeName,
           dst,
         },
-        author: author?.id,
-      });
+        author,
+      };
+
+      await syncLogic.processEvent(ctx, event);
+      await queue.send(ctx, event);
 
       ctx.setDurationMetricLabels({ srcObjectType });
     },

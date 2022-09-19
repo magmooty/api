@@ -21,8 +21,8 @@ export interface QueueDriver {
 }
 
 export interface BaseQueueEvent<T = GraphObject | IEdge> {
-  method: "POST" | "PATCH" | "DELETE";
-  type: "edge" | "object";
+  method: string;
+  type: string;
   path: string;
   previous?: T;
   current?: T;
@@ -30,8 +30,8 @@ export interface BaseQueueEvent<T = GraphObject | IEdge> {
 }
 
 export interface QueueEvent<T = GraphObject | IEdge> extends BaseQueueEvent<T> {
-  method: "POST" | "PATCH" | "DELETE";
-  type: "edge" | "object";
+  method: string;
+  type: string;
   path: string;
   previous?: T;
   current?: T;

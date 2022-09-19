@@ -19,7 +19,7 @@ export const updateObjectEndpoint: APIEndpoint = apiWrapper(
     file: __filename,
   },
   async (ctx: Context, req: APIRequest, res: APIResponse) => {
-    if (!req.session) {
+    if (!req.session || !req.user) {
       return;
     }
 
@@ -67,7 +67,7 @@ export const updateObjectEndpoint: APIEndpoint = apiWrapper(
       ctx,
       id,
       req.body,
-      { hooks: { pre: updatePreHook }, author: req.user }
+      { hooks: { pre: updatePreHook }, author: req.user.id }
     );
 
     const strippedObject = await verifyObjectACL(ctx, {

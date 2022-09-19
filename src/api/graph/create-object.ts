@@ -11,7 +11,7 @@ export const createObjectEndpoint: APIEndpoint = apiWrapper(
     file: __filename,
   },
   async (ctx: Context, req: APIRequest, res: APIResponse) => {
-    if (!req.session) {
+    if (!req.session || !req.user) {
       return;
     }
 
@@ -35,7 +35,7 @@ export const createObjectEndpoint: APIEndpoint = apiWrapper(
     });
 
     const object = await persistence.createObject<GraphObject>(ctx, req.body, {
-      author: req.user,
+      author: req.user.id,
     });
 
     const strippedObject = await verifyObjectACL(ctx, {

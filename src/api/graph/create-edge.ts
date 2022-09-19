@@ -39,7 +39,9 @@ export const createEdgeEndpoint: APIEndpoint = apiWrapper(
       author: req.user,
     });
 
-    await persistence.createEdge(ctx, src, edgeName, dst, { author: req.user });
+    await persistence.createEdge(ctx, src, edgeName, dst, {
+      author: req.user.id,
+    });
 
     res.status(200).send();
   }

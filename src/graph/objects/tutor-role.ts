@@ -51,7 +51,7 @@ export default {
       type: "object-id",
       objectTypes: ["user"],
       view: "system_controlled",
-      default: (object, author) => (author ? author.id : undefined),
+      default: (object, author) => (author ? author : undefined),
     },
     last_read_notification: {
       type: "date",

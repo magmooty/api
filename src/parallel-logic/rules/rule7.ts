@@ -11,7 +11,8 @@ export const rule7 = wrapper(
         ctx,
         event.current.user,
         "roles",
-        event.current.id
+        event.current.id,
+        { author: event.author }
       );
     }
   }

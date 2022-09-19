@@ -16,7 +16,17 @@ export type ObjectType =
   | "study_group_trail"
   | "exam"
   | "exam_stats"
-  | "exam_trail";
+  | "exam_trail"
+  | "exam_grade_group_template"
+  | "exam_log"
+  | "exam_log_trail"
+  | "student_role"
+  | "student_role_trail"
+  | "billable_item"
+  | "billable_item_trail"
+  | "billable_item_stats"
+  | "billable_item_log"
+  | "billable_item_log_trail";
 
 export type ObjectFieldValue =
   | string
@@ -36,13 +46,15 @@ export type ObjectFieldValue =
   | ExamTimeTable
   | ExamGradeGroup
   | ExamGradeGroupStats
+  | BillableItemTimeTable
   | HumanName[]
   | PaymentMethod[]
   | ContactPoint[]
   | StudyGroupTimeTable[]
   | ExamTimeTable[]
   | ExamGradeGroup[]
-  | ExamGradeGroupStats[];
+  | ExamGradeGroupStats[]
+  | BillableItemTimeTable[];
 
 export type AppLocale = "ar" | "en";
 
@@ -82,8 +94,10 @@ export interface NotificationIndexMapping {
 }
 
 export type ValueSet =
+  | "BillableItemType"
   | "Color"
   | "ContactPointType"
+  | "ContactPointUse"
   | "Day"
   | "NamePrefix"
   | "NotificationCriticalityLevel"
@@ -91,6 +105,15 @@ export type ValueSet =
   | "PaymentMethodType"
   | "UserGender"
   | "UserStatus";
+
+export type BillableItemTypeVS =
+  | "subscription"
+  | "book"
+  | "papers"
+  | "revision"
+  | "course"
+  | "added-class"
+  | "other";
 
 export type ColorVS =
   | "red"
@@ -105,6 +128,8 @@ export type ColorVS =
   | "pink";
 
 export type ContactPointTypeVS = "phone" | "email" | "telegram";
+
+export type ContactPointUseVS = "personal" | "parent";
 
 export type DayVS = "sat" | "sun" | "mon" | "tue" | "wed" | "thu" | "fri";
 
@@ -144,6 +169,7 @@ export interface PaymentMethod {
 }
 
 export interface ContactPoint {
+  use: ContactPointUseVS;
   type: ContactPointTypeVS;
   value: string;
 }
@@ -171,6 +197,11 @@ export interface ExamGradeGroup {
 
 export interface ExamGradeGroupStats {
   [key: string]: number;
+}
+
+export interface BillableItemTimeTable {
+  date_from: string;
+  date_to: string;
 }
 
 export interface User extends GraphObject {
@@ -344,5 +375,112 @@ export interface ExamTrail extends GraphObject {
   deleted_at: string;
   delta: { [key: string]: ObjectFieldValue };
   exam: string;
+  role: string;
+}
+
+export interface ExamGradeGroupTemplate extends GraphObject {
+  object_type: "exam_grade_group_template";
+  created_at: string;
+  updated_at: string;
+  deleted_at: string;
+  name: string;
+  grade_groups: ExamGradeGroup[];
+  space: string;
+}
+
+export interface ExamLog extends GraphObject {
+  object_type: "exam_log";
+  created_at: string;
+  updated_at: string;
+  deleted_at: string;
+  student: string;
+  attended: boolean;
+  degree: number;
+  exam: string;
+}
+
+export interface ExamLogTrail extends GraphObject {
+  object_type: "exam_log_trail";
+  created_at: string;
+  updated_at: string;
+  deleted_at: string;
+  delta: { [key: string]: ObjectFieldValue };
+  exam_log: string;
+  role: string;
+}
+
+export interface StudentRole extends GraphObject {
+  object_type: "student_role";
+  created_at: string;
+  updated_at: string;
+  deleted_at: string;
+  name: string;
+  academic_year: string;
+  study_group: string;
+  contacts: ContactPoint[];
+  notes: string;
+}
+
+export interface StudentRoleTrail extends GraphObject {
+  object_type: "student_role_trail";
+  created_at: string;
+  updated_at: string;
+  deleted_at: string;
+  delta: { [key: string]: ObjectFieldValue };
+  student_role: string;
+  role: string;
+}
+
+export interface BillableItem extends GraphObject {
+  object_type: "billable_item";
+  created_at: string;
+  updated_at: string;
+  deleted_at: string;
+  name: string;
+  academic_year: string;
+  type: BillableItemTypeVS;
+  price: number;
+  time_table: BillableItemTimeTable[];
+  stats: string;
+}
+
+export interface BillableItemTrail extends GraphObject {
+  object_type: "billable_item_trail";
+  created_at: string;
+  updated_at: string;
+  deleted_at: string;
+  delta: { [key: string]: ObjectFieldValue };
+  billable_item: string;
+  role: string;
+}
+
+export interface BillableItemStats extends GraphObject {
+  object_type: "billable_item_stats";
+  created_at: string;
+  updated_at: string;
+  deleted_at: string;
+  student_counter: number;
+  paid_students: number;
+  billable_item: string;
+}
+
+export interface BillableItemLog extends GraphObject {
+  object_type: "billable_item_log";
+  created_at: string;
+  updated_at: string;
+  deleted_at: string;
+  student: string;
+  amount: number;
+  receipt_url: string;
+  billable_item: string;
+}
+
+export interface BillableItemLogTrail extends GraphObject {
+  object_type: "billable_item_log_trail";
+  created_at: string;
+  updated_at: string;
+  deleted_at: string;
+  delta: { [key: string]: ObjectFieldValue };
+  billable_item_log: string;
   role: string;
 }
