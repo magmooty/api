@@ -380,7 +380,7 @@ export const verifyObjectACL = wrapper(
 
             ctx.log.info("Executing virtual", { virtualName });
 
-            const virtualResult = await virtual.execute(object, {
+            const virtualResult = await virtual.execute(ctx, object, {
               author,
               roles,
               method,
@@ -534,7 +534,7 @@ export const verifyEdgeACL = wrapper(
 
       ctx.log.info("Executing virtual", { virtualName, author, roles, object });
 
-      const virtualResult = await virtual.execute(object, {
+      const virtualResult = await virtual.execute(ctx, object, {
         author,
         roles,
         method,

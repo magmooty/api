@@ -1,5 +1,8 @@
 import { ObjectConfig } from "@/graph";
-import { OwnerViewVirtualExecutor } from "@/graph/common";
+import {
+  OwnerViewVirtualExecutor,
+  SpaceOwnerVirtualExecutor,
+} from "@/graph/common";
 import { serializeDate } from "@/persistence/commons/serialize-date";
 
 export default {
@@ -13,9 +16,7 @@ export default {
     },
     create_only: {
       GET: ["virtual:owner"],
-      POST: ["all"],
-      // TODO: FEATURE FLAG OFF
-      // POST: ["virtual:has_invite", "virtual:space_owner"],
+      POST: ["virtual:space_owner"],
       PATCH: [],
     },
     system_controlled: {
@@ -34,6 +35,10 @@ export default {
       owner: {
         pre: ["all"],
         execute: OwnerViewVirtualExecutor,
+      },
+      space_owner: {
+        pre: ["all"],
+        execute: SpaceOwnerVirtualExecutor,
       },
     },
   },
