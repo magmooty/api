@@ -3,6 +3,8 @@ import academicYear from "./academic-year";
 import academicYearStats from "./academic-year-stats";
 import academicYearTrail from "./academic-year-trail";
 import billableItem from "./billable-item";
+import billableItemLog from "./billable-item-log";
+import billableItemLogTrail from "./billable-item-log-trail";
 import billableItemStats from "./billable-item-stats";
 import billableItemTrail from "./billable-item-trail";
 import exam from "./exam";
@@ -49,4 +51,6 @@ export default {
   billable_item: billableItem,
   billable_item_trail: billableItemTrail,
   billable_item_stats: billableItemStats,
+  billable_item_log: billableItemLog,
+  billable_item_log_trail: billableItemLogTrail,
 } as { [key: string]: ObjectConfig };
