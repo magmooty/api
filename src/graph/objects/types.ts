@@ -93,6 +93,70 @@ export interface NotificationIndexMapping {
   updated_at: string;
 }
 
+export interface AcademicYearIndexMapping {
+  name: string;
+  space: string;
+  updated_at: string;
+}
+
+export interface BillableItemIndexMapping {
+  name: string;
+  academic_year: string;
+  type: string;
+  price: number;
+  min_date: string;
+  max_date: string;
+  updated_at: string;
+}
+
+export interface BillableItemLogIndexMapping {
+  student: string;
+  billable_item: string;
+  amount: number;
+  fully_paid_at: string;
+  updated_at: string;
+}
+
+export interface ExamGradeGroupTemplateIndexMapping {
+  name: string;
+  space: string;
+  updated_at: string;
+}
+
+export interface ExamIndexMapping {
+  name: string;
+  space: string;
+  academic_year: string;
+  min_date: string;
+  max_date: string;
+  updated_at: string;
+}
+
+export interface ExamLogIndexMapping {
+  student: string;
+  exam: string;
+  degree: number;
+  attended: boolean;
+  updated_at: string;
+}
+
+export interface StudentRoleIndexMapping {
+  name: string;
+  academic_year: string;
+  study_group: string;
+  student_phones: string;
+  parent_phones: string;
+  phone_text: string;
+  updated_at: string;
+}
+
+export interface StudyGroupIndexMapping {
+  name: string;
+  space: string;
+  academic_year: string;
+  updated_at: string;
+}
+
 export type ValueSet =
   | "BillableItemType"
   | "Color"
@@ -290,7 +354,6 @@ export interface AcademicYear extends GraphObject {
   updated_at: string;
   deleted_at: string;
   name: string;
-  year: number;
   space: string;
   stats: string;
 }
@@ -351,6 +414,7 @@ export interface Exam extends GraphObject {
   deleted_at: string;
   name: string;
   academic_year: string;
+  max_grade: number;
   time_table: ExamTimeTable[];
   grade_groups: ExamGradeGroup[];
   grade_group_counter: number;
@@ -414,7 +478,7 @@ export interface StudentRole extends GraphObject {
   created_at: string;
   updated_at: string;
   deleted_at: string;
-  name: string;
+  name: HumanName[];
   academic_year: string;
   study_group: string;
   contacts: ContactPoint[];
@@ -473,6 +537,7 @@ export interface BillableItemLog extends GraphObject {
   amount: number;
   receipt_url: string;
   billable_item: string;
+  fully_paid_at: string;
 }
 
 export interface BillableItemLogTrail extends GraphObject {

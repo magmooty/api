@@ -204,7 +204,7 @@ const object = {
 
 const mappingGenerator = {
   start: (objectType: string) => {
-    const typeName = capitalize(objectType, "-");
+    const typeName = capitalize(objectType, "_");
 
     return `export interface ${typeName}IndexMapping {`;
   },
