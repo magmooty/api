@@ -24,6 +24,7 @@ jobs:
           source-directory: "generated"
           destination-github-username: "magmooty"
           destination-repository-name: "desktop"
+          commit-message: "Generated types update from: ORIGIN_COMMIT"
           target-directory: "src/renderer/generated"
           user-email: ziadalzarka@gmail.com
           target-branch: ${{ steps.extract_branch.outputs.branch }}
