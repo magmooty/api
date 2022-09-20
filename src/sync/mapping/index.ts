@@ -1,7 +1,26 @@
-import user from "./user";
+import academicYear from "./academic-year";
+import billableItem from "./billable-item";
+import billableItemLog from "./billable-item-log";
+import exam from "./exam";
+import examGradeGroupTemplate from "./exam-grade-group-template";
+import examLog from "./exam-log";
 import notification from "./notification";
+import studentRole from "./student-role";
+import studyGroup from "./study-group";
+import user from "./user";
 
-export const mappings = { user, notification };
+export const mappings = {
+  user,
+  notification,
+  academic_year: academicYear,
+  billable_item: billableItem,
+  billable_item_log: billableItemLog,
+  exam_grade_group_template: examGradeGroupTemplate,
+  exam,
+  exam_log: examLog,
+  student_role: studentRole,
+  study_group: studyGroup,
+};
 
 export const indexNames = Object.keys(mappings);
 
