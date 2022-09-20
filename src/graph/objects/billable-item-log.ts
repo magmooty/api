@@ -40,6 +40,9 @@ export default {
       type: "object-id",
       objectTypes: ["billable_item"],
     },
+    fully_paid_at: {
+      type: "date",
+    },
   },
   edges: {
     trails: {

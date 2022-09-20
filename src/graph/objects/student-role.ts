@@ -27,7 +27,8 @@ export default {
   },
   fields: {
     name: {
-      type: "string",
+      type: "array:struct",
+      struct: "human-name",
     },
     academic_year: {
       type: "object-id",

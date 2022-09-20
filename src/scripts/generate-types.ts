@@ -212,6 +212,12 @@ const mappingGenerator = {
     keyword: (fieldName: string) => {
       return `${fieldName}: string;`;
     },
+    float: (fieldName: string) => {
+      return `${fieldName}: number;`;
+    },
+    boolean: (fieldName: string) => {
+      return `${fieldName}: boolean;`;
+    },
     text: (fieldName: string) => {
       return `${fieldName}: string;`;
     },

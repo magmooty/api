@@ -30,9 +30,6 @@ export default {
       type: "string",
       required: true,
     },
-    year: {
-      type: "number",
-    },
     space: {
       type: "object-id",
       objectTypes: ["space"],

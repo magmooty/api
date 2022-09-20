@@ -35,6 +35,9 @@ export default {
       objectTypes: ["academic_year"],
       required: true,
     },
+    max_grade: {
+      type: "number",
+    },
     time_table: {
       type: "array:struct",
       struct: "exam-time-table",

@@ -11,6 +11,7 @@ import "express-async-errors";
 import { authMiddleware } from "./auth/middleware";
 import { APINextFunction, APIRequest, APIResponse } from "./types";
 import userAgentBlocker from "express-user-agent-blocker";
+import cors from "cors";
 
 export interface APIConfig {
   virtualsCacheRecheckInterval: number;
@@ -55,6 +56,7 @@ export const init = wrapper(
     // Config middlewares
     metrics.installApp(app);
     app.use(bodyParser.json());
+    app.use(cors());
 
     // Block some user agents
     app.use(userAgentBlocker(["Nmap Scripting Engine"]));
@@ -75,10 +77,6 @@ export const init = wrapper(
     app.use("/graph", graphRouters.privateRouter);
     app.use("/profile", profileRouters.privateRouter);
     app.use("/search", searchRouters.privateRouter);
-
-    app.get("/hello-world", (req, res) => {
-      res.json({ hello: "world2" });
-    });
 
     // Error handler
     app.use(errorHandler);
