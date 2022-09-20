@@ -4,6 +4,7 @@ import { SpaceAdminVirtualExecutor } from "@/graph/common";
 export default {
   code: "14",
   cacheLevel: "external",
+  deletedBy: ["virtual:space_admin"],
   views: {
     _default: {
       GET: ["virtual:space_admin"],
