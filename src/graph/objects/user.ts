@@ -20,7 +20,6 @@ export default {
       GET: ["virtual:owner"],
       POST: [],
       PATCH: [],
-      DELETE: [],
     },
     system_private: {
       GET: [],

@@ -155,18 +155,26 @@ export const initGraph = wrapper(
   async (ctx: Context) => {
     await Promise.all(
       Object.keys(objects).map(async (objectType) => {
-        const structConfig = await getStructConfigFromObjectTypeOrStructName(
+        // Counter fields and counter structs
+        const objectConfig = await getObjectConfigFromObjectType(
           ctx,
-          objectType
+          objectType as ObjectType
         );
 
         const { counterFields, counterStructs } = await extractCounterFields(
           ctx,
-          structConfig
+          objectConfig
         );
 
         objects[objectType].counterFields = counterFields;
         objects[objectType].counterStructs = counterStructs;
+
+        // Auto-fill delete in views
+        Object.keys(objectConfig.views).forEach((viewName) => {
+          if (!objectConfig.views[viewName].DELETE) {
+            objectConfig.views[viewName].DELETE = objectConfig.deletedBy || [];
+          }
+        });
       })
     );
   }

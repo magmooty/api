@@ -163,8 +163,6 @@ export const verifyObjectACL = wrapper(
 
     let noPermissionsForMethod = true;
 
-    ctx.log.info("Looping through views");
-
     for (const viewName of Object.keys(objectConfig.views)) {
       const viewRoles = (objectConfig.views[viewName] as any)[
         method

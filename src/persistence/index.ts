@@ -758,7 +758,7 @@ export class Persistence {
     async (
       ctx: Context,
       id: string,
-      { author }: { author?: string } = {}
+      { author, previous }: { author?: string; previous?: GraphObject } = {}
     ): Promise<GraphObject> => {
       ctx.startTrackTime(
         "persistence_delete_object_duration",
@@ -781,7 +781,9 @@ export class Persistence {
       ctx.setParam("lockKey", id);
       ctx.setParam("lockHolder", lockHolder);
 
-      const previous = await this.getObject<GraphObject>(ctx, id);
+      if (!previous) {
+        previous = await this.getObject<GraphObject>(ctx, id);
+      }
 
       await uniqueValidation(
         ctx,
