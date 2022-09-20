@@ -13,9 +13,9 @@ jobs:
       - name: creates output
         run: sh ./compile-fe-types.sh
       - name: Extract branch name
-          shell: bash
-          run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-          id: extract_branch
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
       - name: Pushes to FE desktop repository
         uses: cpina/github-action-push-to-another-repository@main
         env:
