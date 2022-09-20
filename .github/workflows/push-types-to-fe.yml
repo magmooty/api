@@ -1,0 +1,30 @@
+name: Push types to FE repos
+
+on:
+  push:
+    branches: [dev, stage, prod]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: ubuntu
+    steps:
+      - uses: actions/checkout@v2
+      - name: creates output
+        run: sh ./compile-fe-types.sh
+      - name: Extract branch name
+          shell: bash
+          run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+          id: extract_branch
+      - name: Pushes to FE desktop repository
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          SSH_DEPLOY_KEY: ${{ secrets.SSH_DEPLOY_KEY }}
+          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+        with:
+          source-directory: "generated"
+          destination-github-username: "magmooty"
+          destination-repository-name: "desktop"
+          target-directory: "src/renderer/generated"
+          user-email: ziadalzarka@gmail.com
+          target-branch: ${{ steps.extract_branch.outputs.branch }}
