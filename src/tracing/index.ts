@@ -140,7 +140,7 @@ export class Tracer {
 
       const log = this.options.log.overloadWithPrefilledData.bind(
         this.options.log
-      )(traceIds) as Logger;
+      )({ ...traceIds, file }) as Logger;
 
       let trackingMetrics: LocalTrackingMetrics = {};
 
