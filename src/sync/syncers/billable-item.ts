@@ -1,24 +1,34 @@
 import { wrapper } from "@/components";
+import { BillableItem, BillableItemIndexMapping } from "@/graph/objects/types";
 import { QueueEvent } from "@/queue";
-import { Context } from "@/tracing";
-import { User, UserIndexMapping } from "@/graph/objects/types";
-import { SyncOperation, SyncOperationMethod } from "@/sync/types";
 import { IndexName } from "@/sync/mapping";
+import { SyncOperation, SyncOperationMethod } from "@/sync/types";
+import { Context } from "@/tracing";
 import { universalDeleteGenerator } from "../commons/universal-delete-generator";
-import { extractSearchableNameFromHumanNameArray } from "../common";
+import _ from "lodash";
 
-const INDEX_NAME: IndexName = "user";
+const INDEX_NAME: IndexName = "billable_item";
 
 const universalGenerator = wrapper(
   { name: "universalGenerator", file: __filename },
   async (
     ctx: Context,
     method: SyncOperationMethod,
-    object: User
-  ): Promise<SyncOperation<UserIndexMapping>[]> => {
-    const { name, email, phone, updated_at } = object;
+    object: BillableItem
+  ): Promise<SyncOperation[]> => {
+    const { name, academic_year, type, price, time_table, updated_at } = object;
 
-    const searchableName = extractSearchableNameFromHumanNameArray(name);
+    let min_date = null;
+    let max_date = null;
+
+    if (time_table && time_table.length > 0) {
+      min_date =
+        _.minBy(time_table, (timeTableEntry) => timeTableEntry.date_from)
+          ?.date_from || null;
+      max_date =
+        _.maxBy(time_table, (timeTableEntry) => timeTableEntry.date_to)
+          ?.date_to || null;
+    }
 
     return [
       {
@@ -26,11 +36,12 @@ const universalGenerator = wrapper(
         index: INDEX_NAME,
         id: object.id,
         data: {
-          ...(searchableName && { name: searchableName }),
-          email,
-          email_text: email,
-          phone,
-          phone_text: phone,
+          name,
+          academic_year,
+          type,
+          price,
+          min_date,
+          max_date,
           updated_at,
         },
       },
@@ -42,8 +53,8 @@ export const onPost = wrapper(
   { name: "onPost", file: __filename },
   async (
     ctx: Context,
-    event: QueueEvent<User>
-  ): Promise<SyncOperation<UserIndexMapping>[]> => {
+    event: QueueEvent<BillableItem>
+  ): Promise<SyncOperation<BillableItemIndexMapping>[]> => {
     ctx.register(event);
 
     if (!event.current) {
@@ -58,8 +69,8 @@ export const onPatch = wrapper(
   { name: "onPatch", file: __filename },
   async (
     ctx: Context,
-    event: QueueEvent<User>
-  ): Promise<SyncOperation<UserIndexMapping>[]> => {
+    event: QueueEvent<BillableItem>
+  ): Promise<SyncOperation<BillableItemIndexMapping>[]> => {
     ctx.register(event);
 
     if (!event.current) {
@@ -74,8 +85,8 @@ export const onDelete = wrapper(
   { name: "onDelete", file: __filename },
   async (
     ctx: Context,
-    event: QueueEvent<User>
-  ): Promise<SyncOperation<UserIndexMapping>[]> => {
+    event: QueueEvent<BillableItem>
+  ): Promise<SyncOperation<BillableItemIndexMapping>[]> => {
     ctx.register(event);
 
     if (!event.previous) {

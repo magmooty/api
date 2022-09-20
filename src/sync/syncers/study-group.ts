@@ -1,24 +1,30 @@
-import { wrapper } from "@/components";
+import { persistence, wrapper } from "@/components";
+import {
+  AcademicYear,
+  StudyGroup,
+  StudyGroupIndexMapping,
+} from "@/graph/objects/types";
 import { QueueEvent } from "@/queue";
-import { Context } from "@/tracing";
-import { User, UserIndexMapping } from "@/graph/objects/types";
-import { SyncOperation, SyncOperationMethod } from "@/sync/types";
 import { IndexName } from "@/sync/mapping";
+import { SyncOperation, SyncOperationMethod } from "@/sync/types";
+import { Context } from "@/tracing";
 import { universalDeleteGenerator } from "../commons/universal-delete-generator";
-import { extractSearchableNameFromHumanNameArray } from "../common";
 
-const INDEX_NAME: IndexName = "user";
+const INDEX_NAME: IndexName = "study_group";
 
 const universalGenerator = wrapper(
   { name: "universalGenerator", file: __filename },
   async (
     ctx: Context,
     method: SyncOperationMethod,
-    object: User
-  ): Promise<SyncOperation<UserIndexMapping>[]> => {
-    const { name, email, phone, updated_at } = object;
+    object: StudyGroup
+  ): Promise<SyncOperation[]> => {
+    const { name, academic_year, updated_at } = object;
 
-    const searchableName = extractSearchableNameFromHumanNameArray(name);
+    const { space } = await persistence.getObject<AcademicYear>(
+      ctx,
+      academic_year
+    );
 
     return [
       {
@@ -26,11 +32,9 @@ const universalGenerator = wrapper(
         index: INDEX_NAME,
         id: object.id,
         data: {
-          ...(searchableName && { name: searchableName }),
-          email,
-          email_text: email,
-          phone,
-          phone_text: phone,
+          name,
+          space,
+          academic_year,
           updated_at,
         },
       },
@@ -42,8 +46,8 @@ export const onPost = wrapper(
   { name: "onPost", file: __filename },
   async (
     ctx: Context,
-    event: QueueEvent<User>
-  ): Promise<SyncOperation<UserIndexMapping>[]> => {
+    event: QueueEvent<StudyGroup>
+  ): Promise<SyncOperation<StudyGroupIndexMapping>[]> => {
     ctx.register(event);
 
     if (!event.current) {
@@ -58,8 +62,8 @@ export const onPatch = wrapper(
   { name: "onPatch", file: __filename },
   async (
     ctx: Context,
-    event: QueueEvent<User>
-  ): Promise<SyncOperation<UserIndexMapping>[]> => {
+    event: QueueEvent<StudyGroup>
+  ): Promise<SyncOperation<StudyGroupIndexMapping>[]> => {
     ctx.register(event);
 
     if (!event.current) {
@@ -74,8 +78,8 @@ export const onDelete = wrapper(
   { name: "onDelete", file: __filename },
   async (
     ctx: Context,
-    event: QueueEvent<User>
-  ): Promise<SyncOperation<UserIndexMapping>[]> => {
+    event: QueueEvent<StudyGroup>
+  ): Promise<SyncOperation<StudyGroupIndexMapping>[]> => {
     ctx.register(event);
 
     if (!event.previous) {

@@ -1,24 +1,39 @@
-import { wrapper } from "@/components";
+import { persistence, wrapper } from "@/components";
+import { AcademicYear, Exam, ExamIndexMapping } from "@/graph/objects/types";
 import { QueueEvent } from "@/queue";
-import { Context } from "@/tracing";
-import { User, UserIndexMapping } from "@/graph/objects/types";
-import { SyncOperation, SyncOperationMethod } from "@/sync/types";
 import { IndexName } from "@/sync/mapping";
+import { SyncOperation, SyncOperationMethod } from "@/sync/types";
+import { Context } from "@/tracing";
+import _ from "lodash";
 import { universalDeleteGenerator } from "../commons/universal-delete-generator";
-import { extractSearchableNameFromHumanNameArray } from "../common";
 
-const INDEX_NAME: IndexName = "user";
+const INDEX_NAME: IndexName = "exam";
 
 const universalGenerator = wrapper(
   { name: "universalGenerator", file: __filename },
   async (
     ctx: Context,
     method: SyncOperationMethod,
-    object: User
-  ): Promise<SyncOperation<UserIndexMapping>[]> => {
-    const { name, email, phone, updated_at } = object;
+    object: Exam
+  ): Promise<SyncOperation[]> => {
+    const { name, academic_year, time_table, updated_at } = object;
 
-    const searchableName = extractSearchableNameFromHumanNameArray(name);
+    const { space } = await persistence.getObject<AcademicYear>(
+      ctx,
+      academic_year
+    );
+
+    let min_date = null;
+    let max_date = null;
+
+    if (time_table && time_table.length > 0) {
+      min_date =
+        _.minBy(time_table, (timeTableEntry) => timeTableEntry.date)?.date ||
+        null;
+      max_date =
+        _.maxBy(time_table, (timeTableEntry) => timeTableEntry.date)?.date ||
+        null;
+    }
 
     return [
       {
@@ -26,11 +41,11 @@ const universalGenerator = wrapper(
         index: INDEX_NAME,
         id: object.id,
         data: {
-          ...(searchableName && { name: searchableName }),
-          email,
-          email_text: email,
-          phone,
-          phone_text: phone,
+          name,
+          space,
+          academic_year,
+          min_date,
+          max_date,
           updated_at,
         },
       },
@@ -42,8 +57,8 @@ export const onPost = wrapper(
   { name: "onPost", file: __filename },
   async (
     ctx: Context,
-    event: QueueEvent<User>
-  ): Promise<SyncOperation<UserIndexMapping>[]> => {
+    event: QueueEvent<Exam>
+  ): Promise<SyncOperation<ExamIndexMapping>[]> => {
     ctx.register(event);
 
     if (!event.current) {
@@ -58,8 +73,8 @@ export const onPatch = wrapper(
   { name: "onPatch", file: __filename },
   async (
     ctx: Context,
-    event: QueueEvent<User>
-  ): Promise<SyncOperation<UserIndexMapping>[]> => {
+    event: QueueEvent<Exam>
+  ): Promise<SyncOperation<ExamIndexMapping>[]> => {
     ctx.register(event);
 
     if (!event.current) {
@@ -74,8 +89,8 @@ export const onDelete = wrapper(
   { name: "onDelete", file: __filename },
   async (
     ctx: Context,
-    event: QueueEvent<User>
-  ): Promise<SyncOperation<UserIndexMapping>[]> => {
+    event: QueueEvent<Exam>
+  ): Promise<SyncOperation<ExamIndexMapping>[]> => {
     ctx.register(event);
 
     if (!event.previous) {

@@ -7,7 +7,16 @@ export interface IndexMapping {
 
 export type SyncOperationMethod = "create" | "update" | "delete";
 
-export interface SyncOperation<T = { [key: string]: string | number | undefined | null }> {
+export type SearchEntryFieldValue =
+  | string
+  | string[]
+  | number
+  | number[]
+  | undefined
+  | boolean
+  | null;
+
+export interface SyncOperation<T = { [key: string]: SearchEntryFieldValue }> {
   method: SyncOperationMethod;
   id: string;
   index: IndexName;

@@ -8,26 +8,30 @@ import { universalDeleteGenerator } from "../commons/universal-delete-generator"
 
 const INDEX_NAME: IndexName = "notification";
 
-const universalNotificationGenerator = (
-  method: SyncOperationMethod,
-  object: Notification
-): SyncOperation[] => {
-  const { user, role, type, updated_at } = object;
+const universalGenerator = wrapper(
+  { name: "universalGenerator", file: __filename },
+  async (
+    ctx: Context,
+    method: SyncOperationMethod,
+    object: Notification
+  ): Promise<SyncOperation[]> => {
+    const { user, role, type, updated_at } = object;
 
-  return [
-    {
-      method,
-      index: INDEX_NAME,
-      id: object.id,
-      data: {
-        type,
-        user,
-        role: role || "no-role",
-        updated_at,
+    return [
+      {
+        method,
+        index: INDEX_NAME,
+        id: object.id,
+        data: {
+          type,
+          user,
+          role: role || "no-role",
+          updated_at,
+        },
       },
-    },
-  ];
-};
+    ];
+  }
+);
 
 export const onPost = wrapper(
   { name: "onPost", file: __filename },
@@ -41,7 +45,7 @@ export const onPost = wrapper(
       return [];
     }
 
-    return universalNotificationGenerator("create", event.current);
+    return universalGenerator(ctx, "create", event.current);
   }
 );
 
@@ -57,7 +61,7 @@ export const onPatch = wrapper(
       return [];
     }
 
-    return universalNotificationGenerator("update", event.current);
+    return universalGenerator(ctx, "update", event.current);
   }
 );
 
