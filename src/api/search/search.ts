@@ -44,6 +44,36 @@ const SearchBody = Record({
       and: Optional(Array(Optional(Dictionary(Union(String, Number))))),
     })
   ),
+  ranges: Optional(
+    Record({
+      or: Optional(
+        Array(
+          Optional(
+            Record({
+              property: String,
+              lt: Optional(String),
+              lte: Optional(String),
+              gt: Optional(String),
+              gte: Optional(String),
+            })
+          )
+        )
+      ),
+      and: Optional(
+        Array(
+          Optional(
+            Record({
+              property: String,
+              lt: Optional(String),
+              lte: Optional(String),
+              gt: Optional(String),
+              gte: Optional(String),
+            })
+          )
+        )
+      ),
+    })
+  ),
   sort_by: Optional(Dictionary(Union(Literal("asc"), Literal("desc")))),
 });
 

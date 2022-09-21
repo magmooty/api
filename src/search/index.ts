@@ -6,6 +6,14 @@ import {
   ElasticSearchSearchDriver,
 } from "./elasticsearch";
 
+export interface RangeFilter {
+  property: string;
+  gt?: string | number;
+  gte?: string | number;
+  lt?: string | number;
+  lte?: string | number;
+}
+
 export interface SearchCriteria {
   query?: string;
   filters?: {
@@ -15,6 +23,10 @@ export interface SearchCriteria {
     and?: {
       [key: string]: string | number;
     }[];
+  };
+  ranges?: {
+    or?: RangeFilter[];
+    and?: RangeFilter[];
   };
   sort_by?: {
     [key: string]: "asc" | "desc";

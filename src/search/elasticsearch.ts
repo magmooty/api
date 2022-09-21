@@ -3,7 +3,7 @@ import { GraphObject } from "@/graph/objects/types";
 import { IndexName } from "@/sync/mapping";
 import { Context } from "@/tracing";
 import { Client } from "@elastic/elasticsearch";
-import { SearchCriteria, SearchDriver, SearchPageResult } from ".";
+import { RangeFilter, SearchCriteria, SearchDriver, SearchPageResult } from ".";
 
 export interface ElasticSearchSearchConfig {
   node: string;
@@ -29,17 +29,30 @@ const serializeFilter = (term: { [key: string]: string | number }) => {
   return { term };
 };
 
+const serializeRange = ({ property, ...rangeQueryOptions }: RangeFilter) => {
+  return {
+    range: {
+      [property]: rangeQueryOptions,
+    },
+  };
+};
+
 const constructElasticSearchFilters = (criteria: SearchCriteria) => {
-  if (!criteria.filters) {
-    return {};
-  }
+  const andFilter = criteria.filters?.and || [];
+  const orFilter = criteria.filters?.or || [];
 
-  const and = criteria.filters.and || [];
-  const or = criteria.filters.or || [];
+  const andRange = criteria.ranges?.and || [];
+  const orRange = criteria.ranges?.or || [];
 
-  const andQuery = and.map(serializeFilter);
+  const andQuery = [
+    ...andFilter.map(serializeFilter),
+    ...andRange.map(serializeRange),
+  ];
 
-  const orQuery = or.map(serializeFilter);
+  const orQuery = [
+    ...orFilter.map(serializeFilter),
+    ...orRange.map(serializeRange),
+  ];
 
   const hasFilters = andQuery.length || orQuery.length;
 
@@ -61,7 +74,7 @@ const constructElasticSearchFilters = (criteria: SearchCriteria) => {
 };
 
 const constructElasticSearchQuery = (criteria: SearchCriteria) => {
-  if (!criteria.query && !criteria.filters) {
+  if (!criteria.query && !criteria.filters && !criteria.ranges) {
     return { match_all: {} };
   }
 
@@ -138,7 +151,7 @@ export class ElasticSearchSearchDriver implements SearchDriver {
         from: criteria.after || 0,
       };
 
-      ctx.log.info("query options", { options });
+      ctx.log.debug("query options", { options });
 
       const result = await this.client.search(options);
 

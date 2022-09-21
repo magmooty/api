@@ -5,7 +5,11 @@ import { seedQueryObjects } from "@/persistence/commons/query-objects";
 import { QueueEvent } from "@/queue";
 import { Context } from "@/tracing";
 import { Client } from "@elastic/elasticsearch";
-import { IndicesIndexSettings } from "@elastic/elasticsearch/lib/api/types";
+import {
+  IndicesIndexSettings,
+  MappingProperty,
+  MappingRuntimeField,
+} from "@elastic/elasticsearch/lib/api/types";
 import { SyncDriver } from ".";
 import { mappings } from "./mapping";
 import syncers from "./syncers";
@@ -108,6 +112,13 @@ export class ElasticSearchSyncDriver implements SyncDriver {
             prefixedIndexName,
             indexConfig,
             indexSettings: INDEX_SETTINGS,
+          });
+
+          Object.keys(indexConfig.mapping).forEach((fieldName) => {
+            if (indexConfig.mapping[fieldName].type === "date") {
+              (indexConfig.mapping[fieldName] as MappingRuntimeField).format =
+                "strict_date_time";
+            }
           });
 
           await this.client.indices.create({
