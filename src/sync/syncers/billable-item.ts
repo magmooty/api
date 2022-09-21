@@ -30,6 +30,8 @@ const universalGenerator = wrapper(
           ?.date_to || null;
     }
 
+    const has_no_date = !min_date && !max_date;
+
     return [
       {
         method,
@@ -40,6 +42,7 @@ const universalGenerator = wrapper(
           academic_year,
           type,
           price,
+          has_no_date,
           min_date,
           max_date,
           updated_at,

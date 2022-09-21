@@ -103,6 +103,7 @@ export interface BillableItemIndexMapping {
   name: string;
   academic_year: string;
   type: string;
+  has_no_date: boolean;
   price: number;
   min_date: string;
   max_date: string;
@@ -127,6 +128,7 @@ export interface ExamIndexMapping {
   name: string;
   space: string;
   academic_year: string;
+  has_no_date: boolean;
   min_date: string;
   max_date: string;
   updated_at: string;

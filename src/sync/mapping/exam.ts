@@ -11,6 +11,9 @@ export default {
     academic_year: {
       type: "keyword",
     },
+    has_no_date: {
+      type: "boolean",
+    },
     min_date: {
       type: "date",
     },

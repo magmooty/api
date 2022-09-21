@@ -18,10 +18,10 @@ export interface SearchCriteria {
   query?: string;
   filters?: {
     or?: {
-      [key: string]: string | number;
+      [key: string]: string | number | boolean;
     }[];
     and?: {
-      [key: string]: string | number;
+      [key: string]: string | number | boolean;
     }[];
   };
   ranges?: {

@@ -11,6 +11,9 @@ export default {
     type: {
       type: "keyword",
     },
+    has_no_date: {
+      type: "boolean",
+    },
     price: {
       type: "float",
     },

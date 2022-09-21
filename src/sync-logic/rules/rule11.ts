@@ -1,7 +1,11 @@
-import { persistence, wrapper } from "@/components";
+import { persistence, search, wrapper } from "@/components";
 import {
   AcademicYear,
   AcademicYearStats,
+  BillableItem,
+  BillableItemStats,
+  Exam,
+  ExamStats,
   StudentRole,
   StudyGroup,
   StudyGroupStats,
@@ -44,6 +48,63 @@ export const rule11 = wrapper(
         student_counter: "+1",
       },
       { author: event.author }
+    );
+
+    const itemSearchCriteria = {
+      filters: {
+        and: [
+          {
+            academic_year,
+          },
+        ],
+        or: [
+          {
+            has_no_date: true,
+          },
+        ],
+      },
+      ranges: {
+        or: [
+          {
+            property: "max_date",
+            gte: event.current.created_at,
+          },
+        ],
+      },
+    };
+
+    const { results: exams } = await search.search<Exam>(
+      ctx,
+      "exam",
+      itemSearchCriteria
+    );
+
+    await Promise.all(
+      exams.map(async (exam) => {
+        await persistence.updateObject<ExamStats>(
+          ctx,
+          exam.stats,
+          { student_counter: "+1" },
+          { author: event.author }
+        );
+      })
+    );
+
+    const { results: billableItems } = await search.search<BillableItem>(
+      ctx,
+      "billable_item",
+      itemSearchCriteria
+    );
+
+    await Promise.all(
+      billableItems.map(async (billableItem) => {
+        await persistence.updateObject<BillableItemStats>(
+          ctx,
+          billableItem.stats,
+          { student_counter: "+1" },
+          { author: event.author }
+        );
+      })
     );
   }
 );

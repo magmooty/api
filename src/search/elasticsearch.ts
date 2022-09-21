@@ -25,7 +25,7 @@ const constructElasticSearchQueryString = (criteria: SearchCriteria) => {
   return {};
 };
 
-const serializeFilter = (term: { [key: string]: string | number }) => {
+const serializeFilter = (term: { [key: string]: string | number | boolean }) => {
   return { term };
 };
 
