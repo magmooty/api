@@ -1,17 +1,21 @@
-import { wrapper } from "@/components";
+import { wrapper, config } from "@/components";
 import { GraphObject, IEdge } from "@/graph/objects/types";
 import { Context } from "@/tracing";
 import {
   Kafka,
   logLevel,
-  Producer
+  Producer,
+  PartitionAssigner,
+  AssignerProtocol,
+  PartitionAssigners,
 } from "kafkajs";
 import {
   BaseQueueEvent,
   QueueDriver,
   QueueEvent,
-  QueueEventProcessor
+  QueueEventProcessor,
 } from ".";
+import { LocalDevelopmentAssigner } from "./LocalDevelopmentAssigner";
 
 export enum QueueKafkaTopicUse {
   Pushing = "pushing",
@@ -53,7 +57,10 @@ export class QueueKafkaDriver implements QueueDriver {
       ctx.register({ kafkaConfig: this.kafkaConfig });
 
       this.kafka = new Kafka({
-        clientId: this.kafkaConfig.groupId,
+        clientId:
+          config.env === "local"
+            ? `${this.kafkaConfig.groupId}-local`
+            : this.kafkaConfig.groupId,
         brokers: this.kafkaConfig.brokers,
         logCreator: () => (entry) => {
           switch (entry.level) {
@@ -149,6 +156,10 @@ export class QueueKafkaDriver implements QueueDriver {
 
       const consumer = this.kafka.consumer({
         groupId,
+        partitionAssigners:
+          config.env === "local"
+            ? [LocalDevelopmentAssigner, PartitionAssigners.roundRobin]
+            : [],
       });
 
       await consumer.connect();

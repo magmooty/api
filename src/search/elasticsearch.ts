@@ -157,7 +157,7 @@ export class ElasticSearchSearchDriver implements SearchDriver {
         }),
       };
 
-      ctx.log.debug("query options", { options });
+      ctx.log.info("query options", { options });
 
       const result = await this.client.search(options);
 
