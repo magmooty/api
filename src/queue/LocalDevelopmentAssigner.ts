@@ -11,7 +11,6 @@ export const LocalDevelopmentAssigner: PartitionAssigner = ({ cluster }) => ({
   name: "LocalDevelopmentAssigner",
   version: 1,
   async assign({ members, topics }) {
-    console.log({ members, topics });
     const assignee = members
       .map(({ memberId }) => memberId)
       .find((memberId) =>
@@ -58,7 +57,6 @@ export const LocalDevelopmentAssigner: PartitionAssigner = ({ cluster }) => ({
     }));
   },
   protocol({ topics }) {
-    console.log({ topics });
     return {
       name: this.name,
       metadata: MemberMetadata.encode({
