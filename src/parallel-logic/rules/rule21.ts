@@ -118,7 +118,6 @@ export const rule21 = wrapper(
       });
 
       q.on("end", () => {
-        console.log("all resolved");
         resolve(true);
       });
     });
