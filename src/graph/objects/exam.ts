@@ -17,6 +17,12 @@ export default {
       PATCH: [],
     },
   },
+  deepDeletion: [
+    {
+      index: "exam_log",
+      property: "exam",
+    },
+  ],
   virtuals: {
     views: {
       space_admin: {
@@ -53,12 +59,14 @@ export default {
       type: "object-id",
       objectTypes: ["exam_stats"],
       view: "system_controlled",
+      deepDelete: true,
     },
   },
   edges: {
     trails: {
       objectTypes: ["exam_trail"],
       view: "system_controlled",
+      deepDelete: true,
     },
   },
 } as ObjectConfig;

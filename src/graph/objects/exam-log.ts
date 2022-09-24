@@ -47,6 +47,7 @@ export default {
     trails: {
       objectTypes: ["exam_log_trail"],
       view: "system_controlled",
+      deepDelete: true,
     },
   },
 } as ObjectConfig;

@@ -4,6 +4,10 @@ import { QueueEvent } from "@/queue";
 import { Context } from "@/tracing";
 import parallelLogicTriggers from "./triggers";
 
+export interface ParallelLogicConfig {
+  deepDeletionSingleObjectConcurrency: number;
+}
+
 export class ParallelLogic {
   init = wrapper({ name: "init", file: __filename }, async (ctx: Context) => {
     await queue.subscribe(ctx, "parallel-logic", this.processEvent);
@@ -19,6 +23,13 @@ export class ParallelLogic {
 
       if (parallelLogicTriggers[handler]) {
         await parallelLogicTriggers[handler](ctx, event as any);
+      }
+
+      const allHandler: keyof typeof parallelLogicTriggers =
+        `${event.method} all` as any;
+
+      if (parallelLogicTriggers[allHandler]) {
+        await parallelLogicTriggers[allHandler](ctx, event as any);
       }
     }
   );

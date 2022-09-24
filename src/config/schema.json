@@ -62,6 +62,9 @@
             "twilio"
           ],
           "additionalProperties": false
+        },
+        "parallelLogic": {
+          "$ref": "#/definitions/ParallelLogicConfig"
         }
       },
       "required": [
@@ -74,7 +77,8 @@
         "queue",
         "sync",
         "search",
-        "services"
+        "services",
+        "parallelLogic"
       ],
       "additionalProperties": false
     },
@@ -481,6 +485,18 @@
         "accountSid",
         "authToken",
         "verificationService"
+      ],
+      "additionalProperties": false
+    },
+    "ParallelLogicConfig": {
+      "type": "object",
+      "properties": {
+        "deepDeletionSingleObjectConcurrency": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "deepDeletionSingleObjectConcurrency"
       ],
       "additionalProperties": false
     }

@@ -1,12 +1,16 @@
 import { wrapper } from "@/components";
 import { GraphObject, IEdge } from "@/graph/objects/types";
 import { Context } from "@/tracing";
-import { Kafka, logLevel, Producer } from "kafkajs";
+import {
+  Kafka,
+  logLevel,
+  Producer
+} from "kafkajs";
 import {
   BaseQueueEvent,
   QueueDriver,
   QueueEvent,
-  QueueEventProcessor,
+  QueueEventProcessor
 } from ".";
 
 export enum QueueKafkaTopicUse {

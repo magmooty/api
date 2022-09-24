@@ -3,6 +3,7 @@ import { GraphObject } from "@/graph/objects/types";
 import { IndexName } from "@/sync/mapping";
 import { Context } from "@/tracing";
 import { Client } from "@elastic/elasticsearch";
+import { SortResults } from "@elastic/elasticsearch/lib/api/typesWithBodyKey";
 import { RangeFilter, SearchCriteria, SearchDriver, SearchPageResult } from ".";
 
 export interface ElasticSearchSearchConfig {
@@ -25,7 +26,9 @@ const constructElasticSearchQueryString = (criteria: SearchCriteria) => {
   return {};
 };
 
-const serializeFilter = (term: { [key: string]: string | number | boolean }) => {
+const serializeFilter = (term: {
+  [key: string]: string | number | boolean;
+}) => {
   return { term };
 };
 
@@ -138,7 +141,7 @@ export class ElasticSearchSearchDriver implements SearchDriver {
       ctx: Context,
       index: IndexName,
       criteria: SearchCriteria,
-      internalOptions: { lean: boolean }
+      internalOptions: { lean: boolean; search_after?: SortResults }
     ): Promise<SearchPageResult<string | GraphObject>> => {
       const query = constructElasticSearchQuery(criteria);
       const sort = constructElasticSearchSorter(criteria);
@@ -149,6 +152,9 @@ export class ElasticSearchSearchDriver implements SearchDriver {
         sort,
         size: criteria.limit || this.elasticSearchConfig.defaultLimit,
         from: criteria.after || 0,
+        ...(internalOptions.search_after && {
+          search_after: internalOptions.search_after,
+        }),
       };
 
       ctx.log.debug("query options", { options });
@@ -160,24 +166,28 @@ export class ElasticSearchSearchDriver implements SearchDriver {
       const ids = result.hits.hits.map((hit) => hit._id);
       const count = (result.hits.total as any).value || 0;
 
+      const search_after = result.hits.hits.at(-1)?.sort;
+
       if (internalOptions.lean) {
-        return { count, results: ids };
+        return { count, results: ids, search_after };
       }
 
       const results = await Promise.all(
         ids.map((id) => persistence.getObject<GraphObject>(ctx, id))
       );
 
-      return { results, count };
+      return { results, count, search_after };
     }
   );
 
   leanSearch(
     ctx: Context,
     index: IndexName,
-    criteria: SearchCriteria
+    criteria: SearchCriteria,
+    internalOptions: { search_after?: SortResults } = {}
   ): Promise<SearchPageResult<string>> {
     return this._search(ctx, index, criteria, {
+      ...internalOptions,
       lean: true,
     });
   }
@@ -185,9 +195,11 @@ export class ElasticSearchSearchDriver implements SearchDriver {
   search<T = GraphObject>(
     ctx: Context,
     index: IndexName,
-    criteria: SearchCriteria
+    criteria: SearchCriteria,
+    internalOptions: { search_after?: SortResults } = {}
   ): Promise<SearchPageResult<T>> {
     return this._search(ctx, index, criteria, {
+      ...internalOptions,
       lean: false,
     });
   }

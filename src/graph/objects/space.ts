@@ -4,6 +4,21 @@ import { OwnerViewVirtualExecutor } from "@/graph/common";
 export default {
   code: "Z5",
   cacheLevel: "external",
+  deletedBy: ["virtual:owner"],
+  deepDeletion: [
+    {
+      index: "academic_year",
+      property: "space",
+    },
+    {
+      index: "exam_grade_group_template",
+      property: "space",
+    },
+    {
+      index: "tutor_role",
+      property: "space",
+    },
+  ],
   views: {
     _default: {
       GET: ["public"],

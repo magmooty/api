@@ -43,12 +43,14 @@ export default {
       type: "object-id",
       objectTypes: ["study_group_stats"],
       view: "system_controlled",
+      deepDelete: true,
     },
   },
   edges: {
     trails: {
       objectTypes: ["study_group_trail"],
       view: "system_controlled",
+      deepDelete: true,
     },
   },
 } as ObjectConfig;

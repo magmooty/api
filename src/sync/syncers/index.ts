@@ -1,6 +1,14 @@
 import * as user from "./user";
 import * as notification from "./notification";
 import * as academicYear from "./academic-year";
+import * as tutorRole from "./tutor-role";
+import * as billableItem from "./billable-item";
+import * as billableItemLog from "./billable-item-log";
+import * as examGradeGroupTemplate from "./exam-grade-group-template";
+import * as examLog from "./exam-log";
+import * as exam from "./exam";
+import * as studentRole from "./student-role";
+import * as studyGroup from "./study-group";
 
 export default {
   "POST user": user.onPost,
@@ -14,4 +22,36 @@ export default {
   "POST academic_year": academicYear.onPost,
   "PATCH academic_year": academicYear.onPatch,
   "DELETE academic_year": academicYear.onDelete,
+
+  "POST tutor_role": tutorRole.onPost,
+  "PATCH tutor_role": tutorRole.onPatch,
+  "DELETE tutor_role": tutorRole.onDelete,
+
+  "POST billable_item": billableItem.onPost,
+  "PATCH billable_item": billableItem.onPatch,
+  "DELETE billable_item": billableItem.onDelete,
+
+  "POST billable_item_log": billableItemLog.onPost,
+  "PATCH billable_item_log": billableItemLog.onPatch,
+  "DELETE billable_item_log": billableItemLog.onDelete,
+
+  "POST exam_grade_group_template": examGradeGroupTemplate.onPost,
+  "PATCH exam_grade_group_template": examGradeGroupTemplate.onPatch,
+  "DELETE exam_grade_group_template": examGradeGroupTemplate.onDelete,
+
+  "POST exam_log": examLog.onPost,
+  "PATCH exam_log": examLog.onPatch,
+  "DELETE exam_log": examLog.onDelete,
+
+  "POST exam": exam.onPost,
+  "PATCH exam": exam.onPatch,
+  "DELETE exam": exam.onDelete,
+
+  "POST student_role": studentRole.onPost,
+  "PATCH student_role": studentRole.onPatch,
+  "DELETE student_role": studentRole.onDelete,
+
+  "POST study_group": studyGroup.onPost,
+  "PATCH study_group": studyGroup.onPatch,
+  "DELETE study_group": studyGroup.onDelete,
 } as const;

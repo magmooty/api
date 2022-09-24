@@ -1,6 +1,7 @@
 import { GraphObject } from "@/graph/objects/types";
 import { IndexName } from "@/sync/mapping";
 import { Context } from "@/tracing";
+import { SortResults } from "@elastic/elasticsearch/lib/api/types";
 import {
   ElasticSearchSearchConfig,
   ElasticSearchSearchDriver,
@@ -38,19 +39,28 @@ export interface SearchCriteria {
 export interface SearchPageResult<T> {
   count: number;
   results: T[];
+  search_after?: SortResults;
+}
+
+export interface SearchInternalOptions {
+  search_after?: SortResults;
 }
 
 export interface SearchDriver {
   init(ctx: Context | null): Promise<void>;
+
   search<T = GraphObject>(
     ctx: Context | null,
     index: IndexName,
-    criteria: SearchCriteria
+    criteria: SearchCriteria,
+    internalOptions?: SearchInternalOptions
   ): Promise<SearchPageResult<T>>;
+
   leanSearch(
     ctx: Context | null,
     index: IndexName,
-    criteria: SearchCriteria
+    criteria: SearchCriteria,
+    internalOptions?: SearchInternalOptions
   ): Promise<SearchPageResult<string>>;
 }
 

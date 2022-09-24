@@ -159,6 +159,11 @@ export interface StudyGroupIndexMapping {
   updated_at: string;
 }
 
+export interface TutorRoleIndexMapping {
+  space: string;
+  updated_at: string;
+}
+
 export type ValueSet =
   | "BillableItemType"
   | "Color"

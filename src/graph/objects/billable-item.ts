@@ -17,6 +17,12 @@ export default {
       PATCH: [],
     },
   },
+  deepDeletion: [
+    {
+      index: "billable_item_log",
+      property: "billable_item",
+    },
+  ],
   virtuals: {
     views: {
       space_admin: {
@@ -51,12 +57,14 @@ export default {
       type: "object-id",
       objectTypes: ["billable_item_stats"],
       view: "system_controlled",
+      deepDelete: true,
     },
   },
   edges: {
     trails: {
       objectTypes: ["billable_item_trail"],
       view: "system_controlled",
+      deepDelete: true,
     },
   },
 } as ObjectConfig;

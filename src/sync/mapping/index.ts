@@ -7,6 +7,7 @@ import examLog from "./exam-log";
 import notification from "./notification";
 import studentRole from "./student-role";
 import studyGroup from "./study-group";
+import tutorRole from "./tutor-role";
 import user from "./user";
 
 export const mappings = {
@@ -20,6 +21,7 @@ export const mappings = {
   exam_log: examLog,
   student_role: studentRole,
   study_group: studyGroup,
+  tutor_role: tutorRole,
 };
 
 export const indexNames = Object.keys(mappings);

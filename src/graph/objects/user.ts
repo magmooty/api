@@ -76,16 +76,19 @@ export default {
       type: "object-id",
       objectTypes: ["system_user"],
       view: "system_private",
+      deepDelete: true,
     },
   },
   edges: {
     roles: {
       objectTypes: ["tutor_role"],
       view: "system_controlled",
+      deepDelete: true,
     },
     statuses: {
       objectTypes: ["user_status"],
       view: "system_controlled",
+      deepDelete: true,
     },
   },
 } as ObjectConfig;

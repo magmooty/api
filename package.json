@@ -72,6 +72,7 @@
     "nanoid": "^3.3.4",
     "prom-client": "^14.0.1",
     "prometheus-api-metrics": "^3.2.2",
+    "queue": "^6.0.2",
     "runtypes": "^6.6.0",
     "string-template": "^1.0.0",
     "tiny-timestamp": "^1.0.0",

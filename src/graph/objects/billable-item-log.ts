@@ -48,6 +48,7 @@ export default {
     trails: {
       objectTypes: ["billable_item_log_trail"],
       view: "system_controlled",
+      deepDelete: true,
     },
   },
 } as ObjectConfig;

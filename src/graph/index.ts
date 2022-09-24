@@ -7,6 +7,7 @@ import {
   User,
 } from "@/graph/objects/types";
 import { Context } from "@/tracing";
+import { IndexName } from "@/sync/mapping";
 import ms from "milliseconds";
 
 export type ObjectFieldType =
@@ -38,11 +39,13 @@ export interface ObjectField {
   required?: boolean;
   schema?: string;
   stripDisallowed?: boolean;
+  deepDelete?: boolean;
 }
 
 export interface ObjectEdge {
   objectTypes?: string[];
   view?: string;
+  deepDelete?: boolean;
 }
 
 export interface ObjectView {
@@ -83,17 +86,27 @@ export interface StructConfig {
   fields: StructConfigFields;
 }
 
+export interface DeepDeletionEntry {
+  index: IndexName;
+  property: string;
+}
+
 export interface ObjectConfig extends StructConfig {
   code: string;
   systemObject?: boolean;
   cacheLevel: "external" | "none" | "onlyCache";
+  deepDeletion?: DeepDeletionEntry[];
   ttl?: ObjectTTL;
   deletedBy?: string[];
   views: { _default: ObjectView; [key: string]: ObjectView };
   virtuals: { views: { [key: string]: ObjectViewVirtual } };
   edges: { [key: string]: ObjectEdge };
+
+  // Auto generated fields
   counterFields?: string[];
   counterStructs?: string[];
+  deepDeletedFields?: string[];
+  deepDeletedEdges?: string[];
 }
 
 import objects from "@/graph/objects";
@@ -107,6 +120,22 @@ const objectCodeObjectTypeMap: { [key: string]: string } = Object.keys(
   }),
   {}
 );
+
+const extractDeepDeletedFields = (ctx: Context, objectConfig: ObjectConfig) => {
+  return Object.keys(objectConfig.fields).filter(
+    (fieldName) =>
+      objectConfig.fields[fieldName].deepDelete &&
+      ["object-id", "array:object-id"].includes(
+        objectConfig.fields[fieldName].type
+      )
+  );
+};
+
+const extractDeepDeletedEdges = (ctx: Context, objectConfig: ObjectConfig) => {
+  return Object.keys(objectConfig.edges).filter(
+    (fieldName) => objectConfig.edges[fieldName].deepDelete
+  );
+};
 
 const extractCounterFields = async (
   ctx: Context,
@@ -168,6 +197,12 @@ export const initGraph = wrapper(
 
         objects[objectType].counterFields = counterFields;
         objects[objectType].counterStructs = counterStructs;
+
+        const deepDeletedFields = extractDeepDeletedFields(ctx, objectConfig);
+        const deepDeletedEdges = extractDeepDeletedEdges(ctx, objectConfig);
+
+        objects[objectType].deepDeletedFields = deepDeletedFields || [];
+        objects[objectType].deepDeletedEdges = deepDeletedEdges || [];
 
         // Auto-fill delete in views
         Object.keys(objectConfig.views).forEach((viewName) => {
