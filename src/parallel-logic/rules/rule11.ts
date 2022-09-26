@@ -3,19 +3,21 @@ import {
   AcademicYear,
   AcademicYearStats,
   BillableItem,
+  BillableItemLog,
   BillableItemStats,
   Exam,
+  ExamLog,
   ExamStats,
   StudentRole,
   StudyGroup,
   StudyGroupStats,
 } from "@/graph/objects/types";
-import { BaseQueueEvent } from "@/queue";
+import { QueueEvent } from "@/queue";
 import { Context } from "@/tracing";
 
 export const rule11 = wrapper(
   { name: "rule11", file: __filename },
-  async (ctx: Context, event: BaseQueueEvent<StudentRole>) => {
+  async (ctx: Context, event: QueueEvent<StudentRole>) => {
     if (!event.current) {
       return;
     }
@@ -81,10 +83,13 @@ export const rule11 = wrapper(
 
     await Promise.all(
       exams.map(async (exam) => {
-        await persistence.updateObject<ExamStats>(
+        if (!event.current) {
+          return;
+        }
+
+        await persistence.createObject<ExamLog>(
           ctx,
-          exam.stats,
-          { student_counter: "+1" },
+          { object_type: "exam_log", student: event.current.id, exam: exam.id },
           { author: event.author }
         );
       })
@@ -98,12 +103,15 @@ export const rule11 = wrapper(
 
     await Promise.all(
       billableItems.map(async (billableItem) => {
-        await persistence.updateObject<BillableItemStats>(
-          ctx,
-          billableItem.stats,
-          { student_counter: "+1" },
-          { author: event.author }
-        );
+        if (!event.current) {
+          return;
+        }
+
+        await persistence.createObject<BillableItemLog>(ctx, {
+          object_type: "billable_item_log",
+          student: event.current.id,
+          billable_item: billableItem.id,
+        });
       })
     );
   }

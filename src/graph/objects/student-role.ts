@@ -5,6 +5,16 @@ export default {
   code: "R2",
   cacheLevel: "external",
   deletedBy: ["virtual:space_admin"],
+  deepDeletion: [
+    {
+      index: "billable_item_log",
+      property: "student",
+    },
+    {
+      index: "exam_log",
+      property: "student",
+    },
+  ],
   views: {
     _default: {
       GET: ["virtual:space_admin"],
@@ -50,6 +60,7 @@ export default {
     trails: {
       objectTypes: ["student_role_trail"],
       view: "system_controlled",
+      deepDelete: true,
     },
   },
 } as ObjectConfig;

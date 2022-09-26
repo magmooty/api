@@ -41,6 +41,7 @@ export default {
     exam: {
       type: "object-id",
       objectTypes: ["exam"],
+      required: true,
     },
   },
   edges: {
