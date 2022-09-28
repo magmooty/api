@@ -4,7 +4,7 @@ git fetch
 git reset --hard
 git pull
 
-regex='\[version\]|Merge|rebuild'
+regex='\[version\]|rebuild'
 text=$(git log -1 --pretty=%B)
 [[ $text =~ $regex ]]
 
