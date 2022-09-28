@@ -185,18 +185,6 @@ export class QueueKafkaDriver implements QueueDriver {
 
             const { locale, spanId, traceId, parentId } = event;
 
-            console.log("------------------");
-            console.log("------------------");
-            console.log("------------------");
-            console.log("------------------");
-            console.log("------------------");
-            console.log("consuming event");
-            console.log("------------------");
-            console.log("------------------");
-            console.log("------------------");
-            console.log("------------------");
-            console.log("------------------");
-
             await cb(
               {
                 traceInfo: { locale },
@@ -206,18 +194,6 @@ export class QueueKafkaDriver implements QueueDriver {
               },
               event
             );
-
-            console.log("------------------");
-            console.log("------------------");
-            console.log("------------------");
-            console.log("------------------");
-            console.log("------------------");
-            console.log("consumed event");
-            console.log("------------------");
-            console.log("------------------");
-            console.log("------------------");
-            console.log("------------------");
-            console.log("------------------");
           },
         });
       }
