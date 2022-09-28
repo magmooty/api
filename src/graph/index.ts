@@ -40,12 +40,13 @@ export interface ObjectField {
   schema?: string;
   stripDisallowed?: boolean;
   deepDelete?: boolean;
+  deepDeleteFromEdges?: string[];
 }
 
 export interface ObjectEdge {
   objectTypes?: string[];
   view?: string;
-  deepDelete?: boolean;
+  deepDelete?: "object" | "edge" | "both";
 }
 
 export interface ObjectView {
@@ -59,6 +60,7 @@ export interface ObjectViewVirtualExecutorOptions {
   author: User;
   roles: string[];
   method: "POST" | "PATCH" | "GET" | "DELETE";
+  cache: LocalLockingCache;
 }
 
 export type ObjectViewVirtualExecutor = (
@@ -107,9 +109,11 @@ export interface ObjectConfig extends StructConfig {
   counterStructs?: string[];
   deepDeletedFields?: string[];
   deepDeletedEdges?: string[];
+  deepDeletedEdgesOnFields?: string[];
 }
 
 import objects from "@/graph/objects";
+import { LocalLockingCache } from "@/api/util/LocalLockingCache";
 
 const objectCodeObjectTypeMap: { [key: string]: string } = Object.keys(
   objects
@@ -134,6 +138,15 @@ const extractDeepDeletedFields = (ctx: Context, objectConfig: ObjectConfig) => {
 const extractDeepDeletedEdges = (ctx: Context, objectConfig: ObjectConfig) => {
   return Object.keys(objectConfig.edges).filter(
     (fieldName) => objectConfig.edges[fieldName].deepDelete
+  );
+};
+
+const extractDeepDeletedEdgesOnFields = (
+  ctx: Context,
+  objectConfig: ObjectConfig
+) => {
+  return Object.keys(objectConfig.fields).filter(
+    (fieldName) => objectConfig.fields[fieldName].deepDeleteFromEdges
   );
 };
 
@@ -200,9 +213,15 @@ export const initGraph = wrapper(
 
         const deepDeletedFields = extractDeepDeletedFields(ctx, objectConfig);
         const deepDeletedEdges = extractDeepDeletedEdges(ctx, objectConfig);
+        const deepDeletedEdgesOnFields = extractDeepDeletedEdgesOnFields(
+          ctx,
+          objectConfig
+        );
 
         objects[objectType].deepDeletedFields = deepDeletedFields || [];
         objects[objectType].deepDeletedEdges = deepDeletedEdges || [];
+        objects[objectType].deepDeletedEdgesOnFields =
+          deepDeletedEdgesOnFields || [];
 
         // Auto-fill delete in views
         Object.keys(objectConfig.views).forEach((viewName) => {

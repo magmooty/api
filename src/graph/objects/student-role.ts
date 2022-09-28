@@ -60,7 +60,7 @@ export default {
     trails: {
       objectTypes: ["student_role_trail"],
       view: "system_controlled",
-      deepDelete: true,
+      deepDelete: "object",
     },
   },
 } as ObjectConfig;

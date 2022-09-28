@@ -50,7 +50,7 @@ export default {
     trails: {
       objectTypes: ["study_group_trail"],
       view: "system_controlled",
-      deepDelete: true,
+      deepDelete: "object",
     },
   },
 } as ObjectConfig;

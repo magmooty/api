@@ -46,7 +46,10 @@ export const LocalDevelopmentAssigner: PartitionAssigner = ({ cluster }) => ({
       );
     });
 
-    console.debug(`\x1b[31mKAFKA CONNECTED TO ALL PARTITIONS ON ALL TOPICS\x1b[0m`);
+    console.debug(
+      `\x1b[31mKAFKA CONNECTED TO ALL PARTITIONS ON ALL TOPICS\x1b[0m`,
+      JSON.stringify({ assignment })
+    );
 
     return Object.keys(assignment).map((memberId) => ({
       memberId,

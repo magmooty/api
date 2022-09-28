@@ -41,7 +41,7 @@ export const SpaceAdminVirtualExecutor: ObjectViewVirtualExecutor = wrapper(
   async (
     ctx: Context,
     object: GraphObject,
-    { roles }: ObjectViewVirtualExecutorOptions
+    { roles, cache }: ObjectViewVirtualExecutorOptions
   ): Promise<boolean> => {
     const { academic_year, study_group, space: rootSpace } = object;
 
@@ -56,9 +56,11 @@ export const SpaceAdminVirtualExecutor: ObjectViewVirtualExecutor = wrapper(
     }
 
     if (academic_year) {
-      const { space } = await persistence.getObject<AcademicYear>(
-        null,
-        academic_year as string
+      const { space } = await cache.lockAndGet<AcademicYear>(
+        ctx,
+        academic_year,
+        async () =>
+          persistence.getObject<AcademicYear>(ctx, academic_year as string)
       );
 
       if (!roleSpaces.includes(space as string)) {
@@ -67,9 +69,11 @@ export const SpaceAdminVirtualExecutor: ObjectViewVirtualExecutor = wrapper(
     }
 
     if (study_group) {
-      const { space } = await persistence.getObject<StudyGroup>(
-        null,
-        academic_year as string
+      const { space } = await cache.lockAndGet<StudyGroup>(
+        ctx,
+        study_group,
+        async () =>
+          persistence.getObject<StudyGroup>(ctx, study_group as string)
       );
 
       if (!roleSpaces.includes(space as string)) {
@@ -86,7 +90,7 @@ export const SpaceOwnerVirtualExecutor: ObjectViewVirtualExecutor = wrapper(
   async (
     ctx: Context,
     object: GraphObject,
-    { author }: ObjectViewVirtualExecutorOptions
+    { author, cache }: ObjectViewVirtualExecutorOptions
   ): Promise<boolean> => {
     const { space: spaceId } = object;
 
@@ -94,7 +98,9 @@ export const SpaceOwnerVirtualExecutor: ObjectViewVirtualExecutor = wrapper(
       return false;
     }
 
-    const space = await persistence.getObject<Space>(ctx, spaceId as string);
+    const space = await cache.lockAndGet<Space>(ctx, spaceId, async () =>
+      persistence.getObject<Space>(ctx, spaceId as string)
+    );
 
     if (space.owner === author.id) {
       return true;

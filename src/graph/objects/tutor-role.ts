@@ -52,6 +52,7 @@ export default {
       objectTypes: ["user"],
       view: "system_controlled",
       default: (object, author) => (author ? author : undefined),
+      deepDeleteFromEdges: ["roles"],
     },
     last_read_notification: {
       type: "date",

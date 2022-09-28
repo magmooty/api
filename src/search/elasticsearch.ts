@@ -217,7 +217,7 @@ export class ElasticSearchSearchDriver implements SearchDriver {
       let done = false;
 
       while (!done) {
-        const result: SearchPageResult<T> = await this._search(
+        const result: SearchPageResult<any> = await this._search(
           ctx,
           index,
           criteria,

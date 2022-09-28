@@ -2,18 +2,45 @@ import { config, persistence, search, wrapper } from "@/components";
 import { getObjectConfigFromObjectType } from "@/graph";
 import { GraphObject } from "@/graph/objects/types";
 import { QueueEvent } from "@/queue";
-import { SearchPageResult } from "@/search";
 import { Context } from "@/tracing";
 import nodeQueue from "queue";
 
-const tryDelete = wrapper(
-  { name: "tryDelete", file: __filename },
+const tryDeleteObject = wrapper(
+  { name: "tryDeleteObject", file: __filename },
   async (ctx: Context, id: string, author?: string) => {
     try {
       await persistence.deleteObject<GraphObject>(ctx, id, { author });
       ctx.log.info("Successfully deep deleted object", { id, author });
     } catch (error) {
       ctx.log.error(error, "Failed to deep delete an object", { id, author });
+    }
+  }
+);
+
+const tryDeleteEdge = wrapper(
+  { name: "tryDeleteEdge", file: __filename },
+  async (
+    ctx: Context,
+    src: string,
+    edgeName: string,
+    dst: string,
+    author?: string
+  ) => {
+    try {
+      await persistence.deleteEdge(ctx, src, edgeName, dst, { author });
+      ctx.log.info("Successfully deep deleted edge", {
+        src,
+        edgeName,
+        dst,
+        author,
+      });
+    } catch (error) {
+      ctx.log.error(error, "Failed to deep delete an edge", {
+        src,
+        edgeName,
+        dst,
+        author,
+      });
     }
   }
 );
@@ -44,7 +71,7 @@ export const rule21 = wrapper(
               id: event.current[deepDeletedField],
             });
 
-            await tryDelete(
+            await tryDeleteObject(
               ctx,
               event.current[deepDeletedField] as string,
               event.author
@@ -52,6 +79,30 @@ export const rule21 = wrapper(
           }
         });
       });
+
+      objectConfig.deepDeletedEdgesOnFields?.forEach(
+        (deepDeletedEdgeOnField) => {
+          q.push(async () => {
+            if (event.current && event.current[deepDeletedEdgeOnField]) {
+              ctx.log.info("Found deep deleted field for object", {
+                deepDeletedField: deepDeletedEdgeOnField,
+                id: event.current[deepDeletedEdgeOnField],
+              });
+
+              for (const edgeName of objectConfig.fields[deepDeletedEdgeOnField]
+                ?.deepDeleteFromEdges || []) {
+                await tryDeleteEdge(
+                  ctx,
+                  event.current[deepDeletedEdgeOnField] as string,
+                  edgeName,
+                  event.current.id,
+                  event.author
+                );
+              }
+            }
+          });
+        }
+      );
 
       objectConfig.deepDeletedEdges?.forEach((deepDeletedEdge) => {
         q.push(async () => {
@@ -73,7 +124,25 @@ export const rule21 = wrapper(
 
           dsts.forEach((id) => {
             q.push(async () => {
-              await tryDelete(ctx, id, event.author);
+              if (!event.current) {
+                return;
+              }
+
+              const { deepDelete } = objectConfig.edges[deepDeletedEdge];
+
+              if (deepDelete === "both" || deepDelete === "object") {
+                await tryDeleteObject(ctx, id, event.author);
+              }
+
+              if (deepDelete === "both" || deepDelete === "edge") {
+                await tryDeleteEdge(
+                  ctx,
+                  event.current.id,
+                  deepDeletedEdge,
+                  id,
+                  event.author
+                );
+              }
             });
           });
         });
@@ -100,7 +169,7 @@ export const rule21 = wrapper(
             },
             (id) => {
               q.push(async () => {
-                await tryDelete(ctx, id, event.author);
+                await tryDeleteObject(ctx, id, event.author);
               });
             },
             { lean: true }

@@ -2,10 +2,11 @@ import { config, errors, persistence, wrapper } from "@/components";
 import { getObjectConfigFromObjectType, getObjectTypeFromId } from "@/graph";
 import { FIXED_OBJECT_FIELDS } from "@/graph/common";
 import { GraphObject, ObjectType, User } from "@/graph/objects/types";
-import { wait } from "@/persistence/commons/wait";
+import { wait } from "@/util/wait";
 import { Context } from "@/tracing";
 import _ from "lodash";
 import { Record } from "runtypes";
+import { LocalLockingCache } from "@/api/util/LocalLockingCache";
 
 const extractType = (fieldName: string, record: Record<any, any>): string => {
   return record.fields[fieldName]
@@ -13,6 +14,10 @@ const extractType = (fieldName: string, record: Record<any, any>): string => {
     .replace(/Runtype<(.+)>/g, "$1")
     .replace(/(.+)[]/, "array:$1");
 };
+
+export interface ACLCache {
+  localCache?: LocalLockingCache;
+}
 
 export interface VerifyObjectACLPayload {
   object?: GraphObject;
@@ -23,7 +28,7 @@ export interface VerifyObjectACLPayload {
   singleFieldStrategy: "error" | "strip";
   aclMode: "soft" | "hard";
   keys?: string[];
-  aclCache?: { [key: string]: boolean };
+  aclCache?: ACLCache;
 }
 
 export interface VerifyEdgeACLPayload {
@@ -33,91 +38,7 @@ export interface VerifyEdgeACLPayload {
   author?: User;
   roles: string[];
   method: "GET" | "POST" | "DELETE";
-}
-
-async function getFromACLCache(
-  ctx: Context,
-  aclCache: any,
-  objectId: string | undefined | null,
-  virtualName: string,
-  waitTime = 0
-): Promise<null | boolean> {
-  const key = `${objectId}-${virtualName}`;
-
-  ctx.log.info("Fetching ACL cached value", {
-    key,
-    waitTime,
-  });
-
-  if (!objectId || waitTime > config.api.virtualsCacheTimeout) {
-    ctx.log.info("Lock on ACL key expired, requeuing", {
-      key,
-      waitTime,
-    });
-    aclCache[key] = "queued";
-    return null;
-  }
-
-  if (aclCache[key] === "queued") {
-    ctx.log.info("ACL key is locked, waiting for cache recheck", {
-      key,
-    });
-
-    await wait(config.api.virtualsCacheRecheckInterval);
-
-    return getFromACLCache(
-      ctx,
-      aclCache,
-      objectId,
-      virtualName,
-      waitTime + config.api.virtualsCacheRecheckInterval
-    );
-  }
-
-  if (aclCache[key]) {
-    ctx.log.info("Found ACL key cached value", { key, value: aclCache[key] });
-    return aclCache[key];
-  } else {
-    ctx.log.info("Value wasn't found in cache, locking ACL key", { key });
-    aclCache[key] = "queued";
-    return null;
-  }
-}
-
-async function unqueueACLCacheValue(
-  ctx: Context,
-  aclCache: any,
-  objectId: string | null | undefined,
-  virtualName: string
-) {
-  if (!objectId) {
-    return;
-  }
-
-  const key = `${objectId}-${virtualName}`;
-
-  if (aclCache[key] === "queued") {
-    ctx.log.info("Freeing lock on ACL key", { key });
-    aclCache[key] = undefined;
-  }
-}
-
-async function setInACLCache(
-  ctx: Context,
-  aclCache: any,
-  objectId: string | null | undefined,
-  virtualName: string,
-  value: boolean | undefined
-) {
-  if (!objectId) {
-    return;
-  }
-
-  const key = `${objectId}-${virtualName}`;
-
-  ctx.log.info("Setting ACL key cache value", { key, value });
-
-  aclCache[key] = value;
+  aclCache?: ACLCache;
 }
 
 export const verifyObjectACL = wrapper(
@@ -157,6 +78,12 @@ export const verifyObjectACL = wrapper(
 
     if (!aclCache) {
       aclCache = {};
+    }
+
+    if (!aclCache.localCache) {
+      aclCache.localCache = new LocalLockingCache({
+        lockRecheckInterval: config.api.virtualsCacheRecheckInterval,
+      });
     }
 
     // Check if the object even has any permissions for the method in its views
@@ -284,25 +211,10 @@ export const verifyObjectACL = wrapper(
           const virtualName = role.slice("virtual:".length);
 
           try {
-            const virtualCachedValue = await getFromACLCache(
-              ctx,
-              aclCache,
-              object?.id,
-              virtualName
-            );
-
-            ctx.log.info("Role is a virtual, checking virtuals cache", {
+            ctx.log.info("Role is a virtual", {
               role,
               virtualName,
-              virtualCachedValue,
             });
-
-            // Virtual has already been executed before with the pre roles and the executor
-            if (virtualCachedValue === true) {
-              ctx.log.info("Access passes: virtual has been executed before");
-              noAccess = false;
-              break;
-            }
 
             const virtual = objectConfig.virtuals.views[virtualName];
 
@@ -334,13 +246,6 @@ export const verifyObjectACL = wrapper(
                 return;
               }
 
-              await setInACLCache(
-                ctx,
-                aclCache,
-                object?.id,
-                virtualName,
-                false
-              );
               continue;
             }
 
@@ -352,12 +257,6 @@ export const verifyObjectACL = wrapper(
                   aclMode,
                   object,
                 }
-              );
-              await unqueueACLCacheValue(
-                ctx,
-                aclCache,
-                object?.id,
-                virtualName
               );
               noAccess = false;
               continue;
@@ -382,17 +281,10 @@ export const verifyObjectACL = wrapper(
               author,
               roles,
               method,
+              cache: aclCache.localCache,
             });
 
             ctx.log.info("Executed virtual", { virtualResult, virtualName });
-
-            await setInACLCache(
-              ctx,
-              aclCache,
-              object.id,
-              virtualName,
-              virtualResult
-            );
 
             if (virtualResult) {
               ctx.log.info("Access passes: virtual executed successfully");
@@ -411,7 +303,6 @@ export const verifyObjectACL = wrapper(
             }
           } catch (error) {
             // Any errors happened, set to undefiend
-            await unqueueACLCacheValue(ctx, aclCache, object?.id, virtualName);
             throw error;
           }
         }
@@ -458,6 +349,17 @@ export const verifyEdgeACL = wrapper(
       errors.createError(ctx, "ACLDenied", { reason: "no author", author });
       return;
     }
+    let { aclCache } = payload;
+
+    if (!aclCache) {
+      aclCache = {};
+    }
+
+    if (!aclCache.localCache) {
+      aclCache.localCache = new LocalLockingCache({
+        lockRecheckInterval: config.api.virtualsCacheRecheckInterval,
+      });
+    }
 
     const id = typeof src === "string" ? src : src.id;
     let object;
@@ -473,6 +375,16 @@ export const verifyEdgeACL = wrapper(
         viewRoles,
       });
       return;
+    }
+
+    if (!aclCache) {
+      aclCache = {};
+    }
+
+    if (!aclCache.localCache) {
+      aclCache.localCache = new LocalLockingCache({
+        lockRecheckInterval: config.api.virtualsCacheRecheckInterval,
+      });
     }
 
     ctx.log.info("Prepared required parameters and looping over view roles", {
@@ -536,6 +448,7 @@ export const verifyEdgeACL = wrapper(
         author,
         roles,
         method,
+        cache: aclCache.localCache,
       });
 
       ctx.log.info("Executed virtual", { virtualResult, virtualName });

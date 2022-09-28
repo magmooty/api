@@ -60,7 +60,7 @@ export default {
     trails: {
       objectTypes: ["academic_year_trail"],
       view: "system_controlled",
-      deepDelete: true,
+      deepDelete: "object",
     },
   },
 } as ObjectConfig;

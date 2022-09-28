@@ -83,12 +83,12 @@ export default {
     roles: {
       objectTypes: ["tutor_role"],
       view: "system_controlled",
-      deepDelete: true,
+      deepDelete: "object",
     },
     statuses: {
       objectTypes: ["user_status"],
       view: "system_controlled",
-      deepDelete: true,
+      deepDelete: "object",
     },
   },
 } as ObjectConfig;

@@ -13,6 +13,7 @@ import {
   SeedObjectsResult,
 } from "@/persistence";
 import { Context } from "@/tracing";
+import { wait } from "@/util/wait";
 import {
   AttributeValue,
   CreateTableCommand,
@@ -37,7 +38,6 @@ import { Command } from "@aws-sdk/smithy-client";
 import AWS from "aws-sdk";
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import http from "http";
-import { wait } from "./commons/wait";
 import AttributeMap = DocumentClient.AttributeMap;
 
 const { marshall, unmarshall } = AWS.DynamoDB.Converter;
