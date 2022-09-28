@@ -203,4 +203,78 @@ export class ElasticSearchSearchDriver implements SearchDriver {
       lean: false,
     });
   }
+
+  _loopOverSearch = wrapper(
+    { name: "loopOverSearch", file: __filename },
+    async (
+      ctx: Context,
+      index: IndexName,
+      criteria: SearchCriteria,
+      callback: (result: SearchPageResult<any>) => Promise<any>,
+      { lean }: { lean: boolean }
+    ): Promise<void> => {
+      let searchAfter;
+      let done = false;
+
+      while (!done) {
+        const result: SearchPageResult<T> = await this._search(
+          ctx,
+          index,
+          criteria,
+          { search_after: searchAfter, lean }
+        );
+
+        await callback(result);
+
+        searchAfter = result.search_after;
+        done = result.results.length <= 0;
+      }
+    }
+  );
+
+  oneByOne = wrapper(
+    { name: "oneByOne", file: __filename },
+    async (
+      ctx: Context,
+      index: IndexName,
+      criteria: SearchCriteria,
+      callback: (result: any) => Promise<any>,
+      internalOptions: { lean: boolean }
+    ): Promise<void> => {
+      await this._loopOverSearch(
+        ctx,
+        index,
+        criteria,
+        async ({ results }) => {
+          for (const item of results) {
+            await callback(item);
+          }
+        },
+        internalOptions
+      );
+    }
+  );
+
+  allByBatch = wrapper(
+    { name: "allByBatch", file: __filename },
+    async (
+      ctx: Context,
+      index: IndexName,
+      criteria: SearchCriteria,
+      callback: (result: any) => Promise<any>,
+      internalOptions: { lean: boolean }
+    ): Promise<void> => {
+      await this._loopOverSearch(
+        ctx,
+        index,
+        criteria,
+        async ({ results }) => {
+          await results.map(async (item) => {
+            await callback(item);
+          });
+        },
+        internalOptions
+      );
+    }
+  );
 }

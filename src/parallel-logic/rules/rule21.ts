@@ -89,31 +89,22 @@ export const rule21 = wrapper(
             deepDeletionEntry,
           });
 
-          let searchAfter;
-          let done = false;
-
-          while (!done) {
-            const result: SearchPageResult<string> = await search.leanSearch(
-              ctx,
-              deepDeletionEntry.index,
-              {
-                filters: {
-                  and: [{ [deepDeletionEntry.property]: event.current?.id }],
-                },
-                limit: 100,
+          await search.allByBatch<string>(
+            ctx,
+            deepDeletionEntry.index,
+            {
+              filters: {
+                and: [{ [deepDeletionEntry.property]: event.current?.id }],
               },
-              { search_after: searchAfter }
-            );
-
-            result.results.forEach((id) => {
+              limit: 100,
+            },
+            (id) => {
               q.push(async () => {
                 await tryDelete(ctx, id, event.author);
               });
-            });
-
-            searchAfter = result.search_after;
-            done = result.results.length <= 0;
-          }
+            },
+            { lean: true }
+          );
         });
       });
 

@@ -62,6 +62,22 @@ export interface SearchDriver {
     criteria: SearchCriteria,
     internalOptions?: SearchInternalOptions
   ): Promise<SearchPageResult<string>>;
+
+  oneByOne<T>(
+    ctx: Context,
+    index: IndexName,
+    criteria: SearchCriteria,
+    callback: (result: T) => void | Promise<void>,
+    internalOptions: { lean: boolean }
+  ): Promise<void>;
+
+  allByBatch<T>(
+    ctx: Context,
+    index: IndexName,
+    criteria: SearchCriteria,
+    callback: (result: T) => void | Promise<void>,
+    internalOptions: { lean: boolean }
+  ): Promise<void>;
 }
 
 export interface SearchConfig {
