@@ -201,20 +201,22 @@ export class ElasticSearchSyncDriver implements SyncDriver {
         pointer,
         async (results: GraphObject[]) => {
           await Promise.all(
-            results.map(async (object) => {
-              const event: QueueEvent<GraphObject> = {
-                method: "POST",
-                type: "object",
-                path: objectType,
-                current: object,
-                spanId: ctx.spanId,
-                parentId: ctx.parentId,
-                traceId: ctx.traceId,
-                locale: "en",
-              };
+            results
+              .filter((object) => !object.deleted_at)
+              .map(async (object) => {
+                const event: QueueEvent<GraphObject> = {
+                  method: "POST",
+                  type: "object",
+                  path: objectType,
+                  current: object,
+                  spanId: ctx.spanId,
+                  parentId: ctx.parentId,
+                  traceId: ctx.traceId,
+                  locale: "en",
+                };
 
-              await this.processEvent(ctx, event);
-            })
+                await this.processEvent(ctx, event);
+              })
           );
         }
       );

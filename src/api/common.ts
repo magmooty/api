@@ -170,6 +170,12 @@ export const verifyObjectACL = wrapper(
       const fieldConfig =
         objectConfig.fields[fieldName] || objectConfig.fields._any;
 
+      if (!fieldConfig) {
+        throw errors.createError(ctx, "ValidationErrorFieldNotFound", {
+          fieldName,
+        });
+      }
+
       const view = fieldConfig.view
         ? objectConfig.views[fieldConfig.view]
         : objectConfig.views._default;

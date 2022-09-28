@@ -84,7 +84,7 @@ export const onPatch = wrapper(
       return [];
     }
 
-    return universalGenerator(ctx, "update", event.current);
+    return universalGenerator(ctx, "create", event.current);
   }
 );
 

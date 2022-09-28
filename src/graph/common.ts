@@ -46,12 +46,14 @@ export const SpaceAdminVirtualExecutor: ObjectViewVirtualExecutor = wrapper(
     const { academic_year, study_group, space: rootSpace } = object;
 
     if (!rootSpace && !academic_year && !study_group) {
+      ctx.log.info("No root space object nor study group or academic year");
       return false;
     }
 
     const roleSpaces = roles.map((role) => role.split("|")[2]);
 
     if (rootSpace && !roleSpaces.includes(rootSpace as string)) {
+      ctx.log.info("Root space is not in roles");
       return false;
     }
 
@@ -64,6 +66,7 @@ export const SpaceAdminVirtualExecutor: ObjectViewVirtualExecutor = wrapper(
       );
 
       if (!roleSpaces.includes(space as string)) {
+        ctx.log.info("Academic year's space is not in roles");
         return false;
       }
     }
@@ -77,10 +80,12 @@ export const SpaceAdminVirtualExecutor: ObjectViewVirtualExecutor = wrapper(
       );
 
       if (!roleSpaces.includes(space as string)) {
+        ctx.log.info("Study group's space is not in roles");
         return false;
       }
     }
 
+    ctx.log.info("Access granted");
     return true;
   }
 );
