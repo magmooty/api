@@ -779,6 +779,8 @@ export class Persistence {
 
       ctx.setParam("objectType", objectType);
 
+      ctx.setDurationMetricLabels({ objectType });
+
       ctx.setErrorDurationMetricLabels({ objectType });
 
       const lockHolder = await this.getLock(ctx, id);
@@ -788,6 +790,10 @@ export class Persistence {
 
       if (!previous) {
         previous = await this.getObject<GraphObject>(ctx, id);
+      }
+
+      if (previous.deleted_at) {
+        return previous;
       }
 
       await uniqueValidation(
@@ -836,8 +842,6 @@ export class Persistence {
 
       await syncLogic.processEvent(ctx, event);
       await queue.send(ctx, event);
-
-      ctx.setDurationMetricLabels({ objectType });
 
       return deletedObject;
     },
