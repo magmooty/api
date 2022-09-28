@@ -50,7 +50,7 @@ export const rule21 = wrapper(
   async (ctx: Context, event: QueueEvent<GraphObject>) => {
     return new Promise(async (resolve) => {
       if (!event.current) {
-        return;
+        return resolve(true);
       }
 
       const q = nodeQueue({
@@ -176,6 +176,10 @@ export const rule21 = wrapper(
           );
         });
       });
+
+      if (!q.length) {
+        resolve(true);
+      }
 
       q.on("end", () => {
         resolve(true);
