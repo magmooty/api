@@ -24,6 +24,11 @@ const errors = [
     templateProps: [],
   },
   {
+    code: "CannotModifyDeletedObject",
+    statusCode: 409,
+    templateProps: [],
+  },
+  {
     code: "StructDoesNotExist",
     statusCode: 404,
     templateProps: [],

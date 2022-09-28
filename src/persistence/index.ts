@@ -1,6 +1,6 @@
 import { CacheConfig, CacheDriver } from "@/cache";
 import { RedisCacheDriver } from "@/cache/redis";
-import { queue, syncLogic, wrapper } from "@/components";
+import { errors, queue, syncLogic, wrapper } from "@/components";
 import {
   getObjectConfigFromObjectType,
   getObjectTypeFromId,
@@ -641,6 +641,13 @@ export class Persistence {
       ctx.setParam("lockHolder", lockHolder);
 
       const previous = await this.getObject<GraphObject>(ctx, id);
+
+      if (previous.deleted_at) {
+        throw errors.createError(ctx, "CannotModifyDeletedObject", {
+          previous,
+          id,
+        });
+      }
 
       const updatePayload = {
         ...payload,

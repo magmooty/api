@@ -158,5 +158,9 @@
   {
     "code": "CounterSetFailed",
     "template": "Failed to set counter: {fieldName} to {value}"
+  },
+  {
+    "code": "CannotModifyDeletedObject",
+    "template": "Cannot modify a deleted object"
   }
 ]

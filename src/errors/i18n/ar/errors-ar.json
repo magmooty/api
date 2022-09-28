@@ -157,5 +157,9 @@
   {
     "code": "CounterSetFailed",
     "template": "فشل في تعديل العداد: {fieldName} إلى {value}"
+  },
+  {
+    "code": "CannotModifyDeletedObject",
+    "template": "لا يمكن تعديل كيان قد تم مسحه بالفعل"
   }
 ]
