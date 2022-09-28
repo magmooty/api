@@ -984,6 +984,7 @@ export class Persistence {
       ctx.setParam("edgeName", edgeName);
 
       ctx.setErrorDurationMetricLabels({ srcObjectType, edgeName });
+      ctx.setDurationMetricLabels({ srcObjectType });
 
       const lockKey = `${src}-${edgeName}-${dst}`;
       const cacheKey = `e_${src}-${edgeName}`;
@@ -992,6 +993,18 @@ export class Persistence {
 
       ctx.setParam("lockKey", lockKey);
       ctx.setParam("lockHolder", lockHolder);
+
+      const position = await this.cache.lpos(ctx, cacheKey, dst);
+
+      if (position < 0) {
+        return;
+      }
+
+      const edges = await this.primaryDB.getEdges(ctx, src, edgeName);
+
+      if (!edges.includes(dst)) {
+        return;
+      }
 
       await this.cache.lrem(ctx, cacheKey, dst);
 
@@ -1013,8 +1026,6 @@ export class Persistence {
 
       await syncLogic.processEvent(ctx, event);
       await queue.send(ctx, event);
-
-      ctx.setDurationMetricLabels({ srcObjectType });
     },
     async (ctx, error) => {
       ctx.metrics.getCounter("persistence_delete_edge_error").inc({
