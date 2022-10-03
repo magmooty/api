@@ -18,6 +18,7 @@ export interface QueueDriver {
     groupId: string,
     callback: QueueEventProcessor
   ): Promise<void>;
+  quit(): Promise<void>;
 }
 
 export interface BaseQueueEvent<T = GraphObject | IEdge> {

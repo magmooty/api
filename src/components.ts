@@ -1,5 +1,5 @@
 // Config
-import config from "@/config";
+import config, { isTesting } from "@/config";
 
 // Info
 const version = process.env.npm_package_version as string;
@@ -93,4 +93,5 @@ export {
   services,
   parallelLogic,
   syncLogic,
+  isTesting,
 };

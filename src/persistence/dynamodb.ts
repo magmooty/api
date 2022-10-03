@@ -20,6 +20,7 @@ import {
   CreateTableCommandOutput,
   DeleteItemCommand,
   DeleteItemCommandOutput,
+  DeleteTableCommand,
   DynamoDBClient,
   GetItemCommand,
   GetItemCommandOutput,
@@ -251,6 +252,29 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
       return this.sendCommand(ctx, command) as Promise<
         CommandOutput<UpdateTableCommandOutput>
       >;
+    }
+  );
+
+  clearDBForTest = wrapper(
+    { name: "clearDBForTest", file: __filename },
+    async (ctx: Context) => {
+      const tableNames = await this.listTableNames();
+
+      ctx.log.info("Deleting all tables with test prefix", { tableNames });
+
+      await Promise.all(
+        tableNames
+          .filter((tableName) => tableName.startsWith("test_"))
+          .map(async (TableName) => {
+            const command = new DeleteTableCommand({
+              TableName,
+            });
+
+            await this.sendCommand(ctx, command);
+          })
+      );
+
+      await this.init(ctx);
     }
   );
 

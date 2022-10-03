@@ -12,6 +12,7 @@ import { authMiddleware } from "./auth/middleware";
 import { APINextFunction, APIRequest, APIResponse } from "./types";
 import userAgentBlocker from "express-user-agent-blocker";
 import cors from "cors";
+import { Server } from "http";
 
 export interface APIConfig {
   virtualsCacheRecheckInterval: number;
@@ -44,6 +45,8 @@ const errorHandler = (
 
   next();
 };
+
+let appServer: Server;
 
 export const init = wrapper(
   { name: "init", file: __filename },
@@ -81,11 +84,17 @@ export const init = wrapper(
     // Error handler
     app.use(errorHandler);
 
-    // Start the server
+    // Start the
     const { port } = config.server;
 
-    app.listen(port);
+    appServer = app.listen(port);
 
     ctx.log.info(`Server listening on port ${port}`);
+
+    return app;
   }
 );
+
+export const quit = async () => {
+  appServer?.close();
+};

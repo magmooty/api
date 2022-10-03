@@ -42,7 +42,7 @@ const main = wrapper(
       }
     );
 
-    persistence.quit();
+    await persistence.quit();
   }
 );
 

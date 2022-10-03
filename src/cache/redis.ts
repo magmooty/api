@@ -193,15 +193,19 @@ export class RedisCacheDriver implements CacheDriver {
 
   del = wrapper(
     { name: "del", file: __filename },
-    (ctx: Context, key: string): Promise<number> => {
+    (ctx: Context, keys: string | string[]): Promise<number> => {
       ctx.startTrackTime("redis_requests_duration", "redis_errors_duration");
 
-      ctx.register({ key });
+      ctx.register({ keys });
 
       ctx.setDurationMetricLabels({ method: ctx.traceInfo.name });
       ctx.setErrorDurationMetricLabels({ method: ctx.traceInfo.name });
 
-      return this.cluster.del(key);
+      if (Array.isArray(keys)) {
+        return this.cluster.del(...keys);
+      } else {
+        return this.cluster.del(keys);
+      }
     },
     (ctx: Context, error: Error) => {
       ctx.metrics
@@ -696,6 +700,15 @@ export class RedisCacheDriver implements CacheDriver {
       ctx.metrics
         .getCounter("redis_requests")
         .inc({ method: ctx.traceInfo.name });
+    }
+  );
+
+  clearDBForTest = wrapper(
+    { name: "clearDBForTest", file: __filename },
+    async (ctx: Context) => {
+      const keys = await this.keys(ctx, "test_*");
+
+      await this.del(ctx, keys);
     }
   );
 

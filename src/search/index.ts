@@ -78,6 +78,8 @@ export interface SearchDriver {
     callback: (result: T) => void | Promise<void>,
     internalOptions: { lean: boolean }
   ): Promise<void>;
+
+  quit(): Promise<void>;
 }
 
 export interface SearchConfig {

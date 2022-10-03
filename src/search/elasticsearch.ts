@@ -277,4 +277,8 @@ export class ElasticSearchSearchDriver implements SearchDriver {
       );
     }
   );
+
+  quit = async () => {
+    await this.client.close();
+  }
 }

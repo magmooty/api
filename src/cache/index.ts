@@ -41,7 +41,7 @@ export interface CacheDriver {
     key: string,
     raw?: boolean
   ): Promise<ApplicationCachedValue | null>;
-  del(ctx: Context, key: string): Promise<number>;
+  del(ctx: Context, keys: string): Promise<number>;
   mget(
     ctx: Context,
     keys: string[],
@@ -73,5 +73,6 @@ export interface CacheDriver {
   lrem(ctx: Context, key: string, value: CacheValue): Promise<number>;
   ttl(ctx: Context, key: string): Promise<number>;
   rPush(ctx: Context, key: string, data: CacheValue): Promise<number>;
+  clearDBForTest(ctx?: Context | null): Promise<void>;
   quit(): Promise<void>;
 }

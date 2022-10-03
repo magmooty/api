@@ -20,6 +20,8 @@ export interface SyncDriver {
     after?: string | null,
     completeRecreation?: boolean
   ): Promise<void>;
+  clearDBForTest(ctx?: Context | null): Promise<void>;
+  quit(): Promise<void>;
 }
 
 export const createSyncDriver = ({

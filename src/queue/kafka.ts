@@ -1,19 +1,15 @@
-import { wrapper, config } from "@/components";
+import { config, wrapper } from "@/components";
 import { GraphObject, IEdge } from "@/graph/objects/types";
 import { Context } from "@/tracing";
 import {
-  Kafka,
-  logLevel,
-  Producer,
-  PartitionAssigner,
-  AssignerProtocol,
-  PartitionAssigners,
+  Consumer, Kafka,
+  logLevel, PartitionAssigners, Producer
 } from "kafkajs";
 import {
   BaseQueueEvent,
   QueueDriver,
   QueueEvent,
-  QueueEventProcessor,
+  QueueEventProcessor
 } from ".";
 import { LocalDevelopmentAssigner } from "./LocalDevelopmentAssigner";
 
@@ -40,6 +36,7 @@ export class QueueKafkaDriver implements QueueDriver {
   producer: Producer | null = null;
   topicsToConsumeFrom: QueueKafkaTopicConfig[];
   topicsToProduceTo: QueueKafkaTopicConfig[];
+  consumers: Consumer[] = [];
 
   constructor(private kafkaConfig: QueueKafkaConfig) {
     this.topicsToProduceTo = this.kafkaConfig.topics.filter(
@@ -164,6 +161,8 @@ export class QueueKafkaDriver implements QueueDriver {
 
       await consumer.connect();
 
+      this.consumers.push(consumer);
+
       ctx.log.info("Consumer connected");
 
       for (const topic of this.topicsToConsumeFrom) {
@@ -199,4 +198,9 @@ export class QueueKafkaDriver implements QueueDriver {
       }
     }
   );
+
+  quit = async () => {
+    await this.producer?.disconnect();
+    await Promise.all(this.consumers.map((consumer) => consumer.disconnect()));
+  };
 }

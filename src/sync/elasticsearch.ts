@@ -243,4 +243,27 @@ export class ElasticSearchSyncDriver implements SyncDriver {
       }
     }
   );
+
+  clearDBForTest = wrapper(
+    { name: "clearDBForTest", file: __filename },
+    async (ctx: Context) => {
+      for (const indexName of Object.keys(mappings)) {
+        const prefixedIndexName = `test_${indexName}`;
+
+        const exists = await this.client.indices.exists({
+          index: prefixedIndexName,
+        });
+
+        if (exists) {
+          await this.client.indices.delete({ index: prefixedIndexName });
+        }
+      }
+
+      await this.init(ctx);
+    }
+  );
+
+  quit = async () => {
+    await this.client.close();
+  };
 }
