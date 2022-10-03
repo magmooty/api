@@ -27,8 +27,6 @@ describe("Login and tutor profile", function () {
       .post("/auth/signup")
       .send(constants.normalUserSignUp);
 
-    console.log({ body: response.body });
-
     expect(response.body.token).toBeTruthy();
     expect(response.body.refresh_token).toBeTruthy();
     expect(response.status).toEqual(200);
