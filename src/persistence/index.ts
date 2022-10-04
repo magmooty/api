@@ -182,8 +182,6 @@ export interface PersistenceDriver {
     dst: string
   ): Promise<string[]>;
 
-  clearDBForTest(ctx?: Context | null): Promise<void>;
-
   quit(): Promise<void>;
 }
 
@@ -1156,14 +1154,6 @@ export class Persistence {
   ): Promise<boolean> => {
     return this.primaryDB.checkUnique(ctx, objectType, fieldName, value);
   };
-
-  clearDBForTest = wrapper(
-    { name: "clearDBForTest", file: __filename },
-    async (ctx: Context) => {
-      await this.primaryDB.clearDBForTest(ctx);
-      await this.cache.clearDBForTest(ctx);
-    }
-  );
 
   quit = async () => {
     await this.primaryDB.quit();

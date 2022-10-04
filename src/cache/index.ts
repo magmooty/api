@@ -27,52 +27,59 @@ export interface CacheConfig {
 
 export interface CacheDriver {
   init(): Promise<void>;
-  append(ctx: Context, key: string, value: CacheValue): Promise<number>;
+  append(ctx: Context | null, key: string, value: CacheValue): Promise<number>;
   set(
-    ctx: Context,
+    ctx: Context | null,
     key: string,
     value: ApplicationCachedValue,
     ttl?: number | null,
     isNX?: boolean
   ): Promise<boolean>;
-  mset(ctx: Context, keys: string[], objects: CacheValue[]): Promise<void>;
+  mset(
+    ctx: Context | null,
+    keys: string[],
+    objects: CacheValue[]
+  ): Promise<void>;
   get(
-    ctx: Context,
+    ctx: Context | null,
     key: string,
     raw?: boolean
   ): Promise<ApplicationCachedValue | null>;
-  del(ctx: Context, keys: string): Promise<number>;
+  del(ctx: Context | null, keys: string): Promise<number>;
   mget(
-    ctx: Context,
+    ctx: Context | null,
     keys: string[],
     raw?: boolean
   ): Promise<(string | number)[]>;
-  keys(ctx: Context, pattern: string): Promise<string[]>;
-  incr(ctx: Context, key: string): Promise<number>;
-  decr(ctx: Context, key: string): Promise<number>;
-  incrBy(ctx: Context, key: string, increment: number): Promise<number>;
-  decrBy(ctx: Context, key: string, decrement: number): Promise<number>;
-  setnx(ctx: Context, key: string, value: CacheValue): Promise<number>;
-  expire(ctx: Context, key: string, seconds: number): Promise<number>;
+  keys(ctx: Context | null, pattern: string): Promise<string[]>;
+  incr(ctx: Context | null, key: string): Promise<number>;
+  decr(ctx: Context | null, key: string): Promise<number>;
+  incrBy(ctx: Context | null, key: string, increment: number): Promise<number>;
+  decrBy(ctx: Context | null, key: string, decrement: number): Promise<number>;
+  setnx(ctx: Context | null, key: string, value: CacheValue): Promise<number>;
+  expire(ctx: Context | null, key: string, seconds: number): Promise<number>;
   scan(
     ctx: Context | null,
     cursor: number | string,
     options: ScanOptions
   ): Promise<ScanResult>;
-  exists(ctx: Context, key: string): Promise<boolean>;
-  lpush(ctx: Context, key: string, values: CacheValue[]): Promise<number>;
-  lpushx(ctx: Context, key: string, value: CacheValue): Promise<number>;
-  lpos(ctx: Context, key: string, value: CacheValue): Promise<number>;
-  llen(ctx: Context, key: string): Promise<number>;
+  exists(ctx: Context | null, key: string): Promise<boolean>;
+  lpush(
+    ctx: Context | null,
+    key: string,
+    values: CacheValue[]
+  ): Promise<number>;
+  lpushx(ctx: Context | null, key: string, value: CacheValue): Promise<number>;
+  lpos(ctx: Context | null, key: string, value: CacheValue): Promise<number>;
+  llen(ctx: Context | null, key: string): Promise<number>;
   lrange(
-    ctx: Context,
+    ctx: Context | null,
     key: string,
     start: number,
     stop?: number
   ): Promise<string[]>;
-  lrem(ctx: Context, key: string, value: CacheValue): Promise<number>;
-  ttl(ctx: Context, key: string): Promise<number>;
-  rPush(ctx: Context, key: string, data: CacheValue): Promise<number>;
-  clearDBForTest(ctx?: Context | null): Promise<void>;
+  lrem(ctx: Context | null, key: string, value: CacheValue): Promise<number>;
+  ttl(ctx: Context | null, key: string): Promise<number>;
+  rPush(ctx: Context | null, key: string, data: CacheValue): Promise<number>;
   quit(): Promise<void>;
 }

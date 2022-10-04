@@ -703,15 +703,6 @@ export class RedisCacheDriver implements CacheDriver {
     }
   );
 
-  clearDBForTest = wrapper(
-    { name: "clearDBForTest", file: __filename },
-    async (ctx: Context) => {
-      const keys = await this.keys(ctx, "test_*");
-
-      await this.del(ctx, keys);
-    }
-  );
-
   async quit(): Promise<void> {
     await this.cluster.quit();
   }

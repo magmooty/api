@@ -1,4 +1,3 @@
-import { isTesting } from "@/config";
 import { LogData, Logger, MessageFormatter } from "@/logger";
 import toJSON from "@stdlib/error-to-json";
 
@@ -11,37 +10,31 @@ export class ConsoleLogger implements Logger {
   }
 
   info(message: string, data?: LogData) {
-    if (!isTesting) {
-      console.info(this.formatter.format({ level: "info" }, message, data));
-    }
+    console.info(this.formatter.format({ level: "info" }, message, data));
   }
 
   warn(message: string, data?: LogData) {
-    if (!isTesting) {
-      console.warn(this.formatter.format({ level: "warn" }, message, data));
-    }
+    console.warn(this.formatter.format({ level: "warn" }, message, data));
   }
 
   error(error: Error | Object | unknown, message: string, data?: LogData) {
-    if (!isTesting) {
-      let logData;
+    let logData;
 
-      if (error instanceof Error) {
-        logData = {
-          ...data,
-          error: toJSON(error),
-        };
-      } else {
-        logData = {
-          ...data,
-          error,
-        };
-      }
-
-      console.error(
-        this.formatter.format({ level: "error" }, message, logData as Object)
-      );
+    if (error instanceof Error) {
+      logData = {
+        ...data,
+        error: toJSON(error),
+      };
+    } else {
+      logData = {
+        ...data,
+        error,
+      };
     }
+
+    console.error(
+      this.formatter.format({ level: "error" }, message, logData as Object)
+    );
   }
 
   overloadWithPrefilledData(prefilledData: Object): Logger {

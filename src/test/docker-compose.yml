@@ -1,0 +1,68 @@
+version: "3.3"
+services:
+  dynamodb-local:
+    user: root
+    container_name: local_test_dynamo
+    ports:
+      - "8000:8000"
+    image: amazon/dynamodb-local
+    command: -jar DynamoDBLocal.jar -sharedDb -dbPath /data
+    volumes:
+      - local_dynamodb_data:/data
+  redis:
+    container_name: local_test_redis
+    image: redis
+    command: redis-server --save 60 1
+    volumes:
+      - "local_redis_data:/data"
+    ports:
+      - "6379:6379"
+  zookeeper:
+    container_name: local_test_zookeeper
+    image: docker.io/bitnami/zookeeper:3.8
+    ports:
+      - "2181:2181"
+    volumes:
+      - "local_zookeeper_data:/bitnami"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+  kafka:
+    container_name: local_test_kafka
+    image: docker.io/bitnami/kafka:3.2
+    hostname: localhost
+    ports:
+      - "9092:9092"
+    volumes:
+      - "local_kafka_data:/bitnami"
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      - zookeeper
+  es:
+    container_name: local_test_elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.3.3
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - xpack.security.enabled=false
+      - node.name=local-magmooty
+      - cluster.name=es-magmooty-local-cluster
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - local_esdata:/usr/share/elasticsearch/data
+
+volumes:
+  local_zookeeper_data:
+    driver: local
+  local_kafka_data:
+    driver: local
+  local_esdata:
+    driver: local
+  local_redis_data:
+    driver: local
+  local_dynamodb_data:
+    driver: local

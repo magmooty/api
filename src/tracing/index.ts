@@ -114,6 +114,91 @@ export class Tracer {
     return (...args: any) => handler(null, ...args);
   }
 
+  createContext(
+    { name, file }: RegisterTraceInfo,
+    rootCtx?: Context | RootContext | null
+  ): {
+    ctx: Context;
+    end: any;
+    errorEnd: any;
+    trackingMetrics: LocalTrackingMetrics;
+  } {
+    const traceInfo: TraceInfo = {
+      name,
+      file,
+      locale: rootCtx?.traceInfo.locale || config.i18n.defaultLocale,
+    };
+
+    const spanId = nanoid();
+
+    const traceIds = {
+      spanId,
+      parentId: (rootCtx && rootCtx.spanId) || undefined,
+      traceId: (rootCtx && rootCtx.traceId) || spanId,
+    };
+
+    const log = this.options.log.overloadWithPrefilledData.bind(
+      this.options.log
+    )({ ...traceIds, file }) as Logger;
+
+    let trackingMetrics: LocalTrackingMetrics = {};
+
+    let end: any;
+    let errorEnd: any;
+
+    const ctx: Context = {
+      register: (data: Object) => {
+        traceInfo.data = data;
+        log.info(`${name} register`, data);
+      },
+      setLocale: (locale: AppLocale) => {
+        traceInfo.locale = locale;
+      },
+      startTrackTime: (durationMetric, errorDurationMetric) => {
+        trackingMetrics = {
+          durationMetric: { name: durationMetric, labels: {} },
+          errorDurationMetric: { name: errorDurationMetric, labels: {} },
+        };
+
+        end = trackingMetrics.durationMetric
+          ? ctx.metrics
+              .getHistogram(trackingMetrics.durationMetric.name)
+              .startTimer()
+          : null;
+
+        errorEnd = trackingMetrics.errorDurationMetric
+          ? ctx.metrics
+              .getHistogram(trackingMetrics.errorDurationMetric.name)
+              .startTimer()
+          : null;
+      },
+      setDurationMetricLabels: (labels) => {
+        if (trackingMetrics.durationMetric) {
+          trackingMetrics.durationMetric.labels = labels;
+        }
+      },
+      setErrorDurationMetricLabels: (labels) => {
+        if (trackingMetrics.errorDurationMetric) {
+          trackingMetrics.errorDurationMetric.labels = labels;
+        }
+      },
+      getParam: (name: string) => (traceInfo as any)[name],
+      setParam: (name: string, value: string | number) =>
+        ((traceInfo as any)[name] = value),
+      log,
+      metrics: this.options.metrics,
+      fatal: (message: string, data?: Object) => {
+        log.error(data, `FATAL ERROR: ${message}`);
+        process.exit();
+      },
+      debug: log.debug,
+      traceInfo,
+      ...traceIds,
+    };
+
+    return { ctx, end, errorEnd, trackingMetrics };
+  }
+
   wrapper<T extends (...args: any[]) => any>(
     { name, file, isAPIEndpoint }: RegisterTraceInfo,
     func: T,
@@ -124,78 +209,10 @@ export class Tracer {
     ...funcArgs: ExtractParametersWithoutFirstParam<T>
   ) => G extends never ? ExtractReturnType<T> : G {
     return ((rootCtx?: Context | RootContext | null, ...args: unknown[]) => {
-      const traceInfo: TraceInfo = {
-        name,
-        file,
-        locale: rootCtx?.traceInfo.locale || config.i18n.defaultLocale,
-      };
-
-      const spanId = nanoid();
-
-      const traceIds = {
-        spanId,
-        parentId: (rootCtx && rootCtx.spanId) || undefined,
-        traceId: (rootCtx && rootCtx.traceId) || spanId,
-      };
-
-      const log = this.options.log.overloadWithPrefilledData.bind(
-        this.options.log
-      )({ ...traceIds, file }) as Logger;
-
-      let trackingMetrics: LocalTrackingMetrics = {};
-
-      let end: any;
-      let errorEnd: any;
-
-      const ctx: Context = {
-        register: (data: Object) => {
-          traceInfo.data = data;
-          log.info(`${name} register`, data);
-        },
-        setLocale: (locale: AppLocale) => {
-          traceInfo.locale = locale;
-        },
-        startTrackTime: (durationMetric, errorDurationMetric) => {
-          trackingMetrics = {
-            durationMetric: { name: durationMetric, labels: {} },
-            errorDurationMetric: { name: errorDurationMetric, labels: {} },
-          };
-
-          end = trackingMetrics.durationMetric
-            ? ctx.metrics
-                .getHistogram(trackingMetrics.durationMetric.name)
-                .startTimer()
-            : null;
-
-          errorEnd = trackingMetrics.errorDurationMetric
-            ? ctx.metrics
-                .getHistogram(trackingMetrics.errorDurationMetric.name)
-                .startTimer()
-            : null;
-        },
-        setDurationMetricLabels: (labels) => {
-          if (trackingMetrics.durationMetric) {
-            trackingMetrics.durationMetric.labels = labels;
-          }
-        },
-        setErrorDurationMetricLabels: (labels) => {
-          if (trackingMetrics.errorDurationMetric) {
-            trackingMetrics.errorDurationMetric.labels = labels;
-          }
-        },
-        getParam: (name: string) => (traceInfo as any)[name],
-        setParam: (name: string, value: string | number) =>
-          ((traceInfo as any)[name] = value),
-        log,
-        metrics: this.options.metrics,
-        fatal: (message: string, data?: Object) => {
-          log.error(data, `FATAL ERROR: ${message}`);
-          process.exit();
-        },
-        debug: log.debug,
-        traceInfo,
-        ...traceIds,
-      };
+      const { ctx, end, errorEnd, trackingMetrics } = this.createContext(
+        { name, file, isAPIEndpoint },
+        rootCtx
+      );
 
       if (isAPIEndpoint) {
         const req = args[0] as APIRequest;
@@ -208,14 +225,14 @@ export class Tracer {
 
         ctx.setLocale(locale as AppLocale);
         req.ctx = ctx;
-        res.header("X-Trace-Id", traceIds.traceId);
+        res.header("X-Trace-Id", ctx.traceId);
 
         const { query, body, headers, path, params, method } = req;
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password, ...strippedBody } = body;
 
-        log.info(`${name} request`, {
+        ctx.log.info(`${name} request`, {
           method,
           query,
           body: strippedBody,
@@ -226,7 +243,7 @@ export class Tracer {
       }
 
       try {
-        log.info(`${name} start`);
+        ctx.log.info(`${name} start`);
 
         return func(ctx, ...args)
           .then(async (result: ExtractReturnType<T>) => {
@@ -247,10 +264,10 @@ export class Tracer {
             return result;
           })
           .catch(async (e: unknown) => {
-            log.error(
+            ctx.log.error(
               e as Error,
               (e as Error).message || "Uncaught error",
-              traceInfo
+              ctx.traceInfo
             );
 
             try {
@@ -280,10 +297,10 @@ export class Tracer {
             }
           });
       } catch (e: unknown) {
-        log.error(
+        ctx.log.error(
           e as Error,
           (e as Error).message || "Uncaught error",
-          traceInfo
+          ctx.traceInfo
         );
 
         try {

@@ -5,10 +5,11 @@ const moduleNameMapper = require("tsconfig-paths-jest")(tsconfig);
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
   preset: "ts-jest",
-  testEnvironment: "./dist/src/test/integration-test-environment",
   transform: {
     "^.+\\.tsx?$": "ts-jest",
   },
+  testTimeout: 30000,
+  testSequencer: "./testSequencer.js",
   testRegex: "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
   moduleNameMapper,

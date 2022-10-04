@@ -170,12 +170,12 @@ const errors = [
   },
   {
     code: "InvalidToken",
-    statusCode: 400,
+    statusCode: 401,
     templateProps: [],
   },
   {
     code: "SessionExpired",
-    statusCode: 401,
+    statusCode: 403,
     templateProps: [],
   },
   {

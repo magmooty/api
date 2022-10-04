@@ -255,29 +255,6 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
     }
   );
 
-  clearDBForTest = wrapper(
-    { name: "clearDBForTest", file: __filename },
-    async (ctx: Context) => {
-      const tableNames = await this.listTableNames();
-
-      ctx.log.info("Deleting all tables with test prefix", { tableNames });
-
-      await Promise.all(
-        tableNames
-          .filter((tableName) => tableName.startsWith("test_"))
-          .map(async (TableName) => {
-            const command = new DeleteTableCommand({
-              TableName,
-            });
-
-            await this.sendCommand(ctx, command);
-          })
-      );
-
-      await this.init(ctx);
-    }
-  );
-
   init = wrapper({ name: "init", file: __filename }, async (ctx: Context) => {
     const tableNames = await this.listTableNames();
 

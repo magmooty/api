@@ -1,16 +1,8 @@
-import fs from "fs";
-import path from "path";
+import { readConfig } from "./read-config";
 import { AppConfig } from "./types";
 
-export const isTesting = process.env.NODE_ENV === "test";
+const { isTesting, config } = readConfig();
 
-const json = fs
-  .readFileSync(
-    path.join(
-      __dirname,
-      isTesting ? "../../config.test.json" : "../../config.json"
-    )
-  )
-  .toString();
+export default config as AppConfig;
 
-export default JSON.parse(json) as AppConfig;
+export { isTesting };

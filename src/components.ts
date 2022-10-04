@@ -27,6 +27,7 @@ import { Tracer } from "@/tracing";
 const tracer = new Tracer({ log, metrics });
 const wrapper = tracer.wrapper.bind(tracer);
 const apiWrapper = tracer.apiWrapper.bind(tracer);
+const createContext = tracer.createContext.bind(tracer);
 
 // Errors
 import { ErrorThrower } from "./errors";
@@ -81,6 +82,7 @@ const syncLogic = new SyncLogic();
 export {
   apiWrapper,
   wrapper,
+  createContext,
   metrics,
   config,
   valueSets,
