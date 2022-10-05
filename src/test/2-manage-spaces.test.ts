@@ -112,6 +112,16 @@ describe("Manage spaces", function () {
     expect(tutorRoleResponse.status).toEqual(200);
 
     state.tutorRoleId = tutorRoleResponse.body.id;
+
+    const loginResponse = await handleRequest(
+      request
+        .post(endpoint("/auth/login"))
+        .send(CONSTANTS.normalUserCredentials)
+    );
+
+    expect(loginResponse.status).toEqual(200);
+
+    state.token = loginResponse.body.token;
   });
 
   test("Creating an academic year", async function () {
@@ -121,8 +131,6 @@ describe("Manage spaces", function () {
         .auth(state.token, { type: "bearer" })
         .send({ ...CONSTANTS.tutorCreateAcademicYear, space: state.spaceId })
     );
-
-    console.log({ ...CONSTANTS.tutorCreateAcademicYear, space: state.spaceId });
 
     expect(academicYearResponse.status).toBe(200);
 

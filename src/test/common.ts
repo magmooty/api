@@ -17,7 +17,6 @@ export const handleRequest = async (
     return response;
   } catch (error: any) {
     error.response.body = JSON.parse(error.response.text);
-    console.log(error.response.body);
     return error.response as Response;
   }
 };
