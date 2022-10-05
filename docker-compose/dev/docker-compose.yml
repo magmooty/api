@@ -1,5 +1,13 @@
 version: "3.3"
 services:
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - mongodb_data:/data/db
   dynamodb:
     user: root
     container_name: dynamo
@@ -83,4 +91,6 @@ volumes:
   redis_data:
     driver: local
   dynamodb_data:
+    driver: local
+  mongodb_data:
     driver: local

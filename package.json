@@ -79,6 +79,7 @@
     "lodash": "^4.17.21",
     "milliseconds": "^1.0.3",
     "moment": "^2.29.4",
+    "mongodb": "^4.10.0",
     "nanoid": "^3.3.4",
     "prom-client": "^14.0.1",
     "prometheus-api-metrics": "^3.2.2",
