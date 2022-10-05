@@ -1,9 +1,15 @@
 import bcrypt from "bcryptjs";
 import request from "superagent";
 import * as cache from "./cache";
-import { endpoint, handleRequest } from "./common";
+import {
+  endpoint,
+  fakePassword,
+  fakePhoneNumber,
+  handleRequest,
+} from "./common";
 import * as primarydb from "./primarydb";
 import * as queue from "./queue";
+import { faker } from "@faker-js/faker";
 
 beforeAll(async () => {
   await queue.init();
@@ -16,28 +22,19 @@ afterAll(async () => {
 });
 
 export const CONSTANTS = {
-  normalUserSignUp: {
-    username: "+201096707442",
-    password: "WarWarWar-Rambo4",
+  normalUserCredentials: {
+    username: fakePhoneNumber(),
+    password: fakePassword(),
   },
-  normalUserLogin: {
-    username: "+201096707442",
-    password: "WarWarWar-Rambo4",
-  },
-  devUserSignUp: {
+  devUserCredentials: {
     username: "ziadalzarka@gmail.com",
-    password: "WarWarWar-Rambo4",
+    password: fakePassword(),
   },
-  devUserLogIn: {
-    username: "ziadalzarka@gmail.com",
-    password: "WarWarWar-Rambo4",
-  },
-  normalUserLoginInvalidPassword: {
-    username: "+201096707442",
-    password: "WarWarWar-Rambo43",
+  normalUserCredentialsInvalidPassword: {
+    password: fakePassword(),
   },
   tutorCreateSpace: {
-    name: "Ziad Alzarka 2022",
+    name: faker.name.fullName(),
     object_type: "space",
   },
   tutorCreateTutorRole: {
@@ -45,7 +42,7 @@ export const CONSTANTS = {
     contacts: [
       {
         type: "phone",
-        value: "+201096707442",
+        value: fakePhoneNumber(),
       },
     ],
     object_type: "tutor_role",
@@ -57,7 +54,9 @@ const state: any = {};
 describe("Login and tutor profile", function () {
   test("Phone user can sign up", async function () {
     const response = await handleRequest(
-      request.post(endpoint("/auth/signup")).send(CONSTANTS.normalUserSignUp)
+      request
+        .post(endpoint("/auth/signup"))
+        .send(CONSTANTS.normalUserCredentials)
     );
 
     expect(response.status).toEqual(200);
@@ -84,7 +83,7 @@ describe("Login and tutor profile", function () {
     expect(systemUser).toBeTruthy();
 
     const hashMatches = await bcrypt.compare(
-      CONSTANTS.normalUserSignUp.password,
+      CONSTANTS.normalUserCredentials.password,
       systemUser.hash
     );
 
@@ -97,9 +96,10 @@ describe("Login and tutor profile", function () {
 
   test("Phone user can't log in with invalid password", async function () {
     const response = await handleRequest(
-      request
-        .post(endpoint("/auth/login"))
-        .send(CONSTANTS.normalUserLoginInvalidPassword)
+      request.post(endpoint("/auth/login")).send({
+        ...CONSTANTS.normalUserCredentials,
+        ...CONSTANTS.normalUserCredentialsInvalidPassword,
+      })
     );
 
     expect(response.status).toEqual(401);
@@ -109,7 +109,9 @@ describe("Login and tutor profile", function () {
 
   test("Phone user can log in", async function () {
     const response = await handleRequest(
-      request.post(endpoint("/auth/login")).send(CONSTANTS.normalUserLogin)
+      request
+        .post(endpoint("/auth/login"))
+        .send(CONSTANTS.normalUserCredentials)
     );
 
     expect(response.status).toEqual(200);
@@ -139,7 +141,7 @@ describe("Login and tutor profile", function () {
 
     const { id, phone, object_type, phone_verified } = response.body;
 
-    expect(phone).toEqual(CONSTANTS.normalUserSignUp.username);
+    expect(phone).toEqual(CONSTANTS.normalUserCredentials.username);
     expect(phone_verified).toBeFalsy();
     expect(object_type).toEqual("user");
 
@@ -165,7 +167,7 @@ describe("Login and tutor profile", function () {
 
   test("Email dev user can sign up", async function () {
     const response = await handleRequest(
-      request.post(endpoint("/auth/signup")).send(CONSTANTS.devUserSignUp)
+      request.post(endpoint("/auth/signup")).send(CONSTANTS.devUserCredentials)
     );
 
     expect(response.status).toEqual(200);
@@ -179,7 +181,7 @@ describe("Login and tutor profile", function () {
 
   test("Email dev user can log in", async function () {
     const response = await handleRequest(
-      request.post(endpoint("/auth/login")).send(CONSTANTS.devUserLogIn)
+      request.post(endpoint("/auth/login")).send(CONSTANTS.devUserCredentials)
     );
 
     expect(response.status).toEqual(200);
@@ -212,7 +214,7 @@ describe("Login and tutor profile", function () {
 
     const { phone, phone_verified } = response.body;
 
-    expect(phone).toEqual(CONSTANTS.normalUserSignUp.username);
+    expect(phone).toEqual(CONSTANTS.normalUserCredentials.username);
     expect(phone_verified).toBeTruthy();
   });
 
@@ -225,7 +227,7 @@ describe("Login and tutor profile", function () {
 
     const { phone, phone_verified } = response.body;
 
-    expect(phone).toEqual(CONSTANTS.normalUserSignUp.username);
+    expect(phone).toEqual(CONSTANTS.normalUserCredentials.username);
     expect(phone_verified).toBeTruthy();
   });
 

@@ -1,17 +1,26 @@
 version: "3.3"
 services:
+  dynamodb:
+    user: root
+    container_name: dynamo
+    ports:
+      - "8000:8000"
+    image: amazon/dynamodb-local
+    command: -jar DynamoDBLocal.jar -sharedDb -dbPath /data
+    volumes:
+      - dynamodb_data:/data
   app:
     container_name: app
     build: ../..
     restart: always
     ports:
       - "80:7200"
-    logging:
-      driver: awslogs
-      options:
-        awslogs-region: eu-central-1
-        awslogs-group: magmooty-dev
-        awslogs-stream: dev-app
+    # logging:
+    #   driver: awslogs
+    #   options:
+    #     awslogs-region: eu-central-1
+    #     awslogs-group: magmooty-dev
+    #     awslogs-stream: dev-app
     volumes:
       - /root/.aws:/root/.aws:ro
   redis:

@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/magmooty/api#readme",
   "devDependencies": {
+    "@faker-js/faker": "^7.5.0",
     "@tsconfig/node16": "^1.0.3",
     "@types/bcryptjs": "^2.4.2",
     "@types/cors": "^2.8.12",
