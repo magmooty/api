@@ -1,14 +1,11 @@
-import { persistence, queue, wrapper } from "@/components";
+import { queue, wrapper } from "@/components";
 import { GraphObject, ObjectType } from "@/graph/objects/types";
-import { SeedObjectsResult } from "@/persistence";
 import { seedQueryObjects } from "@/persistence/commons/query-objects";
 import { QueueEvent } from "@/queue";
 import { Context } from "@/tracing";
 import { Client } from "@elastic/elasticsearch";
 import {
-  IndicesIndexSettings,
-  MappingProperty,
-  MappingRuntimeField,
+  IndicesIndexSettings, MappingRuntimeField
 } from "@elastic/elasticsearch/lib/api/types";
 import { SyncDriver } from ".";
 import { mappings } from "./mapping";

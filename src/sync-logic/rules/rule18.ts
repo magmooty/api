@@ -38,6 +38,7 @@ export const rule18 = wrapper(
       ctx,
       {
         object_type: "billable_item_stats",
+        billable_item: event.current.id,
         student_counter: studentsCountInAcademicYear,
       },
       { author: event.author }

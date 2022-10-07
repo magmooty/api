@@ -5,6 +5,8 @@ import {
 } from "@/graph";
 import {
   AcademicYear,
+  BillableItem,
+  Exam,
   GraphObject,
   Space,
   StudyGroup,
@@ -43,10 +45,24 @@ export const SpaceAdminVirtualExecutor: ObjectViewVirtualExecutor = wrapper(
     object: GraphObject,
     { roles, cache }: ObjectViewVirtualExecutorOptions
   ): Promise<boolean> => {
-    const { academic_year, study_group, space: rootSpace } = object;
+    const {
+      academic_year,
+      study_group,
+      exam,
+      billable_item,
+      space: rootSpace,
+    } = object;
 
-    if (!rootSpace && !academic_year && !study_group) {
-      ctx.log.info("No root space object nor study group or academic year");
+    if (
+      !rootSpace &&
+      !academic_year &&
+      !study_group &&
+      !exam &&
+      !billable_item
+    ) {
+      ctx.log.info(
+        "No root space object nor study group, academic year, exam or billalble item"
+      );
       return false;
     }
 
@@ -72,15 +88,63 @@ export const SpaceAdminVirtualExecutor: ObjectViewVirtualExecutor = wrapper(
     }
 
     if (study_group) {
-      const { space } = await cache.lockAndGet<StudyGroup>(
+      const { academic_year } = await cache.lockAndGet<StudyGroup>(
         ctx,
         study_group,
         async () =>
           persistence.getObject<StudyGroup>(ctx, study_group as string)
       );
 
+      const { space } = await cache.lockAndGet<AcademicYear>(
+        ctx,
+        academic_year,
+        async () =>
+          persistence.getObject<AcademicYear>(ctx, academic_year as string)
+      );
+
       if (!roleSpaces.includes(space as string)) {
         ctx.log.info("Study group's space is not in roles");
+        return false;
+      }
+    }
+
+    if (exam) {
+      const { academic_year } = await cache.lockAndGet<Exam>(
+        ctx,
+        exam,
+        async () => persistence.getObject<Exam>(ctx, exam as string)
+      );
+
+      const { space } = await cache.lockAndGet<AcademicYear>(
+        ctx,
+        academic_year,
+        async () =>
+          persistence.getObject<AcademicYear>(ctx, academic_year as string)
+      );
+
+      if (!roleSpaces.includes(space as string)) {
+        ctx.log.info("Exam's space is not in roles");
+        return false;
+      }
+    }
+
+    if (billable_item) {
+      const { academic_year } = await cache.lockAndGet<BillableItem>(
+        ctx,
+        billable_item,
+        async () =>
+          persistence.getObject<BillableItem>(ctx, billable_item as string)
+      );
+
+      const { space } = await cache.lockAndGet<AcademicYear>(
+        ctx,
+        academic_year,
+        async () =>
+          persistence.getObject<AcademicYear>(ctx, academic_year as string)
+      );
+
+      if (!roleSpaces.includes(space as string)) {
+        ctx.log.info("Billable item's space is not in roles");
         return false;
       }
     }

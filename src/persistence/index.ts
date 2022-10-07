@@ -25,6 +25,7 @@ import { DynamoDBConfig, DynamoPersistenceDriver } from "./dynamodb";
 import cacheHijackRules from "./extra/cache-hijack";
 import postLogicRules, { PostLogicPayload } from "./extra/post-logic";
 import preLogicRules from "./extra/pre-logic";
+import { MongoDBConfig, MongoPersistenceDriver } from "./mongodb";
 
 /**
  * Prefix a cache key with the lock prefix
@@ -57,11 +58,9 @@ export interface MethodOptions {
   noLocks?: boolean;
 }
 
-export type SeedObjectsAfterKey = `${string}#${ObjectId}`;
-
 export interface SeedObjectsResult<T> {
   results: T[];
-  nextKey?: SeedObjectsAfterKey | null;
+  nextKey?: any;
 }
 
 export interface PersistenceDriver {
@@ -106,7 +105,7 @@ export interface PersistenceDriver {
     ctx: Context | null,
     objectType: ObjectType,
     projection?: string[] | null,
-    after?: SeedObjectsAfterKey | string | null
+    after?: any | null
   ): Promise<SeedObjectsResult<T>>;
 
   // /* Counters */
@@ -186,8 +185,8 @@ export interface PersistenceDriver {
 }
 
 export interface PersistenceConfig {
-  driver: "dynamodb";
-  config: DynamoDBConfig;
+  driver: "dynamodb" | "mongodb";
+  config: DynamoDBConfig | MongoDBConfig;
   constants: {
     lockTimeout: number;
     lockObtainerTimeout: number;
@@ -219,7 +218,14 @@ export class Persistence {
   constructor(private persistenceConfig: PersistenceConfig) {
     switch (persistenceConfig.driver) {
       case "dynamodb":
-        this.primaryDB = new DynamoPersistenceDriver(persistenceConfig.config);
+        this.primaryDB = new DynamoPersistenceDriver(
+          persistenceConfig.config as DynamoDBConfig
+        );
+        break;
+      case "mongodb":
+        this.primaryDB = new MongoPersistenceDriver(
+          persistenceConfig.config as MongoDBConfig
+        );
         break;
       default:
         throw new Error(

@@ -1,14 +1,25 @@
 version: "3.3"
 services:
-  dynamodb-local:
-    user: root
-    container_name: local_test_dynamo
+  mongo:
+    container_name: local_test_mongo
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: magmooty
+      MONGO_INITDB_ROOT_PASSWORD: magmooty
     ports:
-      - "8000:8000"
-    image: amazon/dynamodb-local
-    command: -jar DynamoDBLocal.jar -sharedDb -dbPath /data
+      - 27017:27017
     volumes:
-      - local_dynamodb_data:/data
+      - local_mongodb_data:/data/db
+  # dynamodb-local:
+  #   user: root
+  #   container_name: local_test_dynamo
+  #   ports:
+  #     - "8000:8000"
+  #   image: amazon/dynamodb-local
+  #   command: -jar DynamoDBLocal.jar -sharedDb -dbPath /data
+  #   volumes:
+  #     - local_dynamodb_data:/data
   redis:
     container_name: local_test_redis
     image: redis
@@ -66,5 +77,7 @@ volumes:
     driver: local
   local_redis_data:
     driver: local
-  local_dynamodb_data:
+  # local_dynamodb_data:
+  #   driver: local
+  local_mongodb_data:
     driver: local

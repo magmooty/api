@@ -1,5 +1,9 @@
-import { wrapper } from "@/components";
-import { BillableItem, BillableItemIndexMapping } from "@/graph/objects/types";
+import { persistence, wrapper } from "@/components";
+import {
+  AcademicYear,
+  BillableItem,
+  BillableItemIndexMapping,
+} from "@/graph/objects/types";
 import { QueueEvent } from "@/queue";
 import { IndexName } from "@/sync/mapping";
 import { SyncOperation, SyncOperationMethod } from "@/sync/types";
@@ -17,6 +21,11 @@ const universalGenerator = wrapper(
     object: BillableItem
   ): Promise<SyncOperation[]> => {
     const { name, academic_year, type, price, time_table, updated_at } = object;
+
+    const { space } = await persistence.getObject<AcademicYear>(
+      ctx,
+      academic_year
+    );
 
     let min_date = null;
     let max_date = null;
@@ -43,6 +52,7 @@ const universalGenerator = wrapper(
           type,
           price,
           has_no_date,
+          space,
           min_date,
           max_date,
           updated_at,

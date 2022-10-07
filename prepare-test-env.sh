@@ -6,6 +6,8 @@ if [ -n "$output" ]; then
   pm2 del test-app
 fi
 
+rm -rf ~/.pm2/logs/test-app*.log
+
 cd src/test
 
 docker-compose down --rmi local

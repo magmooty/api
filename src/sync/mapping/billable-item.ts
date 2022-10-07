@@ -8,6 +8,9 @@ export default {
     academic_year: {
       type: "keyword",
     },
+    space: {
+      type: "keyword"
+    },
     type: {
       type: "keyword",
     },

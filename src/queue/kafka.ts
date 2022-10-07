@@ -2,14 +2,17 @@ import { config, wrapper } from "@/components";
 import { GraphObject, IEdge } from "@/graph/objects/types";
 import { Context } from "@/tracing";
 import {
-  Consumer, Kafka,
-  logLevel, PartitionAssigners, Producer
+  Consumer,
+  Kafka,
+  logLevel,
+  PartitionAssigners,
+  Producer,
 } from "kafkajs";
 import {
   BaseQueueEvent,
   QueueDriver,
   QueueEvent,
-  QueueEventProcessor
+  QueueEventProcessor,
 } from ".";
 import { LocalDevelopmentAssigner } from "./LocalDevelopmentAssigner";
 
@@ -78,6 +81,7 @@ export class QueueKafkaDriver implements QueueDriver {
 
       if (this.kafkaConfig.canProduce) {
         ctx.log.info("Connecting producer");
+        ctx.debug("config", config);
         this.producer = this.kafka.producer();
         await this.producer.connect();
         ctx.log.info("Producer connected");

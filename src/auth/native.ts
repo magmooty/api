@@ -77,7 +77,11 @@ export class NativeAuthDriver implements AuthDriver {
 
       const roles = rolesObjects.map(serializeRole);
 
-      if (this.nativeAuthDriverConfig.devRoleUsernames.includes(user.email)) {
+      if (
+        this.nativeAuthDriverConfig.devRoleUsernames.find((devRoleUsername) =>
+          new RegExp(devRoleUsername).test(user.email)
+        )
+      ) {
         roles.push("dev-role");
       }
 

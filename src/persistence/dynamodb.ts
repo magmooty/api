@@ -9,7 +9,6 @@ import {
 import {
   CreateObjectPayload,
   PersistenceDriver,
-  SeedObjectsAfterKey,
   SeedObjectsResult,
 } from "@/persistence";
 import { Context } from "@/tracing";
@@ -20,7 +19,6 @@ import {
   CreateTableCommandOutput,
   DeleteItemCommand,
   DeleteItemCommandOutput,
-  DeleteTableCommand,
   DynamoDBClient,
   GetItemCommand,
   GetItemCommandOutput,
@@ -56,11 +54,6 @@ export interface DynamoDBConfig {
 export interface CommandOutput<T = unknown> {
   retries: number;
   result: T;
-}
-
-interface CounterDocument {
-  id: string;
-  value: number;
 }
 
 const DYNAMO_TABLES = [
@@ -723,7 +716,7 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
       ctx: Context,
       objectType: ObjectType,
       projection?: string[] | null,
-      after?: SeedObjectsAfterKey | string | null
+      after?: string | null
     ): Promise<SeedObjectsResult<T>> => {
       ctx.startTrackTime(
         "dynamo_query_objects_duration",
@@ -787,7 +780,7 @@ export class DynamoPersistenceDriver implements PersistenceDriver {
 
       ctx.setDurationMetricLabels({ objectType, retries });
 
-      let nextKey: SeedObjectsAfterKey | null = null;
+      let nextKey: string | null = null;
 
       if (result.LastEvaluatedKey) {
         const { id, object_type } = unmarshall(result.LastEvaluatedKey);

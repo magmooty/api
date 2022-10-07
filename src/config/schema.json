@@ -65,6 +65,12 @@
         },
         "parallelLogic": {
           "$ref": "#/definitions/ParallelLogicConfig"
+        },
+        "processEnv": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         }
       },
       "required": [
@@ -158,10 +164,20 @@
       "properties": {
         "driver": {
           "type": "string",
-          "const": "dynamodb"
+          "enum": [
+            "dynamodb",
+            "mongodb"
+          ]
         },
         "config": {
-          "$ref": "#/definitions/DynamoDBConfig"
+          "anyOf": [
+            {
+              "$ref": "#/definitions/DynamoDBConfig"
+            },
+            {
+              "$ref": "#/definitions/MongoDBConfig"
+            }
+          ]
         },
         "constants": {
           "type": "object",
@@ -234,6 +250,30 @@
         "allowedRetryErrorCodes",
         "retryAfter",
         "waitTimeAfterTableCreation"
+      ],
+      "additionalProperties": false
+    },
+    "MongoDBConfig": {
+      "type": "object",
+      "properties": {
+        "endpoint": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "database": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "endpoint",
+        "username",
+        "password",
+        "database"
       ],
       "additionalProperties": false
     },

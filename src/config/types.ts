@@ -26,4 +26,5 @@ export interface AppConfig {
     twilio: TwilioConfig;
   };
   parallelLogic: ParallelLogicConfig;
+  processEnv?: { [key: string]: string };
 }

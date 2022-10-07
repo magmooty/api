@@ -10,7 +10,7 @@ import { Context } from "@/tracing";
 export const rule23 = wrapper(
   { name: "rule23", file: __filename },
   async (ctx: Context, event: QueueEvent<BillableItemLog>) => {
-    if (!event.current || !event.previous) {
+    if (!event.current) {
       return;
     }
 

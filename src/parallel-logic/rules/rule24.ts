@@ -6,7 +6,7 @@ import { Context } from "@/tracing";
 export const rule24 = wrapper(
   { name: "rule24", file: __filename },
   async (ctx: Context, event: QueueEvent<ExamLog>) => {
-    if (!event.current || !event.previous) {
+    if (!event.current) {
       return;
     }
 

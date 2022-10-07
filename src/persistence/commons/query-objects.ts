@@ -1,7 +1,7 @@
 import { persistence } from "@/components";
 import { GraphObject, ObjectType } from "@/graph/objects/types";
+import { SeedObjectsResult } from "@/persistence";
 import { Context } from "@/tracing";
-import { SeedObjectsResult } from "..";
 
 export const seedQueryObjects = async (
   ctx: Context,

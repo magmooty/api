@@ -27,7 +27,7 @@ export const CONSTANTS = {
     password: fakePassword(),
   },
   devUserCredentials: {
-    username: "ziadalzarka@gmail.com",
+    username: `dev${faker.random.alpha(10)}@gmail.com`,
     password: fakePassword(),
   },
   normalUserCredentialsInvalidPassword: {
