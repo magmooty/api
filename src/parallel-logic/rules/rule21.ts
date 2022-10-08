@@ -48,6 +48,8 @@ const tryDeleteEdge = wrapper(
 export const rule21 = wrapper(
   { name: "rule21", file: __filename },
   async (ctx: Context, event: QueueEvent<GraphObject>) => {
+    ctx.register({ event });
+
     return new Promise(async (resolve) => {
       if (!event.current) {
         return resolve(true);

@@ -1,5 +1,6 @@
 import { persistence, search, wrapper } from "@/components";
 import { BillableItem, BillableItemLog } from "@/graph/objects/types";
+import { billableItemMaxDate } from "@/graph/util/billable-item";
 import { QueueEvent } from "@/queue";
 import { Context } from "@/tracing";
 
@@ -7,6 +8,12 @@ export const rule19 = wrapper(
   { name: "rule19", file: __filename },
   async (ctx: Context, event: QueueEvent<BillableItem>) => {
     if (!event.current) {
+      return;
+    }
+
+    const maxDate = billableItemMaxDate(event.current.time_table);
+
+    if (maxDate && new Date(maxDate) < new Date()) {
       return;
     }
 

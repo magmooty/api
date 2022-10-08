@@ -99,7 +99,8 @@ describe("Login and tutor profile", function () {
       request.post(endpoint("/auth/login")).send({
         ...CONSTANTS.normalUserCredentials,
         ...CONSTANTS.normalUserCredentialsInvalidPassword,
-      })
+      }),
+      { expectingError: true }
     );
 
     expect(response.status).toEqual(401);
@@ -146,6 +147,24 @@ describe("Login and tutor profile", function () {
     expect(object_type).toEqual("user");
 
     state.normalUserId = id;
+  });
+
+  test("Phone user has a user status", async function () {
+    const response = await handleRequest(
+      request
+        .get(endpoint(`/graph/${state.normalUserId}`))
+        .query({ expand: "statuses" })
+        .auth(state.token, { type: "bearer" })
+    );
+
+    expect(response.status).toEqual(200);
+
+    const { status, statuses } = response.body;
+
+    expect(status).toEqual("created");
+    expect(statuses).toHaveLength(1);
+    expect(statuses[0].status).toEqual("created");
+    expect(statuses[0].user).toEqual(state.normalUserId);
   });
 
   test("Phone user can find a notification about verification", async function () {

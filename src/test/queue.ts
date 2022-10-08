@@ -61,7 +61,7 @@ export const waitForEvents = async () => {
       offsetsEqualHits++;
     }
 
-    if (parallelLogicDone && syncDone && offsetsEqualHits >= 4) {
+    if (parallelLogicDone && syncDone && offsetsEqualHits >= 2) {
       return true;
     }
 

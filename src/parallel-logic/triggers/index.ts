@@ -14,6 +14,7 @@ export default {
   "POST tutor_role": tutorRole.onPost,
 
   "POST student_role": studentRole.onPost,
+  "PATCH student_role": studentRole.onPatch,
   "DELETE student_role": studentRole.onDelete,
 
   "POST exam": exam.onPost,

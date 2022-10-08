@@ -81,7 +81,6 @@ export class QueueKafkaDriver implements QueueDriver {
 
       if (this.kafkaConfig.canProduce) {
         ctx.log.info("Connecting producer");
-        ctx.debug("config", config);
         this.producer = this.kafka.producer();
         await this.producer.connect();
         ctx.log.info("Producer connected");

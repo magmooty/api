@@ -15,31 +15,12 @@ export const rule18 = wrapper(
       return;
     }
 
-    const academicYear = await persistence.getObject<AcademicYear>(
-      ctx,
-      event.current.academic_year
-    );
-
-    let studentsCountInAcademicYear = 0;
-
-    try {
-      if (academicYear.stats) {
-        const academicYearStats =
-          await persistence.getObject<AcademicYearStats>(
-            ctx,
-            academicYear.stats
-          );
-
-        studentsCountInAcademicYear = academicYearStats.student_counter;
-      }
-    } catch {}
-
     const statsObject = await persistence.createObject<BillableItemStats>(
       ctx,
       {
         object_type: "billable_item_stats",
         billable_item: event.current.id,
-        student_counter: studentsCountInAcademicYear,
+        student_counter: 0,
       },
       { author: event.author }
     );

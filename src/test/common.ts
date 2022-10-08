@@ -9,13 +9,17 @@ export const endpoint = (path: string) => {
 };
 
 export const handleRequest = async (
-  request: Promise<Response>
+  request: Promise<Response>,
+  { expectingError } = { expectingError: false }
 ): Promise<Response> => {
   try {
     const response = await request;
     await waitForEvents();
     return response;
   } catch (error: any) {
+    if (!expectingError) {
+      console.log(JSON.stringify(error, null, 2));
+    }
     error.response.body = JSON.parse(error.response.text);
     return error.response as Response;
   }

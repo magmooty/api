@@ -10,6 +10,10 @@ import { SyncOperation, SyncOperationMethod } from "@/sync/types";
 import { Context } from "@/tracing";
 import { universalDeleteGenerator } from "../commons/universal-delete-generator";
 import _ from "lodash";
+import {
+  billableItemMaxDate,
+  billableItemMinDate,
+} from "@/graph/util/billable-item";
 
 const INDEX_NAME: IndexName = "billable_item";
 
@@ -27,17 +31,8 @@ const universalGenerator = wrapper(
       academic_year
     );
 
-    let min_date = null;
-    let max_date = null;
-
-    if (time_table && time_table.length > 0) {
-      min_date =
-        _.minBy(time_table, (timeTableEntry) => timeTableEntry.date_from)
-          ?.date_from || null;
-      max_date =
-        _.maxBy(time_table, (timeTableEntry) => timeTableEntry.date_to)
-          ?.date_to || null;
-    }
+    const min_date = billableItemMinDate(time_table);
+    const max_date = billableItemMaxDate(time_table);
 
     const has_no_date = !min_date && !max_date;
 

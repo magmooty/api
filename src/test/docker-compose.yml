@@ -38,6 +38,11 @@ services:
       - "local_zookeeper_data:/bitnami"
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
+    healthcheck:
+      test: ["CMD", "nc", "-vz", "zookeeper", "2181"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
   kafka:
     container_name: local_test_kafka
     image: docker.io/bitnami/kafka:3.2
@@ -51,7 +56,8 @@ services:
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
       - ALLOW_PLAINTEXT_LISTENER=yes
     depends_on:
-      - zookeeper
+      zookeeper:
+        condition: service_healthy
   es:
     container_name: local_test_elasticsearch
     image: docker.elastic.co/elasticsearch/elasticsearch:8.3.3

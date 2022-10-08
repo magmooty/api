@@ -55,8 +55,22 @@ export const deleteObjectEndpoint: APIEndpoint = apiWrapper(
       object: previous,
     });
 
-    await persistence.deleteObject(ctx, id, { author: req.user.id, previous });
+    const deletedObject = await persistence.deleteObject<GraphObject>(ctx, id, {
+      author: req.user.id,
+      previous,
+    });
 
-    res.status(200).send();
+    const strippedObject = await verifyObjectACL(ctx, {
+      author: req.user,
+      method: "GET",
+      aclMode: "hard",
+      objectType,
+      singleFieldStrategy: "strip",
+      object: deletedObject,
+      roles: req.session.roles,
+      aclCache,
+    });
+
+    res.status(200).send(strippedObject);
   }
 );

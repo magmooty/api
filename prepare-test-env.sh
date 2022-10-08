@@ -20,6 +20,8 @@ cd ../../
 npm run build
 cp config.test.json ./dist/config.test.json
 
+sleep 10
+
 NODE_ENV=test pm2 start npm --name test-app -- start
 
 # Wait for the server to be online

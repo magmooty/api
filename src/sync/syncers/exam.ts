@@ -1,5 +1,6 @@
 import { persistence, wrapper } from "@/components";
 import { AcademicYear, Exam, ExamIndexMapping } from "@/graph/objects/types";
+import { examMaxDate, examMinDate } from "@/graph/util/exam";
 import { QueueEvent } from "@/queue";
 import { IndexName } from "@/sync/mapping";
 import { SyncOperation, SyncOperationMethod } from "@/sync/types";
@@ -23,17 +24,8 @@ const universalGenerator = wrapper(
       academic_year
     );
 
-    let min_date = null;
-    let max_date = null;
-
-    if (time_table && time_table.length > 0) {
-      min_date =
-        _.minBy(time_table, (timeTableEntry) => timeTableEntry.date)?.date ||
-        null;
-      max_date =
-        _.maxBy(time_table, (timeTableEntry) => timeTableEntry.date)?.date ||
-        null;
-    }
+    const min_date = examMinDate(time_table);
+    const max_date = examMaxDate(time_table);
 
     const has_no_date = !min_date && !max_date;
 

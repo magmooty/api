@@ -348,7 +348,7 @@ export class MongoPersistenceDriver implements PersistenceDriver {
 
       ctx.setDurationMetricLabels({ objectType });
 
-      return result.value as any;
+      return await this.unserializeDocument(result.value);
     },
     (ctx, error) => {
       ctx.metrics
@@ -888,12 +888,6 @@ export class MongoPersistenceDriver implements PersistenceDriver {
       ctx.setParam("objectType", objectType);
 
       ctx.setErrorDurationMetricLabels({ fieldName, objectType });
-
-      const previousValue = await this.getCounter(ctx, id, fieldName);
-
-      if (!previousValue) {
-        value = `${value[0] === "=" ? "" : "="}${value}`;
-      }
 
       let payload;
 

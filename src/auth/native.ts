@@ -169,8 +169,6 @@ export class NativeAuthDriver implements AuthDriver {
 
       const hashMatches = await bcrypt.compare(password, systemUser.hash);
 
-      ctx.debug("login", { hashMatches, username, password, systemUser });
-
       if (!hashMatches) {
         errors.createError(ctx, "WrongPassword", { username });
         return;
