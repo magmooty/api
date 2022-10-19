@@ -1,0 +1,152 @@
+[
+  {
+    "code": "space:admin",
+    "display": "المالك",
+    "extra": {
+      "permission_group": {
+        "group": "admin",
+        "display": "المالك"
+      }
+    }
+  },
+  {
+    "code": "academic_year:read",
+    "display": "قرائة",
+    "extra": {
+      "permission_group": {
+        "group": "academic_year",
+        "display": "السنين الدراسية"
+      }
+    }
+  },
+  {
+    "code": "academic_year:write",
+    "display": "تعديل",
+    "extra": {
+      "permission_group": {
+        "group": "academic_year",
+        "display": "السنين الدراسية"
+      }
+    }
+  },
+  {
+    "code": "academic_year:stats",
+    "display": "إحصائيات",
+    "extra": {
+      "permission_group": {
+        "group": "academic_year",
+        "display": "السنين الدراسية"
+      }
+    }
+  },
+  {
+    "code": "study_group:read",
+    "display": "قرائة",
+    "extra": {
+      "permission_group": {
+        "group": "study_group",
+        "display": "المجموعات"
+      }
+    }
+  },
+  {
+    "code": "study_group:write",
+    "display": "تعديل",
+    "extra": {
+      "permission_group": {
+        "group": "study_group",
+        "display": "المجموعات"
+      }
+    }
+  },
+  {
+    "code": "study_group:stats",
+    "display": "إحصائيات",
+    "extra": {
+      "permission_group": {
+        "group": "study_group",
+        "display": "المجموعات"
+      }
+    }
+  },
+  {
+    "code": "exam:read",
+    "display": "قرائة",
+    "extra": {
+      "permission_group": {
+        "group": "exam",
+        "display": "الامتحانات"
+      }
+    }
+  },
+  {
+    "code": "exam:write",
+    "display": "تعديل",
+    "extra": {
+      "permission_group": {
+        "group": "exam",
+        "display": "الامتحانات"
+      }
+    }
+  },
+  {
+    "code": "exam:stats",
+    "display": "إحصائيات",
+    "extra": {
+      "permission_group": {
+        "group": "exam",
+        "display": "الامتحانات"
+      }
+    }
+  },
+  {
+    "code": "exam:log",
+    "display": "رصد",
+    "extra": {
+      "permission_group": {
+        "group": "exam",
+        "display": "الامتحانات"
+      }
+    }
+  },
+  {
+    "code": "billable_item:read",
+    "display": "قرائة",
+    "extra": {
+      "permission_group": {
+        "group": "billable_item",
+        "display": "المدفوعات"
+      }
+    }
+  },
+  {
+    "code": "billable_item:write",
+    "display": "تعديل",
+    "extra": {
+      "permission_group": {
+        "group": "billable_item",
+        "display": "المدفوعات"
+      }
+    }
+  },
+  {
+    "code": "billable_item:stats",
+    "display": "إحصائيات",
+    "extra": {
+      "permission_group": {
+        "group": "billable_item",
+        "display": "المدفوعات"
+      }
+    }
+  },
+  {
+    "code": "billable_item:log",
+    "display": "رصد",
+    "extra": {
+      "permission_group": {
+        "group": "billable_item",
+        "display": "المدفوعات"
+      }
+    }
+  }
+]

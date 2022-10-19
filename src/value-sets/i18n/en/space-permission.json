@@ -1,121 +1,151 @@
 [
   {
     "code": "space:admin",
+    "display": "Admin",
     "extra": {
       "permission_group": {
-        "group": "admin"
+        "group": "admin",
+        "display": "Admin"
       }
     }
   },
   {
     "code": "academic_year:read",
+    "display": "Read",
     "extra": {
       "permission_group": {
-        "group": "academic_year"
+        "group": "academic_year",
+        "display": "Academic years"
       }
     }
   },
   {
     "code": "academic_year:write",
+    "display": "Write",
     "extra": {
       "permission_group": {
-        "group": "academic_year"
+        "group": "academic_year",
+        "display": "Academic years"
       }
     }
   },
   {
     "code": "academic_year:stats",
+    "display": "Stats",
     "extra": {
       "permission_group": {
-        "group": "academic_year"
+        "group": "academic_year",
+        "display": "Academic years"
       }
     }
   },
   {
     "code": "study_group:read",
+    "display": "Read",
     "extra": {
       "permission_group": {
-        "group": "study_group"
+        "group": "study_group",
+        "display": "Study groups"
       }
     }
   },
   {
     "code": "study_group:write",
+    "display": "Write",
     "extra": {
       "permission_group": {
-        "group": "study_group"
+        "group": "study_group",
+        "display": "Study groups"
       }
     }
   },
   {
     "code": "study_group:stats",
+    "display": "Stats",
     "extra": {
       "permission_group": {
-        "group": "study_group"
+        "group": "study_group",
+        "display": "Study groups"
       }
     }
   },
   {
     "code": "exam:read",
+    "display": "Read",
     "extra": {
       "permission_group": {
-        "group": "exam"
+        "group": "exam",
+        "display": "Exams"
       }
     }
   },
   {
     "code": "exam:write",
+    "display": "Write",
     "extra": {
       "permission_group": {
-        "group": "exam"
+        "group": "exam",
+        "display": "Exams"
       }
     }
   },
   {
     "code": "exam:stats",
+    "display": "Stats",
     "extra": {
       "permission_group": {
-        "group": "exam"
+        "group": "exam",
+        "display": "Exams"
       }
     }
   },
   {
     "code": "exam:log",
+    "display": "Log",
     "extra": {
       "permission_group": {
-        "group": "exam"
+        "group": "exam",
+        "display": "Exams"
       }
     }
   },
   {
     "code": "billable_item:read",
+    "display": "Read",
     "extra": {
       "permission_group": {
-        "group": "billable_item"
+        "group": "billable_item",
+        "display": "Billable items"
       }
     }
   },
   {
     "code": "billable_item:write",
+    "display": "Write",
     "extra": {
       "permission_group": {
-        "group": "billable_item"
+        "group": "billable_item",
+        "display": "Billable items"
       }
     }
   },
   {
     "code": "billable_item:stats",
+    "display": "Stats",
     "extra": {
       "permission_group": {
-        "group": "billable_item"
+        "group": "billable_item",
+        "display": "Billable items"
       }
     }
   },
   {
     "code": "billable_item:log",
+    "display": "Log",
     "extra": {
       "permission_group": {
-        "group": "billable_item"
+        "group": "billable_item",
+        "display": "Billable items"
       }
     }
   }
