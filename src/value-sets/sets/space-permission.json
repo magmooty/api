@@ -1,0 +1,47 @@
+[
+  {
+    "code": "space:admin"
+  },
+  {
+    "code": "academic_year:read"
+  },
+  {
+    "code": "academic_year:write"
+  },
+  {
+    "code": "academic_year:stats"
+  },
+  {
+    "code": "study_group:read"
+  },
+  {
+    "code": "study_group:write"
+  },
+  {
+    "code": "study_group:stats"
+  },
+  {
+    "code": "exam:read"
+  },
+  {
+    "code": "exam:write"
+  },
+  {
+    "code": "exam:stats"
+  },
+  {
+    "code": "exam:log"
+  },
+  {
+    "code": "billable_item:read"
+  },
+  {
+    "code": "billable_item:write"
+  },
+  {
+    "code": "billable_item:stats"
+  },
+  {
+    "code": "billable_item:log"
+  }
+]
