@@ -26,7 +26,8 @@ export type ObjectType =
   | "billable_item_trail"
   | "billable_item_stats"
   | "billable_item_log"
-  | "billable_item_log_trail";
+  | "billable_item_log_trail"
+  | "assistant_space_invite";
 
 export type ObjectFieldValue =
   | string
@@ -102,6 +103,7 @@ export interface AcademicYearIndexMapping {
 export interface BillableItemIndexMapping {
   name: string;
   academic_year: string;
+  space: string;
   type: string;
   has_no_date: boolean;
   price: number;
@@ -174,6 +176,7 @@ export type ValueSet =
   | "NotificationCriticalityLevel"
   | "NotificationType"
   | "PaymentMethodType"
+  | "SpacePermission"
   | "UserGender"
   | "UserStatus";
 
@@ -221,6 +224,23 @@ export type NotificationTypeVS =
   | "tutor_get_started";
 
 export type PaymentMethodTypeVS = "vodafone_cash";
+
+export type SpacePermissionVS =
+  | "space:admin"
+  | "academic_year:read"
+  | "academic_year:write"
+  | "academic_year:stats"
+  | "study_group:read"
+  | "study_group:write"
+  | "study_group:stats"
+  | "exam:read"
+  | "exam:write"
+  | "exam:stats"
+  | "exam:log"
+  | "billable_item:read"
+  | "billable_item:write"
+  | "billable_item:stats"
+  | "billable_item:log";
 
 export type UserGenderVS = "male" | "female" | "unknown";
 
@@ -555,4 +575,14 @@ export interface BillableItemLogTrail extends GraphObject {
   delta: { [key: string]: ObjectFieldValue };
   billable_item_log: string;
   role: string;
+}
+
+export interface AssistantSpaceInvite extends GraphObject {
+  object_type: "assistant_space_invite";
+  created_at: string;
+  updated_at: string;
+  deleted_at: string;
+  invited_id: string;
+  space: string;
+  permissions: SpacePermissionVS[];
 }

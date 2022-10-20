@@ -1,5 +1,5 @@
 import { persistence, wrapper } from "@/components";
-import { NotificationIcons } from "@/graph/extra/notification-icons";
+import { NotificationIcons } from "@/graph/extra/notification/notification-icons";
 import { TutorRole } from "@/graph/objects/types";
 import { QueueEvent } from "@/queue";
 import { Context } from "@/tracing";

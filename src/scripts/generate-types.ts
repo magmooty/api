@@ -194,6 +194,12 @@ const object = {
     "array:struct": (fieldName: string, fieldConfig: ObjectField) => {
       return `${fieldName}: ${capitalize(fieldConfig.struct as string, "-")}[]`;
     },
+    "array:value-set": (fieldName: string, fieldConfig: ObjectField) => {
+      return `${fieldName}: ${capitalize(
+        fieldConfig.valueSet as string,
+        "-"
+      )}VS[];`;
+    },
   } as {
     [key: string]: (fieldName: string, fieldConfig: ObjectField) => string;
   },
