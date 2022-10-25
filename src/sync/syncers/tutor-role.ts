@@ -15,7 +15,7 @@ const universalGenerator = wrapper(
     method: SyncOperationMethod,
     object: TutorRole
   ): Promise<SyncOperation[]> => {
-    const { space, updated_at } = object;
+    const { space, user, updated_at } = object;
 
     return [
       {
@@ -24,6 +24,7 @@ const universalGenerator = wrapper(
         id: object.id,
         data: {
           space,
+          user,
           updated_at,
         },
       },

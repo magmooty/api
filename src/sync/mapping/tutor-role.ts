@@ -5,6 +5,9 @@ export default {
     space: {
       type: "keyword",
     },
+    user: {
+      type: "keyword",
+    },
     updated_at: {
       type: "date",
     },

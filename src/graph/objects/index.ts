@@ -2,6 +2,7 @@ import { ObjectConfig } from "..";
 import academicYear from "./academic-year";
 import academicYearStats from "./academic-year-stats";
 import academicYearTrail from "./academic-year-trail";
+import assistantRole from "./assistant-role";
 import assistantSpaceInvite from "./assistant-space-invite";
 import billableItem from "./billable-item";
 import billableItemLog from "./billable-item-log";
@@ -55,4 +56,5 @@ export default {
   billable_item_log: billableItemLog,
   billable_item_log_trail: billableItemLogTrail,
   assistant_space_invite: assistantSpaceInvite,
+  assistant_role: assistantRole,
 } as { [key: string]: ObjectConfig };

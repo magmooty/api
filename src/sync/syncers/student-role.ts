@@ -16,7 +16,7 @@ const universalGenerator = wrapper(
     method: SyncOperationMethod,
     object: StudentRole
   ): Promise<SyncOperation[]> => {
-    const { name, academic_year, study_group, updated_at } = object;
+    const { name, academic_year, study_group, user, updated_at } = object;
 
     let { contacts } = object;
 
@@ -50,6 +50,7 @@ const universalGenerator = wrapper(
           student_phones,
           parent_phones,
           phone_text,
+          user,
           updated_at,
         },
       },

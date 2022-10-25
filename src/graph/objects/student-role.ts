@@ -42,6 +42,12 @@ export default {
       type: "array:struct",
       struct: "contact-point",
     },
+    user: {
+      type: "object-id",
+      objectTypes: ["user"],
+      deepDeleteFromEdges: ["roles"],
+      view: "system_controlled",
+    },
     notes: {
       type: "string",
     },

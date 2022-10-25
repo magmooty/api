@@ -139,7 +139,7 @@ export class ElasticSearchSearchDriver implements SearchDriver {
     { name: "search", file: __filename },
     async (
       ctx: Context,
-      index: IndexName,
+      index: IndexName | IndexName[],
       criteria: SearchCriteria,
       internalOptions: { lean: boolean; search_after?: SortResults }
     ): Promise<SearchPageResult<string | GraphObject>> => {
@@ -147,7 +147,9 @@ export class ElasticSearchSearchDriver implements SearchDriver {
       const sort = constructElasticSearchSorter(criteria);
 
       const options = {
-        index: this.prefixIndex(index),
+        index: Array.isArray(index)
+          ? index.map(this.prefixIndex).join(",")
+          : this.prefixIndex(index),
         query,
         sort,
         size: criteria.limit || this.elasticSearchConfig.defaultLimit,
@@ -182,7 +184,7 @@ export class ElasticSearchSearchDriver implements SearchDriver {
 
   leanSearch(
     ctx: Context,
-    index: IndexName,
+    index: IndexName | IndexName[],
     criteria: SearchCriteria,
     internalOptions: { search_after?: SortResults } = {}
   ): Promise<SearchPageResult<string>> {
@@ -194,7 +196,7 @@ export class ElasticSearchSearchDriver implements SearchDriver {
 
   search<T = GraphObject>(
     ctx: Context,
-    index: IndexName,
+    index: IndexName | IndexName[],
     criteria: SearchCriteria,
     internalOptions: { search_after?: SortResults } = {}
   ): Promise<SearchPageResult<T>> {
@@ -280,5 +282,5 @@ export class ElasticSearchSearchDriver implements SearchDriver {
 
   quit = async () => {
     await this.client.close();
-  }
+  };
 }

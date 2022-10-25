@@ -27,7 +27,8 @@ export type ObjectType =
   | "billable_item_stats"
   | "billable_item_log"
   | "billable_item_log_trail"
-  | "assistant_space_invite";
+  | "assistant_space_invite"
+  | "assistant_role";
 
 export type ObjectFieldValue =
   | string
@@ -151,6 +152,7 @@ export interface StudentRoleIndexMapping {
   student_phones: string;
   parent_phones: string;
   phone_text: string;
+  user: string;
   updated_at: string;
 }
 
@@ -163,6 +165,7 @@ export interface StudyGroupIndexMapping {
 
 export interface TutorRoleIndexMapping {
   space: string;
+  user: string;
   updated_at: string;
 }
 
@@ -509,6 +512,7 @@ export interface StudentRole extends GraphObject {
   academic_year: string;
   study_group: string;
   contacts: ContactPoint[];
+  user: string;
   notes: string;
 }
 
@@ -585,4 +589,16 @@ export interface AssistantSpaceInvite extends GraphObject {
   invited_id: string;
   space: string;
   permissions: SpacePermissionVS[];
+}
+
+export interface AssistantRole extends GraphObject {
+  object_type: "assistant_role";
+  created_at: string;
+  updated_at: string;
+  deleted_at: string;
+  space: string;
+  permissions: SpacePermissionVS[];
+  user: string;
+  contacts: ContactPoint[];
+  last_read_notification: string;
 }

@@ -20,6 +20,9 @@ export default {
     phone_text: {
       type: "text",
     },
+    user: {
+      type: "keyword",
+    },
     updated_at: {
       type: "date",
     },

@@ -51,14 +51,14 @@ export interface SearchDriver {
 
   search<T = GraphObject>(
     ctx: Context | null,
-    index: IndexName,
+    index: IndexName | IndexName[],
     criteria: SearchCriteria,
     internalOptions?: SearchInternalOptions
   ): Promise<SearchPageResult<T>>;
 
   leanSearch(
     ctx: Context | null,
-    index: IndexName,
+    index: IndexName | IndexName[],
     criteria: SearchCriteria,
     internalOptions?: SearchInternalOptions
   ): Promise<SearchPageResult<string>>;
