@@ -25,6 +25,11 @@ export default {
       POST: ["all"],
       PATCH: ["virtual:owner"],
     },
+    system_controlled: {
+      GET: ["virtual:space_admin"],
+      POST: [],
+      PATCH: [],
+    },
   },
   virtuals: {
     views: {
@@ -44,5 +49,14 @@ export default {
       default: (object, author) => (author ? author : undefined),
     },
   },
-  edges: {},
+  edges: {
+    assistants: {
+      objectTypes: ["assistant_role"],
+      view: "system_controlled",
+    },
+    assistant_invitations: {
+      objectTypes: ["assistant_space_invite"],
+      view: "system_controlled",
+    },
+  },
 } as ObjectConfig;
