@@ -1,6 +1,4 @@
-import { wrapper } from "@/components";
 import config from "@/config";
-import { Context } from "@/tracing";
 import fs from "fs";
 import path from "path";
 
@@ -13,7 +11,7 @@ export interface ValueSet {
 export class ValueSets {
   private _translations: { [key: string]: { [key: string]: ValueSet[] } } = {};
 
-  init = wrapper({ name: "init", file: __filename }, async (ctx: Context) => {
+  constructor() {
     for (const locale of config.i18n.locales) {
       if (!this._translations[locale]) {
         this._translations[locale] = {};
@@ -41,10 +39,11 @@ export class ValueSets {
             .readFileSync(path.join(__dirname, `./i18n/${locale}/${file}`))
             .toString();
         } catch {
-          ctx.fatal("Unable to find a localization for the value set", {
+          console.error("Unable to find a localization for the value set", {
             locale,
             valueSetName,
           });
+          process.exit();
         }
 
         const localizedValueSet = JSON.parse(
@@ -59,10 +58,11 @@ export class ValueSets {
           );
 
           if (!localizedSingleValue) {
-            ctx.fatal(
+            console.error(
               "Unable to find a localization for a value in the value set",
               { singleValue, locale, valueSetName }
             );
+            process.exit();
           }
 
           this._translations[locale][valueSetName].push({
@@ -72,7 +72,7 @@ export class ValueSets {
         }
       }
     }
-  });
+  }
 
   getValueSet(
     name: string,
@@ -81,3 +81,5 @@ export class ValueSets {
     return this._translations[locale][name];
   }
 }
+
+export const valueSets = new ValueSets();

@@ -6,7 +6,6 @@ import {
   queue,
   search,
   sync,
-  valueSets,
   wrapper,
   isTesting,
 } from "@/components";
@@ -18,7 +17,6 @@ export const bootstrapServer = wrapper(
     let app;
 
     await errors.init(ctx);
-    await valueSets.init(ctx);
     await queue.init(ctx);
     await persistence.init(ctx);
     await search.init(ctx);

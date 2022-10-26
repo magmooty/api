@@ -1,6 +1,6 @@
 [
   {
-    "code": "space:admin",
+    "code": "space_admin",
     "display": "المالك",
     "extra": {
       "permission_group": {
@@ -10,7 +10,7 @@
     }
   },
   {
-    "code": "academic_year:read",
+    "code": "academic_year_read",
     "display": "قرائة",
     "extra": {
       "permission_group": {
@@ -20,7 +20,7 @@
     }
   },
   {
-    "code": "academic_year:write",
+    "code": "academic_year_write",
     "display": "تعديل",
     "extra": {
       "permission_group": {
@@ -30,7 +30,7 @@
     }
   },
   {
-    "code": "academic_year:stats",
+    "code": "academic_year_stats",
     "display": "إحصائيات",
     "extra": {
       "permission_group": {
@@ -40,7 +40,7 @@
     }
   },
   {
-    "code": "study_group:read",
+    "code": "study_group_read",
     "display": "قرائة",
     "extra": {
       "permission_group": {
@@ -50,7 +50,7 @@
     }
   },
   {
-    "code": "study_group:write",
+    "code": "study_group_write",
     "display": "تعديل",
     "extra": {
       "permission_group": {
@@ -60,7 +60,7 @@
     }
   },
   {
-    "code": "study_group:stats",
+    "code": "study_group_stats",
     "display": "إحصائيات",
     "extra": {
       "permission_group": {
@@ -70,7 +70,7 @@
     }
   },
   {
-    "code": "exam:read",
+    "code": "exam_read",
     "display": "قرائة",
     "extra": {
       "permission_group": {
@@ -80,7 +80,7 @@
     }
   },
   {
-    "code": "exam:write",
+    "code": "exam_write",
     "display": "تعديل",
     "extra": {
       "permission_group": {
@@ -90,7 +90,7 @@
     }
   },
   {
-    "code": "exam:stats",
+    "code": "exam_stats",
     "display": "إحصائيات",
     "extra": {
       "permission_group": {
@@ -100,7 +100,7 @@
     }
   },
   {
-    "code": "exam:log",
+    "code": "exam_log",
     "display": "رصد",
     "extra": {
       "permission_group": {
@@ -110,7 +110,7 @@
     }
   },
   {
-    "code": "billable_item:read",
+    "code": "billable_item_read",
     "display": "قرائة",
     "extra": {
       "permission_group": {
@@ -120,7 +120,7 @@
     }
   },
   {
-    "code": "billable_item:write",
+    "code": "billable_item_write",
     "display": "تعديل",
     "extra": {
       "permission_group": {
@@ -130,7 +130,7 @@
     }
   },
   {
-    "code": "billable_item:stats",
+    "code": "billable_item_stats",
     "display": "إحصائيات",
     "extra": {
       "permission_group": {
@@ -140,7 +140,7 @@
     }
   },
   {
-    "code": "billable_item:log",
+    "code": "billable_item_log",
     "display": "رصد",
     "extra": {
       "permission_group": {

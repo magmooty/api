@@ -1,5 +1,5 @@
 import { ObjectConfig } from "@/graph";
-import { SpacePermissionExecutors } from "@/graph/common";
+import { SpacePermissionsViewVirtuals } from "@/graph/common";
 
 export default {
   code: "18",
@@ -17,12 +17,7 @@ export default {
     },
   },
   virtuals: {
-    views: {
-      space_admin: {
-        pre: ["all"],
-        execute: SpacePermissionExecutors.space_admin,
-      },
-    },
+    views: SpacePermissionsViewVirtuals,
   },
   fields: {
     student: {

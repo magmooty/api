@@ -1,6 +1,7 @@
 import { LocalLockingCache } from "@/api/util/LocalLockingCache";
 import { persistence, wrapper } from "@/components";
 import {
+  ObjectViewVirtual,
   ObjectViewVirtualExecutor,
   ObjectViewVirtualExecutorOptions,
 } from "@/graph";
@@ -13,6 +14,7 @@ import {
   StudyGroup,
 } from "@/graph/objects/types";
 import { Context } from "@/tracing";
+import { valueSets } from "@/value-sets";
 
 export const FIXED_OBJECT_FIELDS = [
   "id",
@@ -207,10 +209,23 @@ const createSpacePermissionVirtualExecutor = (
   );
 };
 
-export const SpacePermissionExecutors = {
-  space_admin: createSpacePermissionVirtualExecutor("space_admin"),
-  space_member: createSpacePermissionVirtualExecutor("any"),
+const spacePermissions = valueSets
+  .getValueSet("space-permission")
+  .map((valueSet) => valueSet.code);
+
+export const SpacePermissionsViewVirtuals: { [key: string]: ObjectViewVirtual } = {
+  space_member: {
+    pre: ["all"],
+    execute: createSpacePermissionVirtualExecutor("any"),
+  },
 };
+
+spacePermissions.forEach((spacePermission) => {
+  SpacePermissionsViewVirtuals[spacePermission] = {
+    pre: ["all"],
+    execute: createSpacePermissionVirtualExecutor(spacePermission),
+  };
+});
 
 export const SpaceOwnerVirtualExecutor: ObjectViewVirtualExecutor = wrapper(
   { name: "SpaceOwnerVirtualExecutor", file: __filename },

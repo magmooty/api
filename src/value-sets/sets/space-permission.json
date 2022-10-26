@@ -1,6 +1,6 @@
 [
   {
-    "code": "space:admin",
+    "code": "space_admin",
     "extra": {
       "permission_group": {
         "group": "admin"
@@ -8,7 +8,7 @@
     }
   },
   {
-    "code": "academic_year:read",
+    "code": "academic_year_read",
     "extra": {
       "permission_group": {
         "group": "academic_year"
@@ -16,7 +16,7 @@
     }
   },
   {
-    "code": "academic_year:write",
+    "code": "academic_year_write",
     "extra": {
       "permission_group": {
         "group": "academic_year"
@@ -24,7 +24,7 @@
     }
   },
   {
-    "code": "academic_year:stats",
+    "code": "academic_year_stats",
     "extra": {
       "permission_group": {
         "group": "academic_year"
@@ -32,7 +32,7 @@
     }
   },
   {
-    "code": "study_group:read",
+    "code": "study_group_read",
     "extra": {
       "permission_group": {
         "group": "study_group"
@@ -40,7 +40,7 @@
     }
   },
   {
-    "code": "study_group:write",
+    "code": "study_group_write",
     "extra": {
       "permission_group": {
         "group": "study_group"
@@ -48,7 +48,7 @@
     }
   },
   {
-    "code": "study_group:stats",
+    "code": "study_group_stats",
     "extra": {
       "permission_group": {
         "group": "study_group"
@@ -56,7 +56,7 @@
     }
   },
   {
-    "code": "exam:read",
+    "code": "exam_read",
     "extra": {
       "permission_group": {
         "group": "exam"
@@ -64,7 +64,7 @@
     }
   },
   {
-    "code": "exam:write",
+    "code": "exam_write",
     "extra": {
       "permission_group": {
         "group": "exam"
@@ -72,7 +72,7 @@
     }
   },
   {
-    "code": "exam:stats",
+    "code": "exam_stats",
     "extra": {
       "permission_group": {
         "group": "exam"
@@ -80,7 +80,7 @@
     }
   },
   {
-    "code": "exam:log",
+    "code": "exam_log",
     "extra": {
       "permission_group": {
         "group": "exam"
@@ -88,7 +88,7 @@
     }
   },
   {
-    "code": "billable_item:read",
+    "code": "billable_item_read",
     "extra": {
       "permission_group": {
         "group": "billable_item"
@@ -96,7 +96,7 @@
     }
   },
   {
-    "code": "billable_item:write",
+    "code": "billable_item_write",
     "extra": {
       "permission_group": {
         "group": "billable_item"
@@ -104,7 +104,7 @@
     }
   },
   {
-    "code": "billable_item:stats",
+    "code": "billable_item_stats",
     "extra": {
       "permission_group": {
         "group": "billable_item"
@@ -112,7 +112,7 @@
     }
   },
   {
-    "code": "billable_item:log",
+    "code": "billable_item_log",
     "extra": {
       "permission_group": {
         "group": "billable_item"

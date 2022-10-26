@@ -51,13 +51,22 @@ export interface RefreshTokenPayload {
 const extractRoles = (role: UserRole): string[] => {
   switch (role.object_type) {
     case "tutor_role":
-      return [`${role.id}|${role.user}|${role.space}|space_admin`];
+      return [
+        "tutor_role",
+        `${role.id}|${role.user}|${role.space}|space_admin`,
+      ];
     case "student_role":
-      return [`${role.id}|${role.user}|${role.space}|student_role`];
+      return [
+        "student_role",
+        `${role.id}|${role.user}|${role.space}|space_student`,
+      ];
     case "assistant_role":
-      return role.permissions.map(
-        (permission) => `${role.id}|${role.user}|${role.space}|${permission}`
-      );
+      return [
+        "assistant_role",
+        ...role.permissions.map(
+          (permission) => `${role.id}|${role.user}|${role.space}|${permission}`
+        ),
+      ];
     default:
       return [];
   }

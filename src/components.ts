@@ -34,11 +34,6 @@ import { ErrorThrower } from "./errors";
 
 const errors = new ErrorThrower();
 
-// Value sets
-import { ValueSets } from "./value-sets";
-
-const valueSets = new ValueSets();
-
 // Persistence
 import { Persistence } from "./persistence";
 
@@ -85,7 +80,6 @@ export {
   createContext,
   metrics,
   config,
-  valueSets,
   persistence,
   errors,
   queue,

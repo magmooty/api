@@ -1,4 +1,4 @@
-import { errors, valueSets } from "@/components";
+import { errors } from "@/components";
 import {
   getObjectConfigFromObjectType,
   getObjectTypeFromId,
@@ -11,6 +11,7 @@ import {
 import { FIXED_OBJECT_FIELDS } from "@/graph/common";
 import { GraphObject, ObjectType } from "@/graph/objects/types";
 import { Context } from "@/tracing";
+import { valueSets } from "@/value-sets";
 import joi from "joi";
 import { PersistenceDriver } from "..";
 

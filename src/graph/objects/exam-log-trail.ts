@@ -1,5 +1,5 @@
 import { ObjectConfig } from "@/graph";
-import { ROLE_GROUP, SpacePermissionExecutors } from "@/graph/common";
+import { ROLE_GROUP, SpacePermissionsViewVirtuals } from "@/graph/common";
 
 export default {
   code: "T7",
@@ -12,12 +12,7 @@ export default {
     },
   },
   virtuals: {
-    views: {
-      space_admin: {
-        pre: ["all"],
-        execute: SpacePermissionExecutors.space_admin,
-      },
-    },
+    views: SpacePermissionsViewVirtuals,
   },
   fields: {
     delta: {
