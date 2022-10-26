@@ -8,6 +8,7 @@ module.exports = {
   transform: {
     "^.+\\.tsx?$": "ts-jest",
   },
+  reporters: ["default", "jest-junit"],
   testTimeout: 30000,
   testSequencer: "./testSequencer.js",
   testRegex: "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",

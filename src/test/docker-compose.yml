@@ -9,23 +9,10 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: magmooty
     ports:
       - 27017:27017
-    volumes:
-      - local_mongodb_data:/data/db
-  # dynamodb-local:
-  #   user: root
-  #   container_name: local_test_dynamo
-  #   ports:
-  #     - "8000:8000"
-  #   image: amazon/dynamodb-local
-  #   command: -jar DynamoDBLocal.jar -sharedDb -dbPath /data
-  #   volumes:
-  #     - local_dynamodb_data:/data
   redis:
     container_name: local_test_redis
     image: redis
     command: redis-server --save 60 1
-    volumes:
-      - "local_redis_data:/data"
     ports:
       - "6379:6379"
   zookeeper:
@@ -34,8 +21,6 @@ services:
     restart: always
     ports:
       - "2181:2181"
-    volumes:
-      - "local_zookeeper_data:/bitnami"
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
     healthcheck:
@@ -50,8 +35,6 @@ services:
     hostname: localhost
     ports:
       - "9092:9092"
-    volumes:
-      - "local_kafka_data:/bitnami"
     environment:
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
       - ALLOW_PLAINTEXT_LISTENER=yes
@@ -71,19 +54,3 @@ services:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    volumes:
-      - local_esdata:/usr/share/elasticsearch/data
-
-volumes:
-  local_zookeeper_data:
-    driver: local
-  local_kafka_data:
-    driver: local
-  local_esdata:
-    driver: local
-  local_redis_data:
-    driver: local
-  # local_dynamodb_data:
-  #   driver: local
-  local_mongodb_data:
-    driver: local
