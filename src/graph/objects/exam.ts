@@ -1,5 +1,5 @@
 import { ObjectConfig } from "@/graph";
-import { SpaceAdminVirtualExecutor } from "@/graph/common";
+import { SpacePermissionExecutors } from "@/graph/common";
 
 export default {
   code: "12",
@@ -27,7 +27,7 @@ export default {
     views: {
       space_admin: {
         pre: ["all"],
-        execute: SpaceAdminVirtualExecutor,
+        execute: SpacePermissionExecutors.space_admin,
       },
     },
   },

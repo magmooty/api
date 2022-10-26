@@ -1,19 +1,17 @@
 import { LocalLockingCache } from "@/api/util/LocalLockingCache";
-import { persistence, search, wrapper } from "@/components";
+import { persistence, wrapper } from "@/components";
 import {
   ObjectViewVirtualExecutor,
   ObjectViewVirtualExecutorOptions,
 } from "@/graph";
 import {
   AcademicYear,
-  AssistantRole,
   BillableItem,
   Exam,
   GraphObject,
   Space,
   StudyGroup,
 } from "@/graph/objects/types";
-import { IndexName } from "@/sync/mapping";
 import { Context } from "@/tracing";
 
 export const FIXED_OBJECT_FIELDS = [
@@ -24,7 +22,20 @@ export const FIXED_OBJECT_FIELDS = [
   "deleted_at",
 ];
 
-export const ROLE_GROUP = ["tutor_role", "student_role"];
+export const ROLE_GROUP = ["tutor_role", "student_role", "assistant_role"];
+
+export interface SingleRole {
+  user: string;
+  role: string;
+  space: string;
+  permission: string;
+}
+
+export const parseRole = (roleString: string): SingleRole => {
+  const [role, user, space, permission] = roleString.split("|");
+
+  return { role, user, space, permission };
+};
 
 const findSpaceInObject = wrapper(
   { name: "findSpaceInObject", file: __filename },
@@ -56,7 +67,7 @@ const findSpaceInObject = wrapper(
 
     if (rootSpace) {
       ctx.log.info("Found space in root object", { rootSpace });
-      return rootSpace;
+      return rootSpace as string;
     }
 
     if (academic_year) {
@@ -164,26 +175,42 @@ export const OwnerViewVirtualExecutor: ObjectViewVirtualExecutor = wrapper(
   }
 );
 
-export const SpaceAdminVirtualExecutor: ObjectViewVirtualExecutor = wrapper(
-  { name: "SpaceAdminVirtualExecutor", file: __filename },
-  async (
-    ctx: Context,
-    object: GraphObject,
-    { roles, cache }: ObjectViewVirtualExecutorOptions
-  ): Promise<boolean> => {
-    const space = await findSpaceInObject(ctx, object, cache);
+const createSpacePermissionVirtualExecutor = (
+  permission: string
+): ObjectViewVirtualExecutor => {
+  return wrapper(
+    { name: `SpacePermissionVirtualExecutor:${permission}`, file: __filename },
+    async (
+      ctx: Context,
+      object: GraphObject,
+      { roles, cache }: ObjectViewVirtualExecutorOptions
+    ): Promise<boolean> => {
+      const space = await findSpaceInObject(ctx, object, cache);
 
-    const roleSpaces = roles.map((role) => role.split("|")[2]);
+      const spaceAdminRoleSpaces = roles.map(parseRole);
 
-    if (space && roleSpaces.includes(space as string)) {
-      ctx.log.info("Access granted", { space });
-      return true;
+      if (
+        space &&
+        spaceAdminRoleSpaces.find(
+          (singleRole) =>
+            (singleRole.permission === permission || permission === "any") &&
+            singleRole.space === space
+        )
+      ) {
+        ctx.log.info("Access granted", { space });
+        return true;
+      }
+
+      ctx.log.info("Access denied", { space });
+      return false;
     }
+  );
+};
 
-    ctx.log.info("Access denied", { space });
-    return false;
-  }
-);
+export const SpacePermissionExecutors = {
+  space_admin: createSpacePermissionVirtualExecutor("space_admin"),
+  space_member: createSpacePermissionVirtualExecutor("any"),
+};
 
 export const SpaceOwnerVirtualExecutor: ObjectViewVirtualExecutor = wrapper(
   { name: "SpaceOwnerVirtualExecutor", file: __filename },
@@ -205,42 +232,6 @@ export const SpaceOwnerVirtualExecutor: ObjectViewVirtualExecutor = wrapper(
     if (space.owner === author.id) {
       return true;
     }
-
-    return false;
-  }
-);
-
-export const SpaceMemberVirtualExecutor: ObjectViewVirtualExecutor = wrapper(
-  { name: "SpaceMemberVirtualExecutor", file: __filename },
-  async (
-    ctx: Context,
-    object: GraphObject,
-    { author, cache }: ObjectViewVirtualExecutorOptions
-  ): Promise<boolean> => {
-    const space = await findSpaceInObject(ctx, object, cache);
-
-    if (!space) {
-      ctx.log.info("Access denied");
-      return false;
-    }
-
-    const { results, count } = await search.leanSearch(
-      ctx,
-      ROLE_GROUP as IndexName[],
-      {
-        filters: {
-          and: [{ user: author.id }, { space }],
-        },
-      }
-    );
-
-    ctx.log.info("Role search results", { results, count });
-
-    if (count > 0) {
-      return true;
-    }
-
-    ctx.log.info("No roles for the user found in this space");
 
     return false;
   }

@@ -1,7 +1,7 @@
 import { ObjectConfig } from "@/graph";
 import {
   OwnerViewVirtualExecutor,
-  SpaceMemberVirtualExecutor,
+  SpacePermissionExecutors,
 } from "@/graph/common";
 import { serializeDate } from "@/persistence/commons/serialize-date";
 
@@ -39,7 +39,7 @@ export default {
       },
       space_member: {
         pre: ["all"],
-        execute: SpaceMemberVirtualExecutor,
+        execute: SpacePermissionExecutors.space_member,
       },
     },
   },

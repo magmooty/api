@@ -60,7 +60,7 @@ export type ObjectFieldValue =
 
 export type AppLocale = "ar" | "en";
 
-export type UserRole = TutorRole;
+export type UserRole = TutorRole | AssistantRole | StudentRole;
 
 export interface IEdge {
   src: string;

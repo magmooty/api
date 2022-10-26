@@ -8,6 +8,7 @@ import joi from "joi";
 import joiPhoneNumber from "joi-phone-number";
 import jwt from "jsonwebtoken";
 import kuuid from "kuuid";
+import _ from "lodash";
 import moment from "moment";
 import { AuthDriver, LoginResult, TokenValidationResult } from ".";
 
@@ -47,8 +48,19 @@ export interface RefreshTokenPayload {
   user: string;
 }
 
-const serializeRole = (role: UserRole) => {
-  return `${role.id}|${role.user}|${role.space}`;
+const extractRoles = (role: UserRole): string[] => {
+  switch (role.object_type) {
+    case "tutor_role":
+      return [`${role.id}|${role.user}|${role.space}|space_admin`];
+    case "student_role":
+      return [`${role.id}|${role.user}|${role.space}|student_role`];
+    case "assistant_role":
+      return role.permissions.map(
+        (permission) => `${role.id}|${role.user}|${role.space}|${permission}`
+      );
+    default:
+      return [];
+  }
 };
 
 export class NativeAuthDriver implements AuthDriver {
@@ -75,7 +87,7 @@ export class NativeAuthDriver implements AuthDriver {
         "roles"
       );
 
-      const roles = rolesObjects.map(serializeRole);
+      const roles = _.flatten(rolesObjects.map(extractRoles));
 
       if (
         this.nativeAuthDriverConfig.devRoleUsernames.find((devRoleUsername) =>

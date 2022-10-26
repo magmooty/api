@@ -1,5 +1,5 @@
 import { ObjectConfig } from "@/graph";
-import { SpaceAdminVirtualExecutor } from "@/graph/common";
+import { SpacePermissionExecutors } from "@/graph/common";
 import { AssistantSpaceInviteHasInviteExecutor } from "@/graph/extra/assistant-space-invite/virtuals";
 
 export default {
@@ -17,7 +17,7 @@ export default {
     views: {
       space_admin: {
         pre: ["all"],
-        execute: SpaceAdminVirtualExecutor,
+        execute: SpacePermissionExecutors.space_admin,
       },
       invited_user: {
         pre: ["all"],
