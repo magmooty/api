@@ -7,28 +7,38 @@ jobs:
       image: ubuntu-2204:2022.10.1
     steps:
       - checkout
+      - restore_cache:
+          key: v1-deps
       - node/install:
           node-version: "16.15.1"
-      - run: 
-          command: echo $TEST_CONFIG_ENV_JSON > config.test.json
+      - run:
           name: Get environment configuration
-      - run: 
-          command: npm i -g pm2
+          command: echo $TEST_CONFIG_ENV_JSON > config.test.json
+      - run:
           name: Install PM2
-      - run: 
-          command: npm install
+          command: npm i -g pm2
+      - run:
           name: Install dependencies
-      - run: 
-          command: npm run test:prepare
+          command: npm install
+      - save_cache:
+          key: v1-deps
+          paths:
+            - node_modules
+      - run:
           name: Prepare environment
-      - run: 
-          command: npm test
+          command: npm run test:prepare
+      - run:
           name: Run tests
+          command: npm test
           environment:
             JEST_JUNIT_OUTPUT_DIR: ./reports/
+      - run:
+          name: "Notify Slack with test results"
+          command: node tests-summary.js
       - store_test_results:
           path: ./reports/
 workflows:
   test_magmooty_api:
     jobs:
-      - integration-test
+      - integration-test:
+          context: integration_tests_slack_notifications
