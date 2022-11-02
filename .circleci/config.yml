@@ -3,12 +3,6 @@ orbs:
   node: circleci/node@5.0.3
 jobs:
   integration-test:
-    filters:
-      branches:
-        only:
-          - dev
-          - stage
-          - prod
     machine:
       image: ubuntu-2204:2022.10.1
     steps:
@@ -45,6 +39,12 @@ jobs:
           path: ./reports/
 workflows:
   test_magmooty_api:
+    filters:
+      branches:
+        only:
+          - dev
+          - stage
+          - prod
     jobs:
       - integration-test:
           context: integration_tests_slack_notifications
