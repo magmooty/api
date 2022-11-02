@@ -39,12 +39,6 @@ jobs:
           path: ./reports/
 workflows:
   test_magmooty_api:
-    filters:
-      branches:
-        only:
-          - dev
-          - stage
-          - prod
     jobs:
       - integration-test:
           context: integration_tests_slack_notifications
