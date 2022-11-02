@@ -24,6 +24,10 @@ export default {
       type: "string",
       required: true,
     },
+    session_id: {
+      type: "number",
+      required: true,
+    },
     user: {
       type: "object-id",
       objectTypes: ["user"],

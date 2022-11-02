@@ -90,6 +90,13 @@ export class NativeAuthDriver implements AuthDriver {
         .add(this.nativeAuthDriverConfig.sessionTTL, "seconds")
         .toDate();
 
+      const systemUser = await persistence.updateObject<SystemUser>(
+        ctx,
+        user.system_user,
+        { last_session_id: "+1" },
+        { author: user.id }
+      );
+
       const rolesObjects = await persistence.getEdges<UserRole[]>(
         ctx,
         user.id,
@@ -109,6 +116,7 @@ export class NativeAuthDriver implements AuthDriver {
       const session = await persistence.createObject<Session>(ctx, {
         token: sessionToken,
         user: user.id,
+        session_id: systemUser.last_session_id,
         object_type: "session",
         roles,
         expiresAt: serializeDate(sessionExpiresAt),
@@ -340,6 +348,16 @@ export class NativeAuthDriver implements AuthDriver {
         ctx,
         session.user as string
       );
+
+      const systemUser = await persistence.getObject<SystemUser>(
+        ctx,
+        user.system_user
+      );
+
+      if (systemUser.last_acceptable_session_id > session.session_id) {
+        errors.createError(ctx, "SessionExpired", { sessionId });
+        return;
+      }
 
       return { user, session };
     }

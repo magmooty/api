@@ -229,21 +229,21 @@ export type NotificationTypeVS =
 export type PaymentMethodTypeVS = "vodafone_cash";
 
 export type SpacePermissionVS =
-  | "space:admin"
-  | "academic_year:read"
-  | "academic_year:write"
-  | "academic_year:stats"
-  | "study_group:read"
-  | "study_group:write"
-  | "study_group:stats"
-  | "exam:read"
-  | "exam:write"
-  | "exam:stats"
-  | "exam:log"
-  | "billable_item:read"
-  | "billable_item:write"
-  | "billable_item:stats"
-  | "billable_item:log";
+  | "space_admin"
+  | "academic_year_read"
+  | "academic_year_write"
+  | "academic_year_stats"
+  | "study_group_read"
+  | "study_group_write"
+  | "study_group_stats"
+  | "exam_read"
+  | "exam_write"
+  | "exam_stats"
+  | "exam_log"
+  | "billable_item_read"
+  | "billable_item_write"
+  | "billable_item_stats"
+  | "billable_item_log";
 
 export type UserGenderVS = "male" | "female" | "unknown";
 
@@ -319,6 +319,7 @@ export interface Session extends GraphObject {
   updated_at: string;
   deleted_at: string;
   token: string;
+  session_id: number;
   user: string;
   roles: string[];
   expiresAt: string;
@@ -330,6 +331,8 @@ export interface SystemUser extends GraphObject {
   updated_at: string;
   deleted_at: string;
   hash: string;
+  last_acceptable_session_id: number;
+  last_session_id: number;
 }
 
 export interface Space extends GraphObject {
