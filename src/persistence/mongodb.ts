@@ -129,10 +129,10 @@ export class MongoPersistenceDriver implements PersistenceDriver {
           break;
         case "edges":
           await this.db.createCollection("edges");
-          await this.ensureIndex(ctx, "objects", "direct", {
+          await this.ensureIndex(ctx, "edges", "direct", {
             src: 1,
           });
-          await this.ensureIndex(ctx, "objects", "reverse", {
+          await this.ensureIndex(ctx, "edges", "reverse", {
             dst: 1,
           });
           break;
