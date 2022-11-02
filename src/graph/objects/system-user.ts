@@ -19,6 +19,13 @@ export default {
       type: "string",
       required: true,
     },
+    last_acceptable_session_id: {
+      type: "number",
+      default: () => 0,
+    },
+    last_session_id: {
+      type: "counter",
+    },
   },
   edges: {},
 } as ObjectConfig;
