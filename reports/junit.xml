@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="50" failures="0" errors="0" time="150.506">
+  <testsuite name="Server is healthy" errors="0" failures="0" skipped="0" timestamp="2022-10-29T18:09:15" time="6.582" tests="1">
+    <testcase classname="Server is healthy Responds with 200" name="Server is healthy Responds with 200" time="0.01">
+    </testcase>
+  </testsuite>
+  <testsuite name="Login and tutor profile" errors="0" failures="0" skipped="0" timestamp="2022-10-29T18:09:22" time="35.513" tests="14">
+    <testcase classname="Login and tutor profile Phone user can sign up" name="Login and tutor profile Phone user can sign up" time="3.736">
+    </testcase>
+    <testcase classname="Login and tutor profile Phone user can&apos;t log in with invalid password" name="Login and tutor profile Phone user can&apos;t log in with invalid password" time="0.235">
+    </testcase>
+    <testcase classname="Login and tutor profile Phone user can log in" name="Login and tutor profile Phone user can log in" time="2.519">
+    </testcase>
+    <testcase classname="Login and tutor profile Phone user can fetch my profile" name="Login and tutor profile Phone user can fetch my profile" time="2.273">
+    </testcase>
+    <testcase classname="Login and tutor profile Phone user has a user status" name="Login and tutor profile Phone user has a user status" time="2.214">
+    </testcase>
+    <testcase classname="Login and tutor profile Phone user can find a notification about verification" name="Login and tutor profile Phone user can find a notification about verification" time="3.16">
+    </testcase>
+    <testcase classname="Login and tutor profile Email dev user can sign up" name="Login and tutor profile Email dev user can sign up" time="3.395">
+    </testcase>
+    <testcase classname="Login and tutor profile Email dev user can log in" name="Login and tutor profile Email dev user can log in" time="2.733">
+    </testcase>
+    <testcase classname="Login and tutor profile Dev user can modify phone verified" name="Login and tutor profile Dev user can modify phone verified" time="3.274">
+    </testcase>
+    <testcase classname="Login and tutor profile Phone user has the phone verified" name="Login and tutor profile Phone user has the phone verified" time="2.134">
+    </testcase>
+    <testcase classname="Login and tutor profile User can create a space" name="Login and tutor profile User can create a space" time="2.203">
+    </testcase>
+    <testcase classname="Login and tutor profile User can add themselves as a tutor to the new space" name="Login and tutor profile User can add themselves as a tutor to the new space" time="2.264">
+    </testcase>
+    <testcase classname="Login and tutor profile New tutor role is added to user&apos;s roles" name="Login and tutor profile New tutor role is added to user&apos;s roles" time="2.187">
+    </testcase>
+    <testcase classname="Login and tutor profile Tutor can find notifications about profile completion and getting started" name="Login and tutor profile Tutor can find notifications about profile completion and getting started" time="2.238">
+    </testcase>
+  </testsuite>
+  <testsuite name="Manage spaces" errors="0" failures="0" skipped="0" timestamp="2022-10-29T18:09:57" time="108.335" tests="35">
+    <testcase classname="Manage spaces Prerequisites" name="Manage spaces Prerequisites" time="10.692">
+    </testcase>
+    <testcase classname="Manage spaces Creating an academic year" name="Manage spaces Creating an academic year" time="4.775">
+    </testcase>
+    <testcase classname="Manage spaces Creating a study group" name="Manage spaces Creating a study group" time="5.634">
+    </testcase>
+    <testcase classname="Manage spaces Creating an exam" name="Manage spaces Creating an exam" time="4.738">
+    </testcase>
+    <testcase classname="Manage spaces Creating a billable item" name="Manage spaces Creating a billable item" time="4.71">
+    </testcase>
+    <testcase classname="Manage spaces Creating a student" name="Manage spaces Creating a student" time="5.466">
+    </testcase>
+    <testcase classname="Manage spaces Creating a student should increment academic year stats counter" name="Manage spaces Creating a student should increment academic year stats counter" time="2.115">
+    </testcase>
+    <testcase classname="Manage spaces Creating a student should increment study group stats counter" name="Manage spaces Creating a student should increment study group stats counter" time="2.119">
+    </testcase>
+    <testcase classname="Manage spaces Creating a student should increment exam stats counter" name="Manage spaces Creating a student should increment exam stats counter" time="2.178">
+    </testcase>
+    <testcase classname="Manage spaces Creating a student should increment billable item stats counter" name="Manage spaces Creating a student should increment billable item stats counter" time="2.152">
+    </testcase>
+    <testcase classname="Manage spaces Creating an exam after student creation" name="Manage spaces Creating an exam after student creation" time="3.255">
+    </testcase>
+    <testcase classname="Manage spaces Exam created after student creation counter should be set to students count" name="Manage spaces Exam created after student creation counter should be set to students count" time="2.176">
+    </testcase>
+    <testcase classname="Manage spaces Creating a billable item after student creation" name="Manage spaces Creating a billable item after student creation" time="3.247">
+    </testcase>
+    <testcase classname="Manage spaces Billable item created after student creation counter should be set to students count" name="Manage spaces Billable item created after student creation counter should be set to students count" time="2.116">
+    </testcase>
+    <testcase classname="Manage spaces Can delete a student" name="Manage spaces Can delete a student" time="3.228">
+    </testcase>
+    <testcase classname="Manage spaces Deleting a student should decrement academic year stats counter" name="Manage spaces Deleting a student should decrement academic year stats counter" time="2.144">
+    </testcase>
+    <testcase classname="Manage spaces Deleting a student should decrement study group stats counter" name="Manage spaces Deleting a student should decrement study group stats counter" time="2.142">
+    </testcase>
+    <testcase classname="Manage spaces Creating a student after exam and billable item creation" name="Manage spaces Creating a student after exam and billable item creation" time="5.295">
+    </testcase>
+    <testcase classname="Manage spaces Creating a second student should increment academic year stats counter again" name="Manage spaces Creating a second student should increment academic year stats counter again" time="2.119">
+    </testcase>
+    <testcase classname="Manage spaces Creating a second student should increment study group stats counter again" name="Manage spaces Creating a second student should increment study group stats counter again" time="2.11">
+    </testcase>
+    <testcase classname="Manage spaces Creating a second student should create an exam log for the existing exam" name="Manage spaces Creating a second student should create an exam log for the existing exam" time="2.483">
+    </testcase>
+    <testcase classname="Manage spaces Creating a second student should create a billable item log for the existing billable item" name="Manage spaces Creating a second student should create a billable item log for the existing billable item" time="2.799">
+    </testcase>
+    <testcase classname="Manage spaces Creating a second student should increment exam stats counter" name="Manage spaces Creating a second student should increment exam stats counter" time="2.144">
+    </testcase>
+    <testcase classname="Manage spaces Creating a second student should increment billable item stats counter" name="Manage spaces Creating a second student should increment billable item stats counter" time="2.217">
+    </testcase>
+    <testcase classname="Manage spaces Creating an exam with a past date" name="Manage spaces Creating an exam with a past date" time="2.185">
+    </testcase>
+    <testcase classname="Manage spaces Creating a billable item with a past date" name="Manage spaces Creating a billable item with a past date" time="2.178">
+    </testcase>
+    <testcase classname="Manage spaces Creating an exam with a past date shouldn&apos;t create an exam log for the existing students" name="Manage spaces Creating an exam with a past date shouldn&apos;t create an exam log for the existing students" time="2.142">
+    </testcase>
+    <testcase classname="Manage spaces Creating a billable item with a past date shouldn&apos;t create a billable item log for existing students" name="Manage spaces Creating a billable item with a past date shouldn&apos;t create a billable item log for existing students" time="2.119">
+    </testcase>
+    <testcase classname="Manage spaces Creating a second academic year" name="Manage spaces Creating a second academic year" time="2.201">
+    </testcase>
+    <testcase classname="Manage spaces Creating a second study group" name="Manage spaces Creating a second study group" time="2.249">
+    </testcase>
+    <testcase classname="Manage spaces Move student to another academic year and study group" name="Manage spaces Move student to another academic year and study group" time="3.226">
+    </testcase>
+    <testcase classname="Manage spaces Moving a student should decrement old academic year stats counter" name="Manage spaces Moving a student should decrement old academic year stats counter" time="2.136">
+    </testcase>
+    <testcase classname="Manage spaces Moving a student should decrement old study group stats counter" name="Manage spaces Moving a student should decrement old study group stats counter" time="2.203">
+    </testcase>
+    <testcase classname="Manage spaces Moving a student should increment new academic year stats counter" name="Manage spaces Moving a student should increment new academic year stats counter" time="2.203">
+    </testcase>
+    <testcase classname="Manage spaces Moving a student should increment new study group stats counter" name="Manage spaces Moving a student should increment new study group stats counter" time="2.157">
+    </testcase>
+  </testsuite>
+</testsuites>
