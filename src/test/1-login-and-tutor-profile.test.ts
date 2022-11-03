@@ -131,6 +131,7 @@ describe("Login and tutor profile", function () {
     expect(session.token).toEqual(sessionToken);
 
     state.token = token;
+    state.refreshToken = refresh_token;
   });
 
   test("Phone user can fetch my profile", async function () {
@@ -284,6 +285,22 @@ describe("Login and tutor profile", function () {
     expect(object_type).toBe("tutor_role");
 
     state.normalUserTutorRoleId = id;
+  });
+
+  test("User can refresh token to get new roles in the session", async function () {
+    const response = await handleRequest(
+      request
+        .post(endpoint("/auth/token/refresh"))
+        .send({ refresh_token: state.refreshToken })
+    );
+
+    expect(response.status).toEqual(200);
+
+    const { token } = response.body;
+
+    expect(token).toBeTruthy();
+
+    state.token = token;
   });
 
   test("New tutor role is added to user's roles", async function () {

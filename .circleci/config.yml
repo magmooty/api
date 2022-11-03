@@ -28,13 +28,10 @@ jobs:
           name: Prepare environment
           command: npm run test:prepare
       - run:
-          name: Run tests
-          command: npm test
+          name: Run tests and notify Slack with the results
+          command: npm test && node tests-summary.js
           environment:
             JEST_JUNIT_OUTPUT_DIR: ./reports/
-      - run:
-          name: "Notify Slack with test results"
-          command: node tests-summary.js
       - store_test_results:
           path: ./reports/
 workflows:
