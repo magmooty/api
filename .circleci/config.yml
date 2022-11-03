@@ -29,9 +29,12 @@ jobs:
           command: npm run test:prepare
       - run:
           name: Run tests and notify Slack with the results
-          command: npm test && node tests-summary.js
+          command: npm test || true
           environment:
             JEST_JUNIT_OUTPUT_DIR: ./reports/
+      - run:
+          name: Send notification with test results to Slack
+          command: node tests-summary.js
       - store_test_results:
           path: ./reports/
 workflows:
