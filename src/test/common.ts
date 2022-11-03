@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { Response } from "superagent";
 import { waitForEvents } from "./queue";
+import { SuperAgentRequest } from "superagent";
 
 export const API_URL = "http://localhost:6000";
 
@@ -9,12 +10,14 @@ export const endpoint = (path: string) => {
 };
 
 export const handleRequest = async (
-  request: Promise<Response>,
+  request: SuperAgentRequest,
   { expectingError } = { expectingError: false }
 ): Promise<Response> => {
   try {
     const response = await request;
-    await waitForEvents();
+    if (request.method !== "GET") {
+      await waitForEvents();
+    }
     return response;
   } catch (error: any) {
     if (!expectingError) {
@@ -28,7 +31,9 @@ export const handleRequest = async (
 export const fakePhoneNumber = () => faker.phone.number("+2010########");
 
 export const fakePassword = () =>
-  faker.internet.password(20, false, /[A-Z0-9a-z]/);
+  faker.internet.password(7, false, /[0-9]/) +
+  faker.internet.password(7, false, /[A-Z]/) +
+  faker.internet.password(7, false, /[a-z]/);
 
 export const devUserCredentials = {
   username: "ziadalzarka@gmail.com",

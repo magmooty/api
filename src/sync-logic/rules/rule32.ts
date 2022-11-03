@@ -6,7 +6,7 @@ import { Context } from "@/tracing";
 export const rule32 = wrapper(
   { name: "rule32", file: __filename },
   async (ctx: Context, event: BaseQueueEvent<UserRole>) => {
-    if (!event.current) {
+    if (!event.current || !event.current.user) {
       return;
     }
 

@@ -38,19 +38,20 @@
     "@types/milliseconds": "^0.0.30",
     "@types/node": "^18.0.1",
     "@types/string-template": "^1.0.2",
+    "@types/superagent": "^4.1.15",
     "@types/uuid": "^8.3.4",
     "@types/yargs": "^17.0.11",
     "@typescript-eslint/eslint-plugin": "^5.30.5",
     "@typescript-eslint/parser": "^5.30.5",
     "eslint": "^8.19.0",
-    "ts-node": "^10.8.2",
-    "jest-junit": "^14.0.1"
+    "jest-junit": "^14.0.1",
+    "ts-node": "^10.8.2"
   },
   "dependencies": {
-    "@faker-js/faker": "^7.5.0",
     "@aws-sdk/client-dynamodb": "^3.142.0",
     "@elastic/elasticsearch": "^8.2.1",
     "@escapace/accept-language-parser": "^1.4.4",
+    "@faker-js/faker": "^7.5.0",
     "@slack/web-api": "^6.7.2",
     "@stdlib/error-to-json": "^0.0.7",
     "@tsconfig/node16": "^1.0.3",
