@@ -2,6 +2,7 @@ import * as academicYear from "./academic-year";
 import * as assistantRole from "./assistant-role";
 import * as billableItem from "./billable-item";
 import * as exam from "./exam";
+import * as space from "./space";
 import * as studentRole from "./student-role";
 import * as studyGroup from "./study-group";
 import * as tutorRole from "./tutor-role";
@@ -21,4 +22,6 @@ export default {
 
   "POST assistant_role": assistantRole.onPost,
   "PATCH assistant_role": assistantRole.onPost,
+
+  "POST space": space.onPost,
 } as const;
