@@ -1,4 +1,5 @@
 import academicYear from "./academic-year";
+import assistantSpaceInvite from "./assistant-space-invite";
 import billableItem from "./billable-item";
 import billableItemLog from "./billable-item-log";
 import exam from "./exam";
@@ -22,6 +23,7 @@ export const mappings = {
   student_role: studentRole,
   study_group: studyGroup,
   tutor_role: tutorRole,
+  assistant_space_invite: assistantSpaceInvite,
 };
 
 export const indexNames = Object.keys(mappings);
