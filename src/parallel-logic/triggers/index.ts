@@ -5,6 +5,7 @@ import * as exam from "./exam";
 import * as examLog from "./exam-log";
 import * as studentRole from "./student-role";
 import * as tutorRole from "./tutor-role";
+import * as assistantRole from "./assistant-role";
 import * as user from "./user";
 
 export default {
@@ -26,6 +27,8 @@ export default {
 
   "POST exam_log": examLog.onPost,
   "DELETE exam_log": examLog.onPost,
+
+  "POST assistant_role": assistantRole.onPost,
 
   "DELETE all": all.onDelete,
 } as const;
