@@ -260,23 +260,6 @@ describe("Login and tutor profile", function () {
     state.spaceId = id;
   });
 
-  test("User is automatically added as a tutor to the new space", async function () {
-    const response = await handleRequest(
-      request
-        .get(endpoint(`/graph/${state.userId}/roles`))
-        .auth(state.token, { type: "bearer" })
-    );
-
-    expect(response.status).toEqual(200);
-    expect(response.body).toHaveLength(1);
-
-    const { id, object_type } = response.body[0];
-
-    expect(object_type).toBe("tutor_role");
-
-    state.normalUserTutorRoleId = id;
-  });
-
   test("User can refresh token to get new roles in the session", async function () {
     const response = await handleRequest(
       request
@@ -293,7 +276,7 @@ describe("Login and tutor profile", function () {
     state.token = token;
   });
 
-  test("New tutor role is added to user's roles", async function () {
+  test("User is automatically added as a tutor to the new space", async function () {
     const response = await handleRequest(
       request
         .get(endpoint(`/graph/${state.normalUserId}/roles`))
@@ -301,15 +284,18 @@ describe("Login and tutor profile", function () {
     );
 
     expect(response.status).toEqual(200);
+    expect(response.body).toHaveLength(1);
 
     const [tutorRole] = response.body;
 
     expect(tutorRole).toBeTruthy();
 
-    const { object_type, space } = tutorRole;
+    const { id, object_type, space } = tutorRole;
 
     expect(object_type).toBe("tutor_role");
     expect(space).toBe(state.spaceId);
+
+    state.normalUserTutorRoleId = id;
   });
 
   test("Tutor can find notifications about profile completion and getting started", async function () {
