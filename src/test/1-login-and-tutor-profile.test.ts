@@ -37,16 +37,6 @@ export const CONSTANTS = {
     name: faker.name.fullName(),
     object_type: "space",
   },
-  tutorCreateTutorRole: {
-    space: null,
-    contacts: [
-      {
-        type: "phone",
-        value: fakePhoneNumber(),
-      },
-    ],
-    object_type: "tutor_role",
-  },
 };
 
 const state: any = {};
@@ -270,17 +260,17 @@ describe("Login and tutor profile", function () {
     state.spaceId = id;
   });
 
-  test("User can add themselves as a tutor to the new space", async function () {
+  test("User is automatically added as a tutor to the new space", async function () {
     const response = await handleRequest(
       request
-        .post(endpoint("/graph"))
+        .get(endpoint(`/graph/${state.userId}/roles`))
         .auth(state.token, { type: "bearer" })
-        .send({ ...CONSTANTS.tutorCreateTutorRole, space: state.spaceId })
     );
 
     expect(response.status).toEqual(200);
+    expect(response.body).toHaveLength(1);
 
-    const { id, object_type } = response.body;
+    const { id, object_type } = response.body[0];
 
     expect(object_type).toBe("tutor_role");
 

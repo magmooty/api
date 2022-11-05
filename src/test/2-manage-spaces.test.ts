@@ -33,16 +33,6 @@ export const CONSTANTS = {
     name: faker.name.fullName(),
     object_type: "space",
   },
-  tutorCreateTutorRole: {
-    space: null,
-    contacts: [
-      {
-        type: "phone",
-        value: fakePhoneNumber(),
-      },
-    ],
-    object_type: "tutor_role",
-  },
   tutorCreateAcademicYear: {
     name: faker.random.words(2),
     object_type: "academic_year",
@@ -218,17 +208,6 @@ describe("Manage spaces", function () {
     expect(spaceResponse.status).toEqual(200);
 
     state.spaceId = spaceResponse.body.id;
-
-    const tutorRoleResponse = await handleRequest(
-      request
-        .post(endpoint("/graph"))
-        .auth(state.token, { type: "bearer" })
-        .send({ ...CONSTANTS.tutorCreateTutorRole, space: state.spaceId })
-    );
-
-    expect(tutorRoleResponse.status).toEqual(200);
-
-    state.tutorRoleId = tutorRoleResponse.body.id;
 
     const loginResponse = await handleRequest(
       request
