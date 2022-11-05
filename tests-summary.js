@@ -46,7 +46,7 @@ const main = async () => {
           `Environment: ${codeInline(process.env.CIRCLE_BRANCH)}`,
           `Number of tests: ${tests}`,
           `Failed tests: ${failures}`,
-          ...(isThereFailures ? codeBlock(failedCollection.join("\n")) : []),
+          ...(isThereFailures ? [codeBlock(failedCollection.join("\n"))] : []),
         ].join("\n")
       ),
       Blocks.Actions().elements(
