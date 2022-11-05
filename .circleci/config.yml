@@ -28,7 +28,7 @@ jobs:
           name: Prepare environment
           command: npm run test:prepare
       - run:
-          name: Run tests and notify Slack with the results
+          name: Run tests
           command: npm test || true
           environment:
             JEST_JUNIT_OUTPUT_DIR: ./reports/
