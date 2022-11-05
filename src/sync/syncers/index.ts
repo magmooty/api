@@ -1,14 +1,15 @@
-import * as user from "./user";
-import * as notification from "./notification";
 import * as academicYear from "./academic-year";
-import * as tutorRole from "./tutor-role";
+import * as assistantRole from "./assistant-role";
 import * as billableItem from "./billable-item";
 import * as billableItemLog from "./billable-item-log";
+import * as exam from "./exam";
 import * as examGradeGroupTemplate from "./exam-grade-group-template";
 import * as examLog from "./exam-log";
-import * as exam from "./exam";
+import * as notification from "./notification";
 import * as studentRole from "./student-role";
 import * as studyGroup from "./study-group";
+import * as tutorRole from "./tutor-role";
+import * as user from "./user";
 
 export default {
   "POST user": user.onPost,
@@ -54,4 +55,8 @@ export default {
   "POST study_group": studyGroup.onPost,
   "PATCH study_group": studyGroup.onPatch,
   "DELETE study_group": studyGroup.onDelete,
+
+  "POST assistant_role": assistantRole.onPost,
+  "PATCH assistant_role": assistantRole.onPatch,
+  "DELETE assistant_role": assistantRole.onDelete,
 } as const;

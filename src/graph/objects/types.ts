@@ -175,6 +175,12 @@ export interface AssistantSpaceInviteIndexMapping {
   updated_at: string;
 }
 
+export interface AssistantRoleIndexMapping {
+  space: string;
+  user: string;
+  updated_at: string;
+}
+
 export type ValueSet =
   | "BillableItemType"
   | "Color"
