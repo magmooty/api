@@ -2,6 +2,8 @@
 
 A Pub/Sub backend with a Graph data model that utilizes having 1 data service and all communication is done using a message queue. Each data change is an event that is sent to the queue for services to react to. The only API endpoints available are CRUD operations and search. All logic is done through logic rules that are triggered by data changes.
 
+The code is sttrucutred to be agnostic of what database/cache/email provider/search engine/...etc is used. It is structured in a plug-n-play style to move easily between external components and have different configurations for different use cases. 
+
 ## Technical Documentation
 
 - [How tracing works](https://adorable-busby-fbf.notion.site/Tracing-1c43e38aa46142389c200a017e8323bc?pvs=4)
